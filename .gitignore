@@ -1,0 +1,55 @@
+# Node modules
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+**/dist/
+build/
+**/build/
+
+# TypeScript
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Logs
+logs/
+**/logs/
+**/*.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+
+# OS files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+**/Thumbs.db
+
+# Env files
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Coverage
+coverage/
+**/coverage/
+
+# IDE files
+.idea/
+*.swp
+
+# Misc
+package-lock.json
+yarn.lock
+.pnpm-debug.log
+
+# Local development
+*.local
+# Temporary files
+*.tmp
+**/*.tmp
+
