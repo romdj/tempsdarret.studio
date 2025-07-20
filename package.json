@@ -16,6 +16,7 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
+    "build:tmp": "echo 'This is a temporary build script'",
     "build": "npm run build:shared && npm run build:services && npm run build:api-gateway && npm run build:frontend",
     "build:shared": "cd shared && npm run build",
     "build:services": "npm run build:user-service && npm run build:invite-service && npm run build:portfolio-service && npm run build:event-service && npm run build:file-service && npm run build:notification-service",

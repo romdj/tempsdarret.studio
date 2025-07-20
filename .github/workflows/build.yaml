@@ -1,10 +1,21 @@
 # First Build Stage for Monorepo
-name: Build Monorepo
-
+name: Build Tempsdarret Project
 on:
   push:
     branches:
       - main
+      - feature/*
+      - hotfix/*
+      - release/*
+  
+  pull_request:
+    branches:
+      - dependabot/*
+      - ci/*
+      - chore/*
+      - test/*
+      - docs/*
+
 
 jobs:
   build:
@@ -23,4 +34,4 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build    
+        run: npm run build:tmp
