@@ -22,8 +22,8 @@ Handles file upload, processing, and serving for self-hosted photography portfol
 ## File Storage Structure
 ```
 /var/www/portfolio-files/
-├── projects/
-│   ├── {projectId}/
+├── shoots/
+│   ├── {shootId}/
 │   │   ├── {media_id_001}/
 │   │   │   ├── original/     # img_001.cr3 (25MB+ original)
 │   │   │   ├── high/         # img_001.jpg (2-5MB high quality)
@@ -34,7 +34,12 @@ Handles file upload, processing, and serving for self-hosted photography portfol
 │   │   │   ├── high/
 │   │   │   ├── medium/
 │   │   │   └── thumb/
-│   │   └── metadata.json     # Project-level metadata
+│   │   ├── archives/         # Generated ZIP files (temporary)
+│   │   │   ├── JPEGs.zip     # 50-100GB processed images
+│   │   │   ├── RAWs.zip      # 50-100GB original files
+│   │   │   ├── VIDEOS.zip    # 50-100GB video files
+│   │   │   └── {shoot-name}.zip  # 200-300GB complete package
+│   │   └── metadata.json     # Shoot-level metadata
 │   └── temp/                 # Temporary upload processing
 ├── portfolio/                # Public portfolio images
 └── backups/                 # Automated backups
@@ -43,37 +48,46 @@ Handles file upload, processing, and serving for self-hosted photography portfol
 ## API Endpoints
 
 ### File Upload
-- `POST /upload/project/{projectId}` - Upload files to project
+- `POST /upload/shoot/{shootId}` - Upload files to shoot
 - `POST /upload/portfolio` - Upload for public portfolio
 - `GET /upload/status/{uploadId}` - Check upload progress
 - `DELETE /upload/cancel/{uploadId}` - Cancel ongoing upload
 
 ### File Access
-- `GET /files/project/{projectId}/{mediaId}` - Get image metadata
-- `GET /files/serve/{projectId}/{mediaId}/{resolution}` - Serve image file
-- `GET /files/download/{projectId}/{mediaId}` - Download original file
-- `DELETE /admin/files/{projectId}/{mediaId}` - Delete entire media unit
+- `GET /files/shoot/{shootId}/{mediaId}` - Get image metadata
+- `GET /files/serve/{shootId}/{mediaId}/{resolution}` - Serve image file
+- `GET /files/download/{shootId}/{mediaId}` - Download original file
+- `DELETE /admin/files/{shootId}/{mediaId}` - Delete entire media unit
+
+### Archive Downloads (Large Files)
+- `POST /archives/generate/{shootId}/jpegs` - Generate JPEGs.zip (50-100GB)
+- `POST /archives/generate/{shootId}/raws` - Generate RAWs.zip (50-100GB)  
+- `POST /archives/generate/{shootId}/videos` - Generate VIDEOS.zip (50-100GB)
+- `POST /archives/generate/{shootId}/complete` - Generate {shoot-name}.zip (200-300GB)
+- `GET /archives/status/{archiveId}` - Check archive generation progress
+- `GET /archives/download/{archiveId}` - Download ready archive with resumable support
+- `DELETE /archives/{archiveId}` - Clean up generated archive
 
 ### File Management
-- `POST /files/process/{projectId}/{mediaId}` - Trigger processing for specific media
-- `POST /files/process/{projectId}` - Trigger batch processing for project
+- `POST /files/process/{shootId}/{mediaId}` - Trigger processing for specific media
+- `POST /files/process/{shootId}` - Trigger batch processing for shoot
 - `GET /files/stats` - Storage usage statistics
 - `POST /files/cleanup` - Clean up orphaned files
 
-## Updated Project Schema with Media-Centric Paths
+## Updated Shoot Schema with Media-Centric Paths
 
 ```typescript
-interface ProjectImage {
+interface ShootImage {
   id: string; // Also serves as directory name (media_id)
   originalName: string;
   mimeType: string;
   
   // File paths organized by media ID
   paths: {
-    original: string;   // /projects/{projectId}/{mediaId}/original/{filename}
-    high: string;       // /projects/{projectId}/{mediaId}/high/{filename}
-    medium: string;     // /projects/{projectId}/{mediaId}/medium/{filename}
-    thumb: string;      // /projects/{projectId}/{mediaId}/thumb/{filename}
+    original: string;   // /shoots/{shootId}/{mediaId}/original/{filename}
+    high: string;       // /shoots/{shootId}/{mediaId}/high/{filename}
+    medium: string;     // /shoots/{shootId}/{mediaId}/medium/{filename}
+    thumb: string;      // /shoots/{shootId}/{mediaId}/thumb/{filename}
   };
   
   // File information
@@ -119,15 +133,15 @@ interface ProjectImage {
   uploadedAt: Date;
 }
 
-interface Project {
+interface Shoot {
   id: string;
   title: string;
-  // ... other project fields
+  // ... other shoot fields
   
-  // All images stored as array in project document
-  images: ProjectImage[];
+  // All images stored as array in shoot document
+  images: ShootImage[];
   
-  // Project file statistics
+  // Shoot file statistics
   fileStats: {
     totalImages: number;
     totalSize: number;
@@ -136,6 +150,23 @@ interface Project {
       high: number;
       medium: number;
       thumb: number;
+    };
+  };
+  
+  // Archive management
+  archives: {
+    available: ('jpegs' | 'raws' | 'videos' | 'complete')[];
+    lastGenerated: {
+      jpegs?: Date;
+      raws?: Date;
+      videos?: Date;
+      complete?: Date;
+    };
+    sizes: {
+      jpegs?: number;     // Size in bytes
+      raws?: number;
+      videos?: number;
+      complete?: number;
     };
   };
 }
@@ -147,37 +178,37 @@ interface Project {
 ```typescript
 // For gallery grids and previews
 width: 400px, quality: 70%, format: JPEG
-path: /projects/{projectId}/{mediaId}/thumb/{filename}.jpg
+path: /shoots/{shootId}/{mediaId}/thumb/{filename}.jpg
 ```
 
 ### 2. Medium (500KB-1MB)
 ```typescript
 // For lightbox previews and mobile viewing
 width: 1200px, quality: 80%, format: JPEG
-path: /projects/{projectId}/{mediaId}/medium/{filename}.jpg
+path: /shoots/{shootId}/{mediaId}/medium/{filename}.jpg
 ```
 
 ### 3. High (2-5MB)
 ```typescript
 // For desktop full-screen viewing
 width: 2400px, quality: 85%, format: JPEG
-path: /projects/{projectId}/{mediaId}/high/{filename}.jpg
+path: /shoots/{shootId}/{mediaId}/high/{filename}.jpg
 ```
 
 ### 4. Original (25MB+)
 ```typescript
 // For client downloads - unchanged
 format: Original (RAW/JPEG), no processing
-path: /projects/{projectId}/{mediaId}/original/{filename}.cr3
+path: /shoots/{shootId}/{mediaId}/original/{filename}.cr3
 ```
 
 ## File Processing Pipeline
 
 ```typescript
 // Upload and processing flow
-async function processUpload(projectId: string, file: UploadedFile) {
+async function processUpload(shootId: string, file: UploadedFile) {
   const mediaId = generateMediaId(); // e.g., "img_001", "media_abc123"
-  const baseDir = `/var/www/portfolio-files/projects/${projectId}/${mediaId}`;
+  const baseDir = `/var/www/portfolio-files/shoots/${shootId}/${mediaId}`;
   
   // 1. Create directory structure
   await createDirectories([
@@ -192,14 +223,195 @@ async function processUpload(projectId: string, file: UploadedFile) {
   await saveFile(file.buffer, originalPath);
   
   // 3. Queue processing job (async)
-  await queueImageProcessing(projectId, mediaId, originalPath);
+  await queueImageProcessing(shootId, mediaId, originalPath);
   
   // 4. Return immediate response
   return {
     mediaId,
     status: 'processing',
-    paths: generatePathsForMedia(projectId, mediaId, file.originalName)
+    paths: generatePathsForMedia(shootId, mediaId, file.originalName)
   };
+}
+```
+
+## Archive Generation Pipeline (50-300GB Files)
+
+### Archive Types and Contents
+```typescript
+interface ArchiveDefinition {
+  jpegs: {
+    name: 'JPEGs.zip';
+    content: ['high', 'medium']; // Processed JPEG versions
+    estimatedSize: '50-100GB';
+    includes: 'All processed images in high and medium resolution';
+  };
+  raws: {
+    name: 'RAWs.zip';
+    content: ['original']; // Original RAW files
+    estimatedSize: '50-100GB'; 
+    includes: 'All original RAW files and unprocessed originals';
+  };
+  videos: {
+    name: 'VIDEOS.zip';
+    content: ['videos']; // Video files (separate storage)
+    estimatedSize: '50-100GB';
+    includes: 'All video files from the shoot';
+  };
+  complete: {
+    name: '{project-name}.zip';
+    content: ['all']; // Everything
+    estimatedSize: '200-300GB';
+    includes: 'Complete project: RAWs, processed images, videos, metadata';
+  };
+}
+```
+
+### On-Demand Archive Generation
+```typescript
+// Archive generation flow for large files
+async function generateArchive(shootId: string, archiveType: 'jpegs' | 'raws' | 'videos' | 'complete') {
+  const archiveId = generateArchiveId();
+  const shoot = await getShoot(shootId);
+  
+  // 1. Create archive generation job
+  const job = await createArchiveJob({
+    archiveId,
+    shootId,
+    archiveType,
+    status: 'queued',
+    estimatedSize: calculateEstimatedSize(shoot, archiveType),
+    createdAt: new Date()
+  });
+  
+  // 2. Queue background processing (avoid blocking)
+  await queueArchiveGeneration(archiveId, shootId, archiveType);
+  
+  // 3. Return immediate response
+  return {
+    archiveId,
+    status: 'queued',
+    estimatedSize: job.estimatedSize,
+    estimatedTime: '30-120 minutes', // Based on file sizes
+    downloadUrl: `/archives/download/${archiveId}` // Available when ready
+  };
+}
+
+// Background archive generation worker
+async function processArchiveGeneration(archiveId: string, shootId: string, archiveType: string) {
+  try {
+    await updateArchiveStatus(archiveId, 'generating');
+    
+    const outputPath = `/var/www/portfolio-files/shoots/${shootId}/archives/${getArchiveName(archiveType)}`;
+    const sourcePaths = await getSourcePaths(shootId, archiveType);
+    
+    // Stream-based ZIP creation for large files
+    await createLargeZipStream(sourcePaths, outputPath, {
+      progressCallback: (progress) => updateArchiveProgress(archiveId, progress),
+      compressionLevel: 1, // Minimal compression for speed
+      memoryLimit: '2GB'   // Control memory usage
+    });
+    
+    // Update completion status
+    const fileSize = await getFileSize(outputPath);
+    await updateArchiveStatus(archiveId, 'ready', { 
+      fileSize,
+      downloadUrl: `/archives/download/${archiveId}`,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+    });
+    
+    // Notify client (via Kafka event)
+    await publishEvent('archive.ready', { shootId, archiveId, archiveType });
+    
+  } catch (error) {
+    await updateArchiveStatus(archiveId, 'failed', { error: error.message });
+    await publishEvent('archive.failed', { shootId, archiveId, error: error.message });
+  }
+}
+```
+
+### Archive Download with Resumable Support
+```typescript
+// Large file download with resume capability
+async function downloadArchive(req: Request, res: Response) {
+  const { archiveId } = req.params;
+  const archive = await getArchive(archiveId);
+  
+  if (archive.status !== 'ready') {
+    return res.status(404).json({ error: 'Archive not ready' });
+  }
+  
+  // Validate access permissions
+  if (!await canAccessShoot(req.user, archive.shootId)) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  
+  const filePath = archive.filePath;
+  const stat = await fs.stat(filePath);
+  const fileSize = stat.size;
+  
+  // Handle range requests for resumable downloads
+  const range = req.headers.range;
+  if (range) {
+    const [start, end] = parseRange(range, fileSize);
+    
+    res.status(206).set({
+      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': end - start + 1,
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${archive.filename}"`
+    });
+    
+    // Stream file chunk
+    const stream = fs.createReadStream(filePath, { start, end });
+    stream.pipe(res);
+  } else {
+    // Full file download
+    res.set({
+      'Content-Length': fileSize.toString(),
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${archive.filename}"`
+    });
+    
+    const stream = fs.createReadStream(filePath);
+    stream.pipe(res);
+  }
+  
+  // Log download event
+  await logDownload(archiveId, req.user.id, 'archive');
+}
+```
+
+### Archive Management Schema
+```typescript
+interface Archive {
+  id: string;
+  projectId: string;
+  archiveType: 'jpegs' | 'raws' | 'videos' | 'complete';
+  filename: string; // e.g., "JPEGs.zip", "wedding-smith-2024.zip"
+  
+  status: 'queued' | 'generating' | 'ready' | 'failed' | 'expired';
+  progress?: number; // 0-100 for generation progress
+  
+  // File information
+  filePath?: string;
+  fileSize?: number; // In bytes
+  estimatedSize?: number;
+  
+  // Timing
+  createdAt: Date;
+  startedAt?: Date;
+  completedAt?: Date;
+  expiresAt?: Date; // Auto-cleanup after 7 days
+  
+  // Error handling
+  error?: string;
+  retryCount: number;
+  
+  // Download tracking
+  downloadCount: number;
+  lastDownloaded?: Date;
+  downloadedBy: string[]; // User IDs who downloaded
 }
 ```
 
@@ -331,13 +543,23 @@ function validateMediaPath(projectId: string, mediaId: string, resolution: strin
 ```
 
 ## Event Publishing (Kafka)
-- `file.uploaded` - New file uploaded to project
+- `file.uploaded` - New file uploaded to shoot
 - `file.processing-started` - Processing started for media
 - `file.processing-completed` - All resolutions generated
 - `file.processing-failed` - Processing failed with error
 - `file.deleted` - Media unit removed
 - `file.accessed` - File served to client
 - `storage.cleanup` - Cleanup job completed
+
+### Archive Events
+- `archive.requested` - Archive generation requested by client
+- `archive.queued` - Archive generation added to queue
+- `archive.started` - Archive generation started
+- `archive.progress` - Archive generation progress update (every 10%)
+- `archive.ready` - Archive ready for download
+- `archive.failed` - Archive generation failed
+- `archive.downloaded` - Archive downloaded by client
+- `archive.expired` - Archive automatically cleaned up
 
 ## Implementation Phases
 
@@ -355,12 +577,22 @@ function validateMediaPath(projectId: string, mediaId: string, resolution: strin
 - [ ] Build batch processing for entire projects
 - [ ] Add processing status monitoring
 
-### Phase 3: Management & Optimization
-- [ ] Set up Nginx for efficient static file serving
+### Phase 3: Large Archive Generation (50-300GB Files)
+- [ ] Implement on-demand ZIP generation for project archives
+- [ ] Create streaming ZIP creation for memory efficiency 
+- [ ] Add resumable download support for large files (HTTP Range requests)
+- [ ] Build archive job queue and progress tracking
+- [ ] Implement automatic archive cleanup (7-day expiration)
+- [ ] Add archive status monitoring and retry logic
+- [ ] Create archive management in project schema
+
+### Phase 4: Management & Optimization
+- [ ] Set up Nginx for efficient static file serving and range requests
 - [ ] Implement media cleanup and backup jobs
 - [ ] Add storage usage monitoring per project/media
 - [ ] Create bulk operations (move, copy, delete)
-- [ ] Build admin interface for file management
+- [ ] Build admin interface for file and archive management
+- [ ] Optimize archive generation performance for 100GB+ files
 
 ## Cost Benefits of Self-Hosting with Media Organization
 - **No transfer fees**: Unlimited bandwidth on your server

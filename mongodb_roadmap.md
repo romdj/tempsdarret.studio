@@ -82,18 +82,138 @@ const ProfessionalServiceSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-// Event / Gallery schema
-const EventSchema = new Schema({
+// Shoot schema (Updated for large file archives)
+const ShootSchema = new Schema({
   title: String,
-  date: Date,
+  shootDate: Date,
+  category: { type: String, enum: ['weddings', 'portraits', 'corporate', 'landscapes'] },
   client: { type: Schema.Types.ObjectId, ref: 'User' },
-  portfolioItems: [{ type: Schema.Types.ObjectId, ref: 'PortfolioItem' }],
-  files: [{ 
-    filename: String, 
-    url: String, 
-    type: { type: String, enum: ['image', 'raw'] },
-    createdAt: { type: Date, default: Date.now },
+  
+  // Multi-resolution image storage
+  images: [{
+    id: String, // Media ID (also directory name)
+    originalName: String,
+    mimeType: String,
+    
+    // File paths organized by media ID
+    paths: {
+      original: String,   // /shoots/{shootId}/{mediaId}/original/{filename}
+      high: String,       // /shoots/{shootId}/{mediaId}/high/{filename}
+      medium: String,     // /shoots/{shootId}/{mediaId}/medium/{filename}
+      thumb: String       // /shoots/{shootId}/{mediaId}/thumb/{filename}
+    },
+    
+    // File information
+    sizes: {
+      original: Number,   // File size in bytes
+      high: Number,
+      medium: Number,
+      thumb: Number
+    },
+    
+    // Image dimensions
+    dimensions: {
+      width: Number,      // Original width
+      height: Number      // Original height
+    },
+    
+    // Processing status
+    processing: {
+      status: { type: String, enum: ['pending', 'processing', 'completed', 'failed'] },
+      resolutionsReady: [String], // ['original', 'high', 'medium', 'thumb']
+      processedAt: Date,
+      error: String
+    },
+    
+    // Display settings
+    display: {
+      featured: Boolean,
+      publicVisible: Boolean,
+      altText: String,
+      caption: String,
+      sortOrder: Number
+    },
+    
+    // Metadata
+    metadata: {
+      camera: String,
+      lens: String,
+      settings: String,
+      dateTaken: Date,
+      location: String
+    },
+    
+    uploadedAt: { type: Date, default: Date.now }
   }],
-  inviteCode: String, // for invite flow if needed
+  
+  // Project file statistics
+  fileStats: {
+    totalImages: Number,
+    totalSize: Number,
+    storageUsed: {
+      original: Number,
+      high: Number,
+      medium: Number,
+      thumb: Number
+    }
+  },
+  
+  // Archive management for large files (50-300GB)
+  archives: {
+    available: [{ type: String, enum: ['jpegs', 'raws', 'videos', 'complete'] }],
+    lastGenerated: {
+      jpegs: Date,
+      raws: Date,
+      videos: Date,
+      complete: Date
+    },
+    sizes: {
+      jpegs: Number,     // Size in bytes
+      raws: Number,
+      videos: Number,
+      complete: Number
+    }
+  },
+  
+  inviteCode: String, // for client access
   createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Archive schema for large file downloads (50-300GB)
+const ArchiveSchema = new Schema({
+  shootId: { type: Schema.Types.ObjectId, ref: 'Shoot', required: true },
+  archiveType: { 
+    type: String, 
+    enum: ['jpegs', 'raws', 'videos', 'complete'], 
+    required: true 
+  },
+  filename: String, // e.g., "JPEGs.zip", "wedding-smith-2024.zip"
+  
+  status: { 
+    type: String, 
+    enum: ['queued', 'generating', 'ready', 'failed', 'expired'],
+    default: 'queued'
+  },
+  progress: { type: Number, min: 0, max: 100 }, // Generation progress
+  
+  // File information
+  filePath: String,
+  fileSize: Number, // In bytes
+  estimatedSize: Number,
+  
+  // Timing
+  createdAt: { type: Date, default: Date.now },
+  startedAt: Date,
+  completedAt: Date,
+  expiresAt: Date, // Auto-cleanup after 7 days
+  
+  // Error handling
+  error: String,
+  retryCount: { type: Number, default: 0 },
+  
+  // Download tracking
+  downloadCount: { type: Number, default: 0 },
+  lastDownloaded: Date,
+  downloadedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }] // User IDs who downloaded
 });
