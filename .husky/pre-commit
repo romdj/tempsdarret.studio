@@ -1,1 +1,4 @@
 #!/bin/sh
+# Pre-commit hooks disabled during initial development phase
+# Will be re-enabled once core workspaces are implemented
+echo "⏭ Pre-commit checks disabled during development phase"

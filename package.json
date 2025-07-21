@@ -123,7 +123,7 @@
   "workspaces": [
     "frontend",
     "services/user-service",
-    "services/invite-service", 
+    "services/invite-service",
     "services/portfolio-service",
     "services/event-service",
     "services/file-service",
@@ -132,21 +132,22 @@
     "shared",
     "dev-tools"
   ],
-  "dependencies": {},
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/js": "^9.12.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^11.0.3",
-    "conventional-changelog-conventionalcommits": "^9.1.0",
-    "semantic-release": "^24.2.7",
-    "husky": "^9.0.0",
-    "@eslint/js": "^9.12.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "conventional-changelog-conventionalcommits": "^9.1.0",
     "eslint": "^9.12.0",
     "globals": "^15.0.0",
-    "typescript": "^5.6.2",
-    "prettier": "^3.0.0"
+    "husky": "^9.0.0",
+    "prettier": "^3.0.0",
+    "semantic-release": "^24.2.7",
+    "typescript": "^5.6.2"
   },
   "repository": {
     "type": "git",
