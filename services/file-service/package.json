@@ -1,0 +1,29 @@
+{
+  "name": "@tempsdarret/file-service",
+  "version": "0.1.0",
+  "description": "Large file management, multi-resolution processing, and archive generation service",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.{js,ts}",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tempsdarret/shared": "workspace:*",
+    "archiver": "^7.0.1",
+    "@types/archiver": "^6.0.2",
+    "stream-zip": "^1.15.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  }
+}
