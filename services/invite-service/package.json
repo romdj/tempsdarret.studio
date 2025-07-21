@@ -1,0 +1,26 @@
+{
+  "name": "@tempsdarret/invite-service",
+  "version": "0.1.0",
+  "description": "Magic link generation and invite management service",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.{js,ts}",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tempsdarret/shared": "workspace:*"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  }
+}
