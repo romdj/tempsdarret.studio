@@ -1,31 +1,31 @@
-# Event Service
+# Shoot Service
 
 ## Overview
-Manages photography projects, client assignments, and gallery access. Serves as the central hub for project lifecycle management, from creation to client delivery.
+Manages photography shoots, client assignments, and gallery access. Serves as the central hub for shoot lifecycle management, from creation to client delivery.
 
 ## Core Responsibilities
-- **Project lifecycle**: Create, update, and manage photography projects
-- **Client assignment**: Link clients to their specific projects  
-- **Access control**: Manage who can view which projects
-- **Gallery organization**: Structure photos within projects
-- **Project metadata**: Store event details, dates, and context
+- **Shoot lifecycle**: Create, update, and manage photography shoots
+- **Client assignment**: Link clients to their specific shoots  
+- **Access control**: Manage who can view which shoots
+- **Gallery organization**: Structure photos within shoots
+- **Shoot metadata**: Store shoot details, dates, and context
 
-## Unified Project Model
-All photography work (weddings, portraits, corporate, landscapes) uses the same project structure with optional company information for professional clients.
+## Unified Shoot Model
+All photography work (weddings, portraits, corporate, landscapes) uses the same shoot structure with optional company information for professional clients.
 
 ## Key Features
 
-### Project Management
-- **Universal project creation** for all photography types
+### Shoot Management
+- **Universal shoot creation** for all photography types
 - **Client information capture** with optional company details
-- **Event metadata** (date, location, duration, type)
+- **Shoot metadata** (date, location, duration, type)
 - **Access control** (public portfolio vs private client access)
-- **Project status tracking** (active, completed, archived)
+- **Shoot status tracking** (active, completed, archived)
 
 ### Client Access Patterns
-- **Simple URL access**: `/portfolio?ref={projectId}` for client galleries
+- **Simple URL access**: `/portfolio?ref={shootId}` for client galleries
 - **Magic link integration**: Seamless authentication via invite tokens
-- **Permission validation**: Ensure clients only access their projects
+- **Permission validation**: Ensure clients only access their shoots
 - **Download tracking**: Monitor client engagement and file access
 
 ### Gallery Organization
@@ -36,38 +36,38 @@ All photography work (weddings, portraits, corporate, landscapes) uses the same 
 
 ## API Endpoints
 
-### Project Management
-- `POST /projects` - Create new project
-- `GET /projects/{id}` - Get project details
-- `PUT /projects/{id}` - Update project information
-- `DELETE /projects/{id}` - Archive project
-- `GET /projects` - List projects with filtering
+### Shoot Management
+- `POST /shoots` - Create new shoot
+- `GET /shoots/{id}` - Get shoot details
+- `PUT /shoots/{id}` - Update shoot information
+- `DELETE /shoots/{id}` - Archive shoot
+- `GET /shoots` - List shoots with filtering
 
 ### Client Access
-- `GET /projects/by-ref/{reference}` - Get project by client reference
-- `POST /projects/{id}/access` - Validate client access
-- `GET /projects/{id}/gallery` - Get project gallery with images
-- `POST /projects/{id}/download/{mediaId}` - Log download activity
+- `GET /shoots/by-ref/{reference}` - Get shoot by client reference
+- `POST /shoots/{id}/access` - Validate client access
+- `GET /shoots/{id}/gallery` - Get shoot gallery with images
+- `POST /shoots/{id}/download/{mediaId}` - Log download activity
 
 ### Portfolio Integration
-- `GET /portfolio/featured` - Get featured projects for public display
-- `GET /portfolio/category/{category}` - Get projects by type
-- `POST /projects/{id}/publish` - Make project publicly visible
+- `GET /portfolio/featured` - Get featured shoots for public display
+- `GET /portfolio/category/{category}` - Get shoots by type
+- `POST /shoots/{id}/publish` - Make shoot publicly visible
 
-## Project Schema
+## Shoot Schema
 
 ```typescript
-interface Project {
+interface Shoot {
   id: string;
   reference: string;              // Unique client-friendly reference
   
-  // Project details
+  // Shoot details
   title: string;
   category: 'weddings' | 'portraits' | 'landscapes' | 'private-events' | 'professional';
   description?: string;
   
-  // Event information
-  event: {
+  // Shoot information
+  shoot: {
     date: Date;
     location?: string;
     duration?: number;            // Hours
