@@ -1,0 +1,255 @@
+asyncapi: 3.0.0
+info:
+  title: Temps D'arrêt Studio Events
+  version: '0.1.0'
+  description: Event specifications for photography platform
+  contact:
+    name: Temps D'arrêt Studio
+    email: dev@tempsdarret.studio
+
+servers:
+  kafka:
+    host: localhost:9092
+    protocol: kafka
+    description: Local Kafka broker
+
+channels:
+  shoots:
+    description: Shoot lifecycle events
+    messages:
+      shoot.created:
+        $ref: '#/components/messages/ShootCreated'
+      shoot.completed:
+        $ref: '#/components/messages/ShootCompleted'
+      shoot.delivered:
+        $ref: '#/components/messages/ShootDelivered'
+  
+  files:
+    description: File processing events
+    messages:
+      file.uploaded:
+        $ref: '#/components/messages/FileUploaded'
+      file.processed:
+        $ref: '#/components/messages/FileProcessed'
+  
+  invitations:
+    description: Invitation events
+    messages:
+      invitation.created:
+        $ref: '#/components/messages/InvitationCreated'
+      invitation.used:
+        $ref: '#/components/messages/InvitationUsed'
+
+operations:
+  publishShootCreated:
+    action: send
+    channel:
+      $ref: '#/channels/shoots'
+    messages:
+      - $ref: '#/components/messages/ShootCreated'
+
+components:
+  messages:
+    ShootCreated:
+      name: ShootCreated
+      title: Shoot Created Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ShootCreatedPayload'
+    
+    ShootCompleted:
+      name: ShootCompleted
+      title: Shoot Completed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ShootCompletedPayload'
+    
+    ShootDelivered:
+      name: ShootDelivered
+      title: Shoot Delivered Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ShootDeliveredPayload'
+    
+    FileUploaded:
+      name: FileUploaded
+      title: File Uploaded Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileUploadedPayload'
+    
+    FileProcessed:
+      name: FileProcessed
+      title: File Processed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileProcessedPayload'
+    
+    InvitationCreated:
+      name: InvitationCreated
+      title: Invitation Created Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/InvitationCreatedPayload'
+    
+    InvitationUsed:
+      name: InvitationUsed
+      title: Invitation Used Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/InvitationUsedPayload'
+
+  schemas:
+    ShootCreatedPayload:
+      type: object
+      properties:
+        eventId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        shootId:
+          type: string
+        clientId:
+          type: string
+        photographerId:
+          type: string
+        title:
+          type: string
+        scheduledDate:
+          type: string
+          format: date-time
+      required:
+        - eventId
+        - timestamp
+        - shootId
+        - clientId
+        - photographerId
+        - title
+    
+    ShootCompletedPayload:
+      type: object
+      properties:
+        eventId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        shootId:
+          type: string
+        totalPhotos:
+          type: integer
+        archiveSize:
+          type: integer
+          description: Size in bytes
+      required:
+        - eventId
+        - timestamp
+        - shootId
+        - totalPhotos
+        - archiveSize
+    
+    ShootDeliveredPayload:
+      type: object
+      properties:
+        eventId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        shootId:
+          type: string
+        deliveryUrl:
+          type: string
+      required:
+        - eventId
+        - timestamp
+        - shootId
+        - deliveryUrl
+    
+    FileUploadedPayload:
+      type: object
+      properties:
+        eventId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        fileId:
+          type: string
+        shootId:
+          type: string
+        filename:
+          type: string
+        size:
+          type: integer
+      required:
+        - eventId
+        - timestamp
+        - fileId
+        - filename
+        - size
+    
+    FileProcessedPayload:
+      type: object
+      properties:
+        eventId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        fileId:
+          type: string
+        thumbnailUrl:
+          type: string
+        processingTime:
+          type: integer
+          description: Processing time in milliseconds
+      required:
+        - eventId
+        - timestamp
+        - fileId
+        - thumbnailUrl
+    
+    InvitationCreatedPayload:
+      type: object
+      properties:
+        eventId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        invitationId:
+          type: string
+        email:
+          type: string
+        shootId:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+        - eventId
+        - timestamp
+        - invitationId
+        - email
+        - shootId
+        - expiresAt
+    
+    InvitationUsedPayload:
+      type: object
+      properties:
+        eventId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        invitationId:
+          type: string
+        userId:
+          type: string
+      required:
+        - eventId
+        - timestamp
+        - invitationId
+        - userId

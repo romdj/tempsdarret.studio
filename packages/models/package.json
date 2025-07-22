@@ -1,0 +1,24 @@
+{
+  "name": "@tempsdarret/models",
+  "version": "0.1.0",
+  "description": "TypeSpec models and API contracts for photography platform",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsp compile .",
+    "dev": "tsp compile . --watch",
+    "clean": "rm -rf dist tsp-output",
+    "validate": "tsp compile . --no-emit"
+  },
+  "dependencies": {
+    "@typespec/compiler": "^0.62.0",
+    "@typespec/http": "^0.62.0",
+    "@typespec/rest": "^0.62.0",
+    "@typespec/openapi3": "^0.62.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  }
+}
