@@ -7,8 +7,8 @@
   "scripts": {
     "build": "asyncapi generate fromTemplate asyncapi.yaml @asyncapi/nodejs-template -o dist",
     "validate": "asyncapi validate asyncapi.yaml",
-    "docs": "asyncapi generate fromTemplate asyncapi.yaml @asyncapi/html-template -o docs",
-    "clean": "rm -rf dist docs"
+    "docs": "asyncapi generate fromTemplate asyncapi.yaml @asyncapi/html-template -o ../../docs/events",
+    "clean": "rm -rf dist ../../docs/events"
   },
   "dependencies": {
     "@asyncapi/parser": "^3.0.0"

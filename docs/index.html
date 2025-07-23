@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temps D'arrêt Studio - Documentation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+            margin-bottom: 40px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .subtitle {
+            margin-top: 10px;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .docs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .doc-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+        .doc-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        .doc-card h2 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.4em;
+        }
+        .doc-card p {
+            margin: 0;
+            color: #666;
+            line-height: 1.5;
+        }
+        .icon {
+            font-size: 2em;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        .status.ready {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.coming-soon {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Temps D'arrêt Studio</h1>
+        <div class="subtitle">Photography Platform Documentation</div>
+    </header>
+
+    <div class="container">
+        <div class="docs-grid">
+            <a href="api/index.html" class="doc-card">
+                <span class="icon">🚀</span>
+                <h2>API Documentation</h2>
+                <p>Interactive OpenAPI documentation for all REST endpoints. Explore the complete API surface with request/response examples and authentication details.</p>
+                <span class="status ready">Ready</span>
+            </a>
+
+            <a href="events/index.html" class="doc-card">
+                <span class="icon">⚡</span>
+                <h2>Event Specifications</h2>
+                <p>AsyncAPI documentation for event-driven architecture. Covers all Kafka events, message schemas, and event flow patterns.</p>
+                <span class="status ready">Ready</span>
+            </a>
+
+            <a href="architecture/index.html" class="doc-card">
+                <span class="icon">🏗️</span>
+                <h2>Architecture Guide</h2>
+                <p>System architecture overview, service interactions, deployment patterns, and technical decision records.</p>
+                <span class="status coming-soon">Coming Soon</span>
+            </a>
+
+            <div class="doc-card">
+                <span class="icon">📸</span>
+                <h2>Photography Workflows</h2>
+                <p>Business process documentation covering shoot management, client onboarding, file processing, and delivery workflows.</p>
+                <span class="status coming-soon">Coming Soon</span>
+            </div>
+
+            <div class="doc-card">
+                <span class="icon">🔐</span>
+                <h2>Security & Authentication</h2>
+                <p>Security implementation details, magic link authentication flow, authorization patterns, and data protection measures.</p>
+                <span class="status coming-soon">Coming Soon</span>
+            </div>
+
+            <div class="doc-card">
+                <span class="icon">⚙️</span>
+                <h2>Developer Guide</h2>
+                <p>Local development setup, contribution guidelines, testing strategies, and deployment procedures.</p>
+                <span class="status coming-soon">Coming Soon</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
