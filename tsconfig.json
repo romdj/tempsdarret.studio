@@ -28,19 +28,12 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
-  "references": [
-    { "path": "./shared" },
-    { "path": "./frontend" },
-    { "path": "./api-gateway" },
-    { "path": "./services/user-service" },
-    { "path": "./services/invite-service" },
-    { "path": "./services/portfolio-service" },
-    { "path": "./services/event-service" },
-    { "path": "./services/file-service" },
-    { "path": "./services/notification-service" },
-    { "path": "./dev-tools" }
+  "include": [
+    "packages/shared/src/**/*",
+    "packages/types/src/**/*", 
+    "api-gateway/src/**/*",
+    "services/*/src/**/*",
+    "dev-tools/src/**/*"
   ],
-  "files": [],
-  "include": [],
   "exclude": ["node_modules", "dist", "build"]
 }
