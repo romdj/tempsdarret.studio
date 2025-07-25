@@ -10,12 +10,7 @@
     "clean": "rm -rf dist tsp-output",
     "validate": "tsp compile . --no-emit"
   },
-  "dependencies": {
-    "@typespec/compiler": "^0.62.0",
-    "@typespec/http": "^0.62.0",
-    "@typespec/rest": "^0.62.0",
-    "@typespec/openapi3": "^0.62.0"
-  },
+  "dependencies": {},
   "devDependencies": {},
   "engines": {
     "node": ">=22.0.0",

@@ -7,7 +7,6 @@ using TypeSpec.Rest;
 
 @service({
   title: "Temps D'arrêt Studio API",
-  version: "0.1.0",
 })
 namespace TempsArret;
 

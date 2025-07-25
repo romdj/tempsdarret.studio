@@ -4,4 +4,4 @@ options:
   "@typespec/openapi3":
     output-file: "{output-dir}/openapi.json"
     
-output-dir: "dist"
+output-dir: "{project-root}/dist"
