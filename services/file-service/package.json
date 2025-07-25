@@ -16,10 +16,9 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@tempsdarret/shared": "workspace:*",
     "archiver": "^7.0.1",
     "@types/archiver": "^6.0.2",
-    "stream-zip": "^1.15.0"
+    "node-stream-zip": "^1.15.0"
   },
   "devDependencies": {},
   "engines": {
