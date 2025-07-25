@@ -5,7 +5,7 @@ import "@typespec/openapi3";
 using TypeSpec.Http;
 using TypeSpec.Rest;
 
-@service({
+@service(#{
   title: "Temps D'arrêt Studio API",
 })
 namespace TempsArret;
