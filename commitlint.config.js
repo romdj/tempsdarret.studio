@@ -61,6 +61,19 @@ module.exports = {
         'security',
         'performance',
         
+        // Data and messaging
+        'api',
+        'graphql',
+        'rest',
+        'websockets',
+        'pubsub',
+        'queues',
+        'models',
+        'events',
+        'messages',
+        'messaging',
+        'data-structures',
+
         // Development
         'shared',
         'dev-tools',
