@@ -1,5 +1,16 @@
 # Photography Platform - Event-Driven Architecture with Kafka
 
+## Technology Stack
+
+**Backend Framework:** Fastify v5.4.0 (high-performance, TypeScript-first)  
+**Schema Definition:** TypeSpec v1.2.1 → OpenAPI 3.0 generation  
+**Database:** MongoDB with Mongoose v8.16.4  
+**Authentication:** Magic Links (JWT-based)  
+**Event Streaming:** Kafka (for service communication)  
+**File Storage:** Sharp v0.34.3 for image processing  
+**Validation:** Zod v4.0.10 schemas  
+**Security:** bcryptjs v3.0.2, Helmet, Rate limiting  
+
 ---
 
 ## Core Microservices & Their Responsibilities

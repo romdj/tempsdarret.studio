@@ -73,6 +73,9 @@ module.exports = {
         'messages',
         'messaging',
         'data-structures',
+        
+        // Architecture
+        'architecture',
 
         // Development
         'shared',
