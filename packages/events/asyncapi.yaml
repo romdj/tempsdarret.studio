@@ -46,7 +46,7 @@ operations:
     channel:
       $ref: '#/channels/shoots'
     messages:
-      - $ref: '#/components/messages/ShootCreated'
+      - $ref: '#/channels/shoots/messages/shoot.created'
 
 components:
   messages:

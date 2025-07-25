@@ -7,15 +7,11 @@
   "scripts": {
     "build": "asyncapi generate fromTemplate asyncapi.yaml @asyncapi/nodejs-template -o dist",
     "validate": "asyncapi validate asyncapi.yaml",
-    "docs": "asyncapi generate fromTemplate asyncapi.yaml @asyncapi/html-template -o ../../docs/events",
+    "docs": "asyncapi generate fromTemplate asyncapi.yaml @asyncapi/html-template -o ../../docs/events --force-write",
     "clean": "rm -rf dist ../../docs/events"
   },
-  "dependencies": {
-    "@asyncapi/parser": "^3.0.0"
-  },
-  "devDependencies": {
-    "@asyncapi/cli": "^1.0.0"
-  },
+  "dependencies": {},
+  "devDependencies": {},
   "engines": {
     "node": ">=22.0.0",
     "npm": ">=10.0.0"
