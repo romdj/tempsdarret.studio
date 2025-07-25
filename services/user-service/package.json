@@ -16,8 +16,6 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@tempsdarret/shared": "workspace:*",
-    "@tempsdarret/types": "workspace:*",
     "jsonwebtoken": "^9.0.2",
     "@types/jsonwebtoken": "^9.0.7"
   },

@@ -15,9 +15,6 @@
     "lint": "eslint src/**/*.{js,ts}",
     "check": "tsc --noEmit"
   },
-  "dependencies": {
-    "@tempsdarret/shared": "workspace:*"
-  },
   "devDependencies": {},
   "engines": {
     "node": ">=22.0.0",
