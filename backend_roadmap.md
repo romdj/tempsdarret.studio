@@ -58,7 +58,15 @@
 - **Communication channels**: Email (primary), SMS (optional)
 - **Subscribe to**: `invite.created`, `archive.ready`, `shoot.delivered`, `invite.expiring`
 
-### 7. API Gateway / BFF (Backend For Frontend)
+### 7. Content Management Service (CMS)
+- **Email templates**: Invitation emails, notification templates, branded content
+- **Content management**: Configurable text, branding, terms of service
+- **Template rendering**: Dynamic content injection for personalized emails
+- **Configuration storage**: System settings, feature flags, business rules
+- **API endpoints**: Template fetching, content updates, configuration management
+- **No event subscription**: Provides content via direct API calls to other services
+
+### 8. API Gateway / BFF (Backend For Frontend)
 - **Client portal**: `/portfolio?ref={shootId}` access pattern
 - **Admin dashboard**: Shoot management, client oversight, analytics
 - **Authentication proxy**: Magic link validation and session management
