@@ -1,53 +1,51 @@
-```mermaid
-sequenceDiagram  
-  participant P as Photographer  
-  participant AG as API Gateway  
-  participant SS as Shoot Service
-  participant EB as Event Bus (Kafka)  
-  participant US as User Service 
-  participant IS as Invite Service  
-  participant NS as Notification Service  
-  participant CMS as Content Management Service  
+sequenceDiagram
+participant P as Photographer
+participant AG as API Gateway
+participant SS as Shoot Service
+participant EB as Event Bus (Kafka)
+participant US as User Service 
+participant IS as Invite Service
+participant NS as Notification Service
+participant CMS as Content Management Service
 
-  Note over P,NS: Scenario 1: Photographer Creates Shoot and Invites Client (Event-Driven)
+Note over P,NS: Scenario 1: Photographer Creates Shoot and Invites Client (Event-Driven)
 
-  P->>AG: POST /shoots (title, date, clientEmail, location) 
-  AG->>P: Validate photographer authentication  
-  AG->>SS: Create new shoot command 
-  SS->>SS: Generate shootId (shoot_xxxx)  
-  SS->>EB: Publish "shoot.created" event  
-  Note right of EB: {shootId, title, clientEmail, photographerId, date} 
-  SS->>AG: Return shoot details  
-  AG->>P: 201 Created (shootId)  
+P->>AG: POST /shoots (title, date, clientEmail, location) 
+AG->>P: Validate photographer authentication
+AG->>SS: Create new shoot command 
+SS->>SS: Generate shootId (shoot_xxxx)
+SS->>EB: Publish "shoot.created" event
+Note right of EB: {shootId, title, clientEmail, photographerId, date} 
+SS->>AG: Return shoot details
+AG->>P: 201 Created (shootId)
 
-  EB->>US: Consume "shoot.created" event  
-  US->>US: Process client user creation/lookup  
-  alt Client doesn't exist 
-    US->>US: Create client user (role: 'client') 
-    US->>EB: Publish "user.created" event  
-    Note right of EB: {userId, email, role: 'client', shootId}  
-  else Client exists 
-    US->>EB: Publish "user.verified" event 
-    Note right of EB: {userId, email, shootId}
-  end 
+EB->>US: Consume "shoot.created" event
+US->>US: Process client user creation/lookup
+alt Client doesn't exist 
+US->>US: Create client user (role: 'client') 
+US->>EB: Publish "user.created" event
+Note right of EB: {userId, email, role: 'client', shootId}
+else Client exists 
+US->>EB: Publish "user.verified" event 
+Note right of EB: {userId, email, shootId}
+end 
 
-  EB->>IS: Consume "user.created" or "user.verified" event  
-  IS->>IS: Generate magic link token (64-char hex) 
-  IS->>IS: Set expiration (48 hours) 
-  IS->>IS: Invalidate/clear previous invitation (email)
-  IS->>IS: Store invitation (email, shootId, token)
-  IS->>EB: Publish "invite.created" event 
-  Note right of EB: {inviteId, email, shootId, token, expiresAt}  
+EB->>IS: Consume "user.created" or "user.verified" event
+IS->>IS: Generate magic link token (64-char hex) 
+IS->>IS: Set expiration (48 hours) 
+IS->>IS: Invalidate/clear previous invitation (email)
+IS->>IS: Store invitation (email, shootId, token)
+IS->>EB: Publish "invite.created" event 
+Note right of EB: {inviteId, email, shootId, token, expiresAt}
 
-  EB->>NS: Consume "invite.created" event 
-  NS->>NS: Generate magic link URL  
-  NS->>CMS: Fetch invitation email template 
-  CMS->>NS: Return email template content
-  NS->>NS: Compose invitation email with template 
-  NS->>NS: Send email to client  
-  NS->>EB: Publish "invite.sent" event 
-  Note right of EB: {inviteId, email, sentAt, status: 'sent'}  
+EB->>NS: Consume "invite.created" event 
+NS->>NS: Generate magic link URL
+NS->>CMS: Fetch invitation email template 
+CMS->>NS: Return email template content
+NS->>NS: Compose invitation email with template 
+NS->>NS: Send email to client
+NS->>EB: Publish "invite.sent" event 
+Note right of EB: {inviteId, email, sentAt, status: 'sent'}
 
-  Note over P,NS: All services except CMS react to events independently
-  Note over P,NS: CMS provides template content via direct API calls
-```
+Note over P,NS: All services except CMS react to events independently
+Note over P,NS: CMS provides template content via direct API calls
