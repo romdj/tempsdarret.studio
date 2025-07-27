@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { UserRole } from '@tempsdarret/shared';
+import { UserRole } from '../types/shared.js';
 
 export interface IUser extends Document {
   email: string;
@@ -11,6 +11,7 @@ export interface IUser extends Document {
   lastLoginAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  fullName: string;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -42,7 +43,7 @@ const UserSchema = new Schema<IUser>({
   invitedShoots: [{
     type: String,
     validate: {
-      validator: function(v: string) {
+      validator: function(v: string): boolean {
         return v.startsWith('shoot_');
       },
       message: 'Invalid shoot ID format'
@@ -61,11 +62,11 @@ UserSchema.index({ role: 1 });
 UserSchema.index({ isActive: 1 });
 
 // Virtual for full name
-UserSchema.virtual('fullName').get(function(this: IUser) {
+UserSchema.virtual('fullName').get(function(this: IUser): string {
   if (this.firstName && this.lastName) {
     return `${this.firstName} ${this.lastName}`;
   }
-  return this.firstName || this.email;
+  return this.firstName ?? this.email;
 });
 
 // Transform output
