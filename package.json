@@ -12,7 +12,7 @@
   "author": "romdj",
   "license": "MIT",
   "engines": {
-    "node": ">=22.0.0",
+    "node": ">=24.0.0",
     "npm": ">=10.0.0"
   },
   "scripts": {
@@ -154,9 +154,9 @@
     "@semantic-release/github": "^11.0.3",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
-    "@typespec/compiler": "^1.2.1",
-    "@typespec/http": "^1.2.1",
-    "@typespec/openapi3": "^1.2.1",
+    "@typespec/compiler": "^1.1.0",
+    "@typespec/http": "^1.1.0",
+    "@typespec/openapi3": "^1.1.0",
     "@typespec/rest": "^0.72.1",
     "conventional-changelog-conventionalcommits": "^9.1.0",
     "eslint": "^9.12.0",
