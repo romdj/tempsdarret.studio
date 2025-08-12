@@ -1,0 +1,1 @@
+export { EventPublisher, DomainEvent } from './event-publisher';
