@@ -1,5 +1,5 @@
 import { KafkaContainer } from '@testcontainers/kafka';
-import { GenericContainer } from 'testcontainers';
+import { GenericContainer, Network } from 'testcontainers';
 import { Kafka, Consumer, Producer } from 'kafkajs';
 import supertest from 'supertest';
 import type { StartedTestContainer } from 'testcontainers';
@@ -11,6 +11,7 @@ import type { StartedTestContainer } from 'testcontainers';
 export class TestMonitor {
   private kafkaContainer?: StartedTestContainer;
   private kafkaUIContainer?: StartedTestContainer;
+  private network?: Network;
   private kafka?: Kafka;
   private consumer?: Consumer;
   private producer?: Producer;
@@ -18,10 +19,16 @@ export class TestMonitor {
   async start() {
     console.log('🚀 Starting Test Monitor...');
     
-    // Start Kafka container
+    // Create network first
+    console.log('🔗 Creating network...');
+    this.network = await new Network().start();
+    
+    // Start Kafka container - let KafkaContainer handle its own configuration
     console.log('📦 Starting Kafka container...');
     this.kafkaContainer = await new KafkaContainer('confluentinc/cp-kafka:7.4.0')
-      .withStartupTimeout(60000)
+      .withNetwork(this.network)
+      .withNetworkAliases('kafka-broker')
+      .withStartupTimeout(90000)
       .start();
 
     const kafkaHost = this.kafkaContainer.getHost();
@@ -29,6 +36,7 @@ export class TestMonitor {
     const brokers = [`${kafkaHost}:${kafkaPort}`];
     
     console.log(`✅ Kafka running at: ${brokers[0]}`);
+    console.log(`🔗 Internal Kafka: kafka-broker:9092`);
 
     // Setup Kafka client
     this.kafka = new Kafka({
@@ -36,16 +44,18 @@ export class TestMonitor {
       brokers,
     });
 
-    // Start Kafka UI container
+    // Start Kafka UI on same network
     console.log('🖥️  Starting Kafka UI...');
     this.kafkaUIContainer = await new GenericContainer('provectuslabs/kafka-ui:latest')
+      .withNetwork(this.network)
       .withEnvironment({
         'KAFKA_CLUSTERS_0_NAME': 'test-cluster',
-        'KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS': `${kafkaHost}:${kafkaPort}`,
-        'KAFKA_CLUSTERS_0_ZOOKEEPER': ''
+        'KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS': 'kafka-broker:9092',
+        'KAFKA_CLUSTERS_0_ZOOKEEPER': '',
+        'DYNAMIC_CONFIG_ENABLED': 'true'
       })
       .withExposedPorts(8080)
-      .withStartupTimeout(30000)
+      .withStartupTimeout(60000)
       .start();
 
     const uiPort = this.kafkaUIContainer.getMappedPort(8080);
@@ -123,6 +133,7 @@ export class TestMonitor {
     await this.producer?.disconnect();
     await this.kafkaUIContainer?.stop();
     await this.kafkaContainer?.stop();
+    await this.network?.stop();
     console.log('✅ Monitor stopped');
   }
 }
