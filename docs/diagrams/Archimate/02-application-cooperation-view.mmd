@@ -1,0 +1,68 @@
+---
+title: ArchiMate Application Cooperation View - Temps D'arrêt Studio
+description: Core application components and their cooperation patterns
+---
+graph TB
+    subgraph "Client Interface Layer"
+        WEB[Web Frontend<br/>SvelteKit Portal]
+        API[API Gateway<br/>Request Router]
+    end
+
+    subgraph "Core Business Applications"
+        AUTH[Authentication App<br/>Magic Links & Users]
+        SHOOT[Shoot Management App<br/>Photography Sessions]
+        FILES[File Processing App<br/>Photos & Archives]
+        COMM[Communication App<br/>Notifications & Email]
+    end
+
+    subgraph "Supporting Applications"
+        PORTFOLIO[Portfolio App<br/>Public Website]
+        CONFIG[Configuration App<br/>Templates & Settings]
+    end
+
+    subgraph "Integration Infrastructure"
+        EVENTS[Event Bus<br/>Kafka Messaging]
+        SCHEMA[Schema Registry<br/>TypeSpec Contracts]
+    end
+
+    %% Primary Cooperation Flows
+    WEB -->|HTTP Requests| API
+    API -->|Service Calls| AUTH
+    API -->|Service Calls| SHOOT
+    API -->|Service Calls| FILES
+    API -->|Service Calls| PORTFOLIO
+
+    %% Event-Driven Cooperation
+    AUTH -->|User Events| EVENTS
+    SHOOT -->|Shoot Events| EVENTS
+    FILES -->|File Events| EVENTS
+    
+    EVENTS -->|Event Delivery| AUTH
+    EVENTS -->|Event Delivery| SHOOT
+    EVENTS -->|Event Delivery| FILES
+    EVENTS -->|Event Delivery| COMM
+
+    %% Configuration and Templates
+    COMM -->|Template Requests| CONFIG
+    API -->|Config Requests| CONFIG
+
+    %% Schema Coordination
+    SCHEMA -->|API Contracts| API
+    SCHEMA -->|Type Definitions| AUTH
+    SCHEMA -->|Type Definitions| SHOOT
+    SCHEMA -->|Type Definitions| FILES
+
+    %% Key Cooperation Pattern: Shoot Creation Flow
+    SHOOT -.->|shoot.created| AUTH
+    AUTH -.->|invite.ready| COMM
+    COMM -.->|email.sent| SHOOT
+
+    %% Key Cooperation Pattern: File Processing Flow
+    FILES -.->|file.processed| SHOOT
+    SHOOT -.->|gallery.ready| COMM
+
+    classDef application fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef technology fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+
+    class WEB,API,AUTH,SHOOT,FILES,COMM,PORTFOLIO,CONFIG application
+    class EVENTS,SCHEMA technology
