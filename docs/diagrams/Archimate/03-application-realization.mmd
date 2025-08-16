@@ -1,0 +1,112 @@
+---
+config:
+  layout: fixed
+---
+flowchart TB
+ subgraph subGraph0["Business Layer"]
+        PW["Portfolio Website"]
+        CP["Client Portal"]
+        AM["Admin Management"]
+        FS["File Services"]
+  end
+ subgraph subGraph1["Frontend Applications"]
+        SK["SvelteKit Frontend<br>TypeScript 5.8.3<br>TailwindCSS + DaisyUI"]
+  end
+ subgraph subGraph2["Backend Applications"]
+        AG["API Gateway/BFF<br>Fastify 5.4.0"]
+        US["User Service<br>Magic Link Auth"]
+        IS["Invite Service<br>JWT Management"]
+        SS["Shoot Service<br>Core Business Logic"]
+        FLS["File Service<br>Large File Processing"]
+        PS["Portfolio Service<br>Public Content"]
+        NS["Notification Service<br>Email/SMS"]
+        CMS["Content Management<br>Templates &amp; Config"]
+  end
+ subgraph subGraph3["Integration Layer"]
+        TS["TypeSpec Schema<br>OpenAPI 3.0 Generation"]
+        KF["Kafka Event Streaming<br>Service Communication"]
+        SM["Shared Messaging<br>Event Publisher"]
+  end
+ subgraph subGraph4["Application Layer"]
+        subGraph1
+        subGraph2
+        subGraph3
+  end
+ subgraph subGraph5["Runtime Platforms"]
+        NJS["Node.js 24+<br>Runtime Environment"]
+        DC["Docker Containers<br>Containerization"]
+  end
+ subgraph subGraph6["Data Storage"]
+        MDB["MongoDB<br>Mongoose 8.16.4"]
+        FS_STOR["File System Storage<br>Sharp Processing"]
+  end
+ subgraph Infrastructure["Infrastructure"]
+        NGX["Nginx Reverse Proxy<br>SSL Termination"]
+        LTL@{ label: "Let's Encrypt SSL<br>Auto-renewal" }
+        MON["Health Monitoring<br>Custom Scripts"]
+  end
+ subgraph subGraph8["Development Tools"]
+        VIT["Vitest Testing<br>Coverage Reports"]
+        ESL["ESLint 9.12.0<br>Code Quality"]
+        HKS["Husky Git Hooks<br>Pre-commit Checks"]
+        WS["npm Workspaces<br>Monorepo Management"]
+  end
+ subgraph subGraph9["Technology Layer"]
+        subGraph5
+        subGraph6
+        Infrastructure
+        subGraph8
+  end
+    PW -.-> SK & PS
+    CP -.-> SK & AG
+    AM -.-> AG
+    FS -.-> FLS
+    SK --> AG
+    AG --> US & IS & SS & FLS & PS & NS & CMS
+    US -.-> SM & NJS & MDB & VIT
+    IS -.-> SM & NJS
+    SS -.-> SM & NJS & MDB
+    FLS -.-> SM & NJS & FS_STOR
+    NS -.-> SM & NJS
+    SM --> KF
+    SK -.-> NJS & NGX & VIT & ESL
+    AG -.-> NJS & MDB & NGX & VIT & ESL
+    PS -.-> NJS & MDB
+    CMS -.-> NJS
+    NJS -.-> DC
+    MDB -.-> DC
+    KF -.-> DC
+    NGX -.-> LTL
+    TS --> AG & US & SS & PS
+    LTL@{ shape: rect}
+     PW:::business
+     CP:::business
+     AM:::business
+     FS:::business
+     SK:::application
+     AG:::application
+     US:::application
+     IS:::application
+     SS:::application
+     FLS:::application
+     PS:::application
+     NS:::application
+     CMS:::application
+     TS:::integration
+     KF:::integration
+     SM:::integration
+     NJS:::technology
+     DC:::technology
+     MDB:::technology
+     FS_STOR:::technology
+     NGX:::technology
+     LTL:::technology
+     MON:::technology
+     VIT:::technology
+     ESL:::technology
+     HKS:::technology
+     WS:::technology
+    classDef business fill:#fff3e0
+    classDef application fill:#e1f5fe
+    classDef technology fill:#e8f5e8
+    classDef integration fill:#f3e5f5
