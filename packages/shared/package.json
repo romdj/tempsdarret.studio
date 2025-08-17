@@ -48,6 +48,16 @@
       "types": "./dist/utils/index.d.ts",
       "import": "./dist/utils/index.js",
       "require": "./dist/utils/index.js"
+    },
+    "./schemas/shoot.schema": {
+      "types": "./dist/schemas/shoot.schema.d.ts",
+      "import": "./dist/schemas/shoot.schema.js",
+      "require": "./dist/schemas/shoot.schema.js"
+    },
+    "./schemas/base.schema": {
+      "types": "./dist/schemas/base.schema.d.ts",
+      "import": "./dist/schemas/base.schema.js",
+      "require": "./dist/schemas/base.schema.js"
     }
   }
 }
