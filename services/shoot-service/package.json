@@ -12,6 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest", 
     "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest run --reporter=verbose src",
+    "test:component": "vitest run --reporter=verbose tests/component",
     "lint": "eslint src/**/*.{js,ts}",
     "check": "tsc --noEmit"
   },
@@ -28,6 +30,11 @@
     "vitest": "^3.2.4",
     "@vitest/coverage-v8": "^3.2.4",
     "mongodb-memory-server": "^9.1.0",
+    "@testcontainers/mongodb": "^10.13.0",
+    "@testcontainers/kafka": "^10.13.0",
+    "testcontainers": "^10.13.0",
+    "supertest": "^7.0.0",
+    "@types/supertest": "^6.0.2",
     "eslint": "^9.12.0"
   },
   "engines": {
