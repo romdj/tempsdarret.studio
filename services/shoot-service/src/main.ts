@@ -54,6 +54,10 @@ class ShootServiceApp {
     await this.eventPublisher.disconnect();
     await this.fastify.close();
   }
+
+  getServer() {
+    return this.fastify;
+  }
 }
 
 // Start service if this file is run directly
