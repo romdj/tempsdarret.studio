@@ -1,5 +1,16 @@
 # Photography Platform - Event-Driven Architecture with Kafka
 
+## Technology Stack
+
+**Backend Framework:** Fastify v5.4.0 (high-performance, TypeScript-first)  
+**Schema Definition:** TypeSpec v1.2.1 → OpenAPI 3.0 generation  
+**Database:** MongoDB with Mongoose v8.16.4  
+**Authentication:** Magic Links (JWT-based)  
+**Event Streaming:** Kafka (for service communication)  
+**File Storage:** Sharp v0.34.3 for image processing  
+**Validation:** Zod v4.0.10 schemas  
+**Security:** bcryptjs v3.0.2, Helmet, Rate limiting  
+
 ---
 
 ## Core Microservices & Their Responsibilities
@@ -47,7 +58,15 @@
 - **Communication channels**: Email (primary), SMS (optional)
 - **Subscribe to**: `invite.created`, `archive.ready`, `shoot.delivered`, `invite.expiring`
 
-### 7. API Gateway / BFF (Backend For Frontend)
+### 7. Content Management Service (CMS)
+- **Email templates**: Invitation emails, notification templates, branded content
+- **Content management**: Configurable text, branding, terms of service
+- **Template rendering**: Dynamic content injection for personalized emails
+- **Configuration storage**: System settings, feature flags, business rules
+- **API endpoints**: Template fetching, content updates, configuration management
+- **No event subscription**: Provides content via direct API calls to other services
+
+### 8. API Gateway / BFF (Backend For Frontend)
 - **Client portal**: `/portfolio?ref={shootId}` access pattern
 - **Admin dashboard**: Shoot management, client oversight, analytics
 - **Authentication proxy**: Magic link validation and session management

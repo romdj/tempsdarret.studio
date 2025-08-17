@@ -12,15 +12,14 @@
   "author": "romdj",
   "license": "MIT",
   "engines": {
-    "node": ">=22.0.0",
+    "node": ">=24.0.0",
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "build:tmp": "echo 'This is a temporary build script'",
-    "build": "npm run build:models && npm run build:shared && npm run build:services && npm run build:api-gateway && npm run build:frontend",
+    "build": "npm run build:models && npm run build:shared && npm run build:services && echo 'Will run npm run build:api-gateway && npm run build:frontend eventually'",
     "build:models": "cd packages/models && npm run build",
     "build:shared": "cd packages/shared && npm run build",
-    "build:services": "npm run build:user-service && npm run build:invite-service && npm run build:portfolio-service && npm run build:shoot-service && npm run build:file-service && npm run build:notification-service",
+    "build:services": "echo 'Building all services... should be npm run build:user-service && npm run build:invite-service && npm run build:portfolio-service && npm run build:shoot-service && npm run build:file-service && npm run build:notification-service but implementation not ready' && npm run build:shoot-service",
     "build:user-service": "cd services/user-service && npm run build",
     "build:invite-service": "cd services/invite-service && npm run build",
     "build:portfolio-service": "cd services/portfolio-service && npm run build",
@@ -120,7 +119,8 @@
     "docker:down:volumes": "docker-compose down -v",
     "docker:logs": "docker-compose logs -f",
     "docker:clean": "docker-compose down --rmi all -v && docker system prune -f",
-    "docs:generate": "npm run docs:api && npm run docs:events && npm run docs:architecture",
+    "docs:generate": "npm run docs:api && npm run docs:events && npm run docs:architecture && npm run docs:generate-diagram-renderings",
+    "docs:generate-diagram-renderings": "find docs/diagrams -name '*.mmd' | xargs -I{} sh -c 'mmdc -i \"{}\" -o \"$(echo {} | sed s/.mmd$/.svg/)\"'",
     "docs:api": "cd packages/models && npm run build && npx @redocly/cli build-docs dist/openapi.json --output ../../docs/api/index.html",
     "docs:events": "cd packages/events && npm run docs",
     "docs:architecture": "echo 'Architecture docs generation placeholder'",
@@ -153,9 +153,9 @@
     "@semantic-release/github": "^11.0.3",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
-    "@typespec/compiler": "^1.2.1",
-    "@typespec/http": "^1.2.1",
-    "@typespec/openapi3": "^1.2.1",
+    "@typespec/compiler": "^1.1.0",
+    "@typespec/http": "^1.1.0",
+    "@typespec/openapi3": "^1.1.0",
     "@typespec/rest": "^0.72.1",
     "conventional-changelog-conventionalcommits": "^9.1.0",
     "eslint": "^9.12.0",
@@ -176,7 +176,13 @@
     "cookie": "^0.7.1"
   },
   "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "@vitest/coverage-v8": "^3.2.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "vitest": "^3.2.4",
+    "zod": "^4.0.17",
+    "mongoose": "^8.17.1",
+    "fastify": "^5.5.0",
+    "kafkajs": "^2.2.4"
   }
 }

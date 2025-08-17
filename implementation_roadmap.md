@@ -209,11 +209,13 @@ A practical 10-step roadmap to deliver a working photographer portfolio website 
 
 ### **Simplified Stack**
 ```
-Frontend: SvelteKit + TypeScript + TailwindCSS
-Backend: Node.js + Express + TypeScript
-Database: MongoDB + Mongoose
-Auth: Magic.link or custom magic links
-Storage: Local files or cloud storage (S3/CloudFlare)
+Frontend: SvelteKit v2.26.0 + TypeScript v5.8.3 + TailwindCSS + DaisyUI v4.12.0
+Backend: Node.js 22+ + Fastify v5.4.0 + TypeScript v5.8.3
+Schema: TypeSpec v1.2.1 → OpenAPI 3.0 documentation
+Database: MongoDB + Mongoose v8.16.4
+Auth: Custom magic links (JWT-based, 15min expiry)
+Testing: Vitest v3.2.4 + component testing
+Storage: Local files with Sharp v0.34.3 processing
 Deployment: Docker + VPS or cloud platform
 ```
 

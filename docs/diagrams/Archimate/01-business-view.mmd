@@ -1,0 +1,184 @@
+
+ graph TB
+      subgraph "External Stakeholders"
+          CLI[👤 Client<br/>Primary Customer]
+          GST[👥 Guest<br/>Invited by Client]
+          VIS[🌐 Portfolio Visitor<br/>Public Website]
+          PHO[📸 Photographer<br/>Business Owner]
+      end
+
+      subgraph "Business Capabilities"
+          subgraph "Client Experience Management"
+              CEM[Client Engagement<br/>& Communication]
+              GAM[Gallery Access<br/>Management]
+              SDA[Secure Download<br/>& Archive Services]
+          end
+
+          subgraph "Portfolio & Marketing"
+              PMM[Portfolio Marketing<br/>Management]
+              PSS[Professional Services<br/>Showcase]
+              SEO[SEO & Lead<br/>Generation]
+          end
+
+          subgraph "Photography Business Operations"
+              SLM[Shoot Lifecycle<br/>Management]
+              FPM[File Processing<br/>& Management]
+              CLM[Client Lifecycle<br/>Management]
+          end
+
+          subgraph "Security & Privacy"
+              IAM[Identity & Access<br/>Management]
+              DPP[Data Protection<br/>& Privacy]
+              STC[Secure Transfer<br/>& Communication]
+          end
+      end
+
+      subgraph "Business Services"
+          subgraph "Client Portal Services"
+              MLA[Magic Link<br/>Authentication]
+              PGA[Photo Gallery<br/>Access]
+              FDL[File Download<br/>& Large Archives]
+              GIN[Guest Invitation<br/>Management]
+          end
+
+          subgraph "Marketing Services"
+              PWS[Public Website<br/>Showcase]
+              PMT[Portfolio<br/>Management]
+              LSO[Lead Generation<br/>& SEO]
+          end
+
+          subgraph "Operational Services"
+              SCM[Shoot Creation<br/>& Management]
+              FUP[File Upload<br/>& Processing]
+              CIM[Client Invitation<br/>Management]
+              NCS[Notification &<br/>Communication]
+          end
+      end
+
+      subgraph "Business Processes"
+          subgraph "Core Value Streams"
+              subgraph "📋 Shoot-to-Delivery Process"
+                  P1[1_ Shoot Planning<br/>& Creation]
+                  P2[2_ Client Invitation<br/>& Onboarding]
+                  P3[3_ Photo Upload<br/>& Processing]
+                  P4[4_ Client Notification<br/>& Access]
+                  P5[5_ Download &<br/>Archive Delivery]
+
+                  P1 --> P2 --> P3 --> P4 --> P5
+              end
+
+              subgraph "👥 Guest Access Process"
+                  G1[1_ Client Invites<br/>Guest]
+                  G2[2_ Limited Access<br/>Grant]
+                  G3[3_ Print-Quality<br/>Downloads Only]
+
+                  G1 --> G2 --> G3
+              end
+
+              subgraph "🌟 Portfolio Management Process"
+                  M1[1_ Photo Curation<br/>& Selection]
+                  M2[2_ Portfolio<br/>Publishing]
+                  M3[3_ Public Website<br/>Update]
+
+                  M1 --> M2 --> M3
+              end
+          end
+      end
+
+      subgraph "Business Objects"
+          subgraph "Photography Business Entities"
+              SHO[📷 Photography Shoot<br/>Wedding/Portrait/Commercial<br/>150-300
+  photos<br/>RAW and processed files]
+
+              CLI_ENT[👤 Client<br/>Primary customer<br/>Full access rights<br/>Archive
+  download capability]
+
+              GST_ENT[👥 Guest<br/>Invited by client<br/>Limited access<br/>Print-quality
+  only]
+
+              PRT[🎨 Portfolio<br/>Curated showcase<br/>Marketing content<br/>SEO optimized]
+          end
+
+          subgraph "Digital Assets"
+              PHF[📁 Photo File<br/>Original RAW files 25MB<br/>High-res
+  processed<br/>Web-optimized variants]
+
+              ARC[📦 Archive Package<br/>50-300GB ZIP files<br/>Client-only
+  access<br/>Complete collection]
+
+              MLI[🔗 Magic Link<br/>Role-based access<br/>Time-limited<br/>Secure
+  authentication]
+          end
+      end
+
+      %% Stakeholder to Capability Relationships
+      CLI -.-> CEM
+      CLI -.-> GAM
+      CLI -.-> SDA
+      GST -.-> GAM
+      VIS -.-> PMM
+      VIS -.-> PSS
+      PHO -.-> SLM
+      PHO -.-> FPM
+      PHO -.-> PMM
+
+      %% Capability to Service Relationships
+      CEM -.-> MLA
+      CEM -.-> NCS
+      GAM -.-> PGA
+      GAM -.-> GIN
+      SDA -.-> FDL
+
+      PMM -.-> PMT
+      PSS -.-> PWS
+      SEO -.-> LSO
+
+      SLM -.-> SCM
+      FPM -.-> FUP
+      CLM -.-> CIM
+
+      IAM -.-> MLA
+      DPP -.-> MLA
+      STC -.-> FDL
+
+      %% Service to Process Relationships
+      SCM -.-> P1
+      CIM -.-> P2
+      FUP -.-> P3
+      NCS -.-> P4
+      FDL -.-> P5
+
+      GIN -.-> G1
+      MLA -.-> G2
+      FDL -.-> G3
+
+      PMT -.-> M1
+      PMT -.-> M2
+      PWS -.-> M3
+
+      %% Business Object Relationships
+      P1 -.-> SHO
+      P2 -.-> CLI_ENT
+      P3 -.-> PHF
+      P5 -.-> ARC
+
+      G1 -.-> GST_ENT
+      G2 -.-> MLI
+      G3 -.-> PHF
+
+      M1 -.-> PRT
+      M2 -.-> PHF
+
+      classDef stakeholder fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+      classDef capability fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+      classDef service fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+      classDef process fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+      classDef object fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+
+      class CLI,GST,VIS,PHO stakeholder
+      class CEM,GAM,SDA,PMM,PSS,SEO,SLM,FPM,CLM,IAM,DPP,STC capability
+      class MLA,PGA,FDL,GIN,PWS,PMT,LSO,SCM,FUP,CIM,NCS service
+      class P1,P2,P3,P4,P5,G1,G2,G3,M1,M2,M3 process
+      class SHO,CLI_ENT,GST_ENT,PRT,PHF,ARC,MLI object
+
+

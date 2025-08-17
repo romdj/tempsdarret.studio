@@ -11,8 +11,8 @@
     "clean": "rm -rf dist",
     "lint": "eslint src --ext .ts",
     "check": "tsc --noEmit",
-    "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {},
   "devDependencies": {
@@ -21,9 +21,12 @@
     "eslint": "^9.12.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
-    "jest": "^29.0.0",
-    "@types/jest": "^29.0.0",
-    "ts-jest": "^29.0.0"
+    "vitest": "^3.2.4",
+    "@vitest/coverage-v8": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=24.0.0",
+    "npm": ">=10.0.0"
   },
   "exports": {
     ".": {
@@ -45,6 +48,16 @@
       "types": "./dist/utils/index.d.ts",
       "import": "./dist/utils/index.js",
       "require": "./dist/utils/index.js"
+    },
+    "./schemas/shoot.schema": {
+      "types": "./dist/schemas/shoot.schema.d.ts",
+      "import": "./dist/schemas/shoot.schema.js",
+      "require": "./dist/schemas/shoot.schema.js"
+    },
+    "./schemas/base.schema": {
+      "types": "./dist/schemas/base.schema.d.ts",
+      "import": "./dist/schemas/base.schema.js",
+      "require": "./dist/schemas/base.schema.js"
     }
   }
 }

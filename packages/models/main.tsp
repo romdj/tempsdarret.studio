@@ -1,89 +1,21 @@
 import "@typespec/http";
 import "@typespec/rest";
-import "@typespec/openapi3";
 
+// Import common models and service-specific models
+import "./common.tsp";
+import "./shoot-service.tsp";
+import "./user-service.tsp";
+import "./file-service.tsp";
+import "./invite-service.tsp";
+import "./notification-service.tsp";
+import "./portfolio-service.tsp";
+import "@typespec/openapi";
+
+@service(#{ title: "TempsDarret Photography Platform API" })
+
+@OpenAPI.info(#{ version: "1.0.0"})
+namespace TempsDarretAPI;
+
+using TypeSpec.OpenAPI;
 using TypeSpec.Http;
 using TypeSpec.Rest;
-
-@service(#{
-  title: "Temps D'arrêt Studio API",
-})
-namespace TempsArret;
-
-// Base models
-model BaseEntity {
-  id: string;
-  createdAt: utcDateTime;
-  updatedAt: utcDateTime;
-}
-
-// User domain
-model User extends BaseEntity {
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  role: UserRole;
-  isActive: boolean;
-}
-
-enum UserRole {
-  PHOTOGRAPHER: "photographer",
-  CLIENT: "client",
-  ADMIN: "admin",
-}
-
-// Shoot domain
-model Shoot extends BaseEntity {
-  title: string;
-  description?: string;
-  clientId: string;
-  photographerId: string;
-  scheduledDate?: utcDateTime;
-  status: ShootStatus;
-  location?: string;
-  totalPhotos?: int32;
-  archiveSize?: int64; // bytes
-}
-
-enum ShootStatus {
-  PLANNED: "planned",
-  IN_PROGRESS: "in_progress", 
-  COMPLETED: "completed",
-  DELIVERED: "delivered",
-  ARCHIVED: "archived",
-}
-
-// File domain
-model FileMetadata extends BaseEntity {
-  filename: string;
-  originalFilename: string;
-  mimeType: string;
-  size: int64; // bytes
-  shootId?: string;
-  tags?: string[];
-  isProcessed: boolean;
-  storageUrl: string;
-  thumbnailUrl?: string;
-}
-
-// Invitation domain
-model Invitation extends BaseEntity {
-  email: string;
-  shootId: string;
-  token: string;
-  expiresAt: utcDateTime;
-  usedAt?: utcDateTime;
-  invitedBy: string;
-}
-
-// Portfolio domain
-model PortfolioItem extends BaseEntity {
-  title: string;
-  description?: string;
-  imageUrl: string;
-  thumbnailUrl: string;
-  category: string;
-  tags?: string[];
-  isPublic: boolean;
-  shootId?: string;
-}
