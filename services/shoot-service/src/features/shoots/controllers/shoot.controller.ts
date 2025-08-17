@@ -19,7 +19,7 @@ export class ShootController {
         reply.code(400).send({
           code: 400,
           message: 'Validation error',
-          details: error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+          details: error.errors?.map(e => `${e.path.join('.')}: ${e.message}`).join(', ') || 'Validation failed'
         });
         return;
       }
@@ -77,7 +77,7 @@ export class ShootController {
         reply.code(400).send({
           code: 400,
           message: 'Validation error',
-          details: error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+          details: error.errors?.map(e => `${e.path.join('.')}: ${e.message}`).join(', ') || 'Validation failed'
         });
         return;
       }
@@ -111,7 +111,7 @@ export class ShootController {
         reply.code(400).send({
           code: 400,
           message: 'Invalid query parameters',
-          details: error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+          details: error.errors?.map(e => `${e.path.join('.')}: ${e.message}`).join(', ') || 'Validation failed'
         });
         return;
       }
