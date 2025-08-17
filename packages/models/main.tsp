@@ -10,7 +10,7 @@ import "./invite-service.tsp";
 import "./notification-service.tsp";
 import "./portfolio-service.tsp";
 
-@service({
+@service(#{
   title: "TempsDarret Photography Platform API",
   version: "1.0.0",
   description: "Comprehensive API for photography shoot management, client galleries, and portfolio showcase"

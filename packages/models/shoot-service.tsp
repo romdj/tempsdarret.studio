@@ -1,15 +1,16 @@
 import "@typespec/http";
 import "@typespec/rest";
+import "@typespec/openapi";
 import "./common.tsp";
 
-@service({
-  title: "Shoot Service API",
-  version: "1.0.0"
-})
-namespace ShootService;
-
+using TypeSpec.OpenAPI;
 using TypeSpec.Http;
 using TypeSpec.Rest;
+
+@service(#{ title: "Shoot Service API" })
+@OpenAPI.info(#{ version: "1.0.0" })
+namespace ShootService;
+
 
 @doc("Shoot status enumeration")
 enum ShootStatus {

@@ -1,13 +1,14 @@
 import "@typespec/http";
 import "@typespec/rest";
+import "@typespec/openapi";
 import "./common.tsp";
 
-@service({
-  title: "Notification Service API",
-  version: "1.0.0" 
-})
+@service(#{ title: "Notification Service API" })
+@OpenAPI.info(#{ version: "1.0.0" })
+
 namespace NotificationService;
 
+using TypeSpec.OpenAPI;
 using TypeSpec.Http;
 using TypeSpec.Rest;
 

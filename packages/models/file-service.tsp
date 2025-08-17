@@ -1,15 +1,17 @@
 import "@typespec/http";
 import "@typespec/rest";
+import "@typespec/openapi";
 import "./common.tsp";
 
-@service({
-  title: "File Service API",
-  version: "1.0.0"
-})
-namespace FileService;
-
+using TypeSpec.OpenAPI;
 using TypeSpec.Http;
 using TypeSpec.Rest;
+
+
+@service(#{ title: "File Service API" })
+@OpenAPI.info(#{ version: "1.0.0" })
+namespace FileService;
+
 
 @doc("File type enumeration")
 enum FileType {

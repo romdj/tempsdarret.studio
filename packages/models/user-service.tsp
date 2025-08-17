@@ -1,13 +1,14 @@
 import "@typespec/http";
 import "@typespec/rest";
+import "@typespec/openapi";
 import "./common.tsp";
 
-@service({
-  title: "User Service API",
-  version: "1.0.0"
-})
+@service(#{ title: "User Service API" })
+@OpenAPI.info(#{ version: "1.0.0" })
+
 namespace UserService;
 
+using TypeSpec.OpenAPI;
 using TypeSpec.Http;
 using TypeSpec.Rest;
 
