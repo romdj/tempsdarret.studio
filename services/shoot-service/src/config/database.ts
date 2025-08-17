@@ -30,7 +30,6 @@ export class DatabaseConnection {
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
         bufferCommands: false,
-        bufferMaxEntries: 0,
       };
 
       await mongoose.connect(config.uri, {

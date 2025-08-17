@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyRequest, FastifyReply, RouteGenericInterface } from 'fastify';
 import { ShootController } from './shoot.controller';
 import { ShootService } from '../services/shoot.service';
 import { CreateShootRequest, Shoot, ShootStatus } from '@tempsdarret/shared/schemas/shoot.schema';
@@ -15,11 +15,11 @@ const mockShootService = {
 };
 
 // Mock Fastify request and reply
-const createMockRequest = (data: any = {}) => ({
+const createMockRequest = <T extends RouteGenericInterface = RouteGenericInterface>(data: any = {}) => ({
   body: data.body || {},
   params: data.params || {},
   query: data.query || {}
-}) as FastifyRequest;
+}) as FastifyRequest<T>;
 
 const createMockReply = () => {
   const reply = {
@@ -57,7 +57,7 @@ describe('ShootController', () => {
 
       mockShootService.createShoot.mockResolvedValue(createdShoot);
 
-      const request = createMockRequest({ body: requestData });
+      const request = createMockRequest<{ Body: CreateShootRequest }>({ body: requestData });
       const reply = createMockReply();
 
       await controller.createShoot(request, reply);
@@ -81,8 +81,8 @@ describe('ShootController', () => {
         {
           code: 'too_small',
           minimum: 1,
-          type: 'string',
           inclusive: true,
+          origin: 'value',
           message: 'String must contain at least 1 character(s)',
           path: ['title']
         }
@@ -112,7 +112,7 @@ describe('ShootController', () => {
 
       mockShootService.createShoot.mockRejectedValue(new Error('Database connection failed'));
 
-      const request = createMockRequest({ body: requestData });
+      const request = createMockRequest<{ Body: CreateShootRequest }>({ body: requestData });
       const reply = createMockReply();
 
       await controller.createShoot(request, reply);
@@ -247,8 +247,8 @@ describe('ShootController', () => {
         {
           code: 'too_small',
           minimum: 1,
-          type: 'string',
           inclusive: true,
+          origin: 'value',
           message: 'String must contain at least 1 character(s)',
           path: ['title']
         }
@@ -329,8 +329,8 @@ describe('ShootController', () => {
         {
           code: 'too_small',
           minimum: 1,
-          type: 'number',
           inclusive: true,
+          origin: 'value',
           message: 'Number must be greater than or equal to 1',
           path: ['page']
         }

@@ -222,7 +222,7 @@ describe('ShootService', () => {
     });
 
     it('should return all shoots with default pagination', async () => {
-      const result = await shootService.listShoots({});
+      const result = await shootService.listShoots({ page: 1, limit: 10 });
 
       expect(result.shoots).toHaveLength(3);
       expect(result.total).toBe(3);
@@ -230,7 +230,7 @@ describe('ShootService', () => {
     });
 
     it('should filter by photographerId', async () => {
-      const result = await shootService.listShoots({ photographerId: 'photographer_1' });
+      const result = await shootService.listShoots({ page: 1, limit: 10, photographerId: 'photographer_1' });
 
       expect(result.shoots).toHaveLength(2);
       expect(result.total).toBe(2);
@@ -238,7 +238,7 @@ describe('ShootService', () => {
     });
 
     it('should filter by clientEmail', async () => {
-      const result = await shootService.listShoots({ clientEmail: 'wedding1@example.com' });
+      const result = await shootService.listShoots({ page: 1, limit: 10, clientEmail: 'wedding1@example.com' });
 
       expect(result.shoots).toHaveLength(1);
       expect(result.total).toBe(1);
@@ -247,10 +247,10 @@ describe('ShootService', () => {
 
     it('should filter by status', async () => {
       // Update one shoot to completed status
-      const allShoots = await shootService.listShoots({});
+      const allShoots = await shootService.listShoots({ page: 1, limit: 10 });
       await shootService.updateShoot(allShoots.shoots[0].id, { status: 'completed' });
 
-      const result = await shootService.listShoots({ status: 'completed' });
+      const result = await shootService.listShoots({ page: 1, limit: 10, status: 'completed' });
 
       expect(result.shoots).toHaveLength(1);
       expect(result.total).toBe(1);
@@ -259,6 +259,8 @@ describe('ShootService', () => {
 
     it('should filter by date range', async () => {
       const result = await shootService.listShoots({
+        page: 1,
+        limit: 10,
         fromDate: new Date('2024-06-01'),
         toDate: new Date('2024-06-30')
       });
