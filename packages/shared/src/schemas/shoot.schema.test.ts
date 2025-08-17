@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { describe, it, expect } from 'vitest';
 import { 
   ShootSchema, 
@@ -5,7 +6,7 @@ import {
   UpdateShootRequestSchema, 
   ShootQuerySchema,
   ShootStatusSchema 
-} from '../shoot.schema';
+} from './shoot.schema';
 import { ZodError } from 'zod';
 
 describe('Shoot Schemas', () => {
