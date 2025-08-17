@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ShootModel, IShootDocument } from '../schemas/shoot.mongoose';
+import { ShootModel, IShootDocument } from './shoot.mongoose';
 import { generateShootId } from '../../../shared/utils/id';
 
 describe('Shoot Mongoose Integration', () => {

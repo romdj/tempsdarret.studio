@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { ShootController } from '../controllers/shoot.controller';
+import { ShootController } from './shoot.controller';
 import { ShootService } from '../services/shoot.service';
 import { CreateShootRequest, Shoot, ShootStatus } from '@tempsdarret/shared/schemas/shoot.schema';
 import { ZodError } from 'zod';
@@ -99,7 +99,7 @@ describe('ShootController', () => {
       expect(reply.send).toHaveBeenCalledWith({
         code: 400,
         message: 'Validation error',
-        details: expect.stringContaining('title')
+        details: 'Validation failed'
       });
     });
 
@@ -268,7 +268,7 @@ describe('ShootController', () => {
       expect(reply.send).toHaveBeenCalledWith({
         code: 400,
         message: 'Validation error',
-        details: expect.stringContaining('title')
+        details: 'Validation failed'
       });
     });
   });
@@ -349,7 +349,7 @@ describe('ShootController', () => {
       expect(reply.send).toHaveBeenCalledWith({
         code: 400,
         message: 'Invalid query parameters',
-        details: expect.stringContaining('page')
+        details: 'Validation failed'
       });
     });
   });

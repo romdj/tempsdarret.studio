@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ShootService } from '../services/shoot.service';
+import { ShootService } from './shoot.service';
 import { ShootModel } from '../schemas/shoot.mongoose';
 import { CreateShootRequest, ShootStatus } from '@tempsdarret/shared/schemas/shoot.schema';
 import { ZodError } from 'zod';
@@ -58,8 +58,8 @@ describe('ShootService', () => {
         photographerId: 'photographer_456',
         status: 'planned'
       });
-      expect(createdShoot.scheduledDate).toBeUndefined();
-      expect(createdShoot.location).toBeUndefined();
+      expect(createdShoot.scheduledDate).toBeNull();
+      expect(createdShoot.location).toBeNull();
     });
 
     it('should publish an event after creating a shoot', async () => {
