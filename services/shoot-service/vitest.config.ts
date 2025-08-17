@@ -5,12 +5,12 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    setupFiles: ['./src/__tests__/setup.ts'],
+    setupFiles: ['./tests/setup.ts'],
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
-        'src/__tests__/',
+        'tests/',
         'src/main.ts',
         'src/index.ts',
         '**/*.d.ts'
