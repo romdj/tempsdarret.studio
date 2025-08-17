@@ -1,24 +1,21 @@
 import "@typespec/http";
 import "@typespec/rest";
 
-@service(#{title: "Widget Service"})
-namespace DemoService;
+// Import common models and service-specific models
+import "./common.tsp";
+import "./shoot-service.tsp";
+import "./user-service.tsp";
+import "./file-service.tsp";
+import "./invite-service.tsp";
+import "./notification-service.tsp";
+import "./portfolio-service.tsp";
+
+@service({
+  title: "TempsDarret Photography Platform API",
+  version: "1.0.0",
+  description: "Comprehensive API for photography shoot management, client galleries, and portfolio showcase"
+})
+namespace TempsDarretAPI;
 
 using TypeSpec.Http;
 using TypeSpec.Rest;
-
-model Widget {
-  @key id: string;
-  weight: int32;
-  color: "red" | "blue";
-}
-
-@error
-model Error {
-  code: int32;
-  message: string;
-}
-
-interface WidgetService extends TypeSpec.Rest.Resource.ResourceOperations<Widget, Error> {
-  @get @route("customGet") customGet(): Widget;
-}
