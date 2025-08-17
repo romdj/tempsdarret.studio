@@ -90,7 +90,7 @@ describe('ShootController', () => {
 
       mockShootService.createShoot.mockRejectedValue(zodError);
 
-      const request = createMockRequest({ body: invalidRequest });
+      const request = createMockRequest<{ Body: any }>({ body: invalidRequest });
       const reply = createMockReply();
 
       await controller.createShoot(request, reply);
@@ -139,7 +139,7 @@ describe('ShootController', () => {
 
       mockShootService.getShoot.mockResolvedValue(shoot);
 
-      const request = createMockRequest({ 
+      const request = createMockRequest<{ Params: { shootId: string } }>({ 
         params: { shootId: 'shoot_1234567890abcdef1234567890abcdef' } 
       });
       const reply = createMockReply();
@@ -155,7 +155,7 @@ describe('ShootController', () => {
     it('should return 404 when shoot not found', async () => {
       mockShootService.getShoot.mockResolvedValue(null);
 
-      const request = createMockRequest({ 
+      const request = createMockRequest<{ Params: { shootId: string } }>({ 
         params: { shootId: 'shoot_nonexistent123456789012345678901234' } 
       });
       const reply = createMockReply();
@@ -172,7 +172,7 @@ describe('ShootController', () => {
     it('should return 500 for internal errors', async () => {
       mockShootService.getShoot.mockRejectedValue(new Error('Database error'));
 
-      const request = createMockRequest({ 
+      const request = createMockRequest<{ Params: { shootId: string } }>({ 
         params: { shootId: 'shoot_1234567890abcdef1234567890abcdef' } 
       });
       const reply = createMockReply();
@@ -206,7 +206,7 @@ describe('ShootController', () => {
 
       mockShootService.updateShoot.mockResolvedValue(updatedShoot);
 
-      const request = createMockRequest({ 
+      const request = createMockRequest<{ Params: { shootId: string }; Body: any }>({ 
         params: { shootId: 'shoot_1234567890abcdef1234567890abcdef' },
         body: updateData
       });
@@ -227,7 +227,7 @@ describe('ShootController', () => {
     it('should return 404 when shoot not found', async () => {
       mockShootService.updateShoot.mockResolvedValue(null);
 
-      const request = createMockRequest({ 
+      const request = createMockRequest<{ Params: { shootId: string }; Body: any }>({ 
         params: { shootId: 'shoot_nonexistent123456789012345678901234' },
         body: { title: 'Updated Title' }
       });
@@ -256,7 +256,7 @@ describe('ShootController', () => {
 
       mockShootService.updateShoot.mockRejectedValue(zodError);
 
-      const request = createMockRequest({ 
+      const request = createMockRequest<{ Params: { shootId: string }; Body: any }>({ 
         params: { shootId: 'shoot_1234567890abcdef1234567890abcdef' },
         body: { title: '' }
       });
@@ -301,7 +301,7 @@ describe('ShootController', () => {
         total: 25
       });
 
-      const request = createMockRequest({ 
+      const request = createMockRequest<{ Querystring: any }>({ 
         query: { page: 1, limit: 10, photographerId: 'photographer_123' }
       });
       const reply = createMockReply();
@@ -338,7 +338,7 @@ describe('ShootController', () => {
 
       mockShootService.listShoots.mockRejectedValue(zodError);
 
-      const request = createMockRequest({ 
+      const request = createMockRequest<{ Querystring: any }>({ 
         query: { page: 0 } // Invalid page number
       });
       const reply = createMockReply();
@@ -358,7 +358,7 @@ describe('ShootController', () => {
     it('should delete a shoot successfully', async () => {
       mockShootService.deleteShoot.mockResolvedValue(true);
 
-      const request = createMockRequest({ 
+      const request = createMockRequest<{ Params: { shootId: string } }>({ 
         params: { shootId: 'shoot_1234567890abcdef1234567890abcdef' }
       });
       const reply = createMockReply();
@@ -375,7 +375,7 @@ describe('ShootController', () => {
     it('should return 404 when shoot not found', async () => {
       mockShootService.deleteShoot.mockResolvedValue(false);
 
-      const request = createMockRequest({ 
+      const request = createMockRequest<{ Params: { shootId: string } }>({ 
         params: { shootId: 'shoot_nonexistent123456789012345678901234' }
       });
       const reply = createMockReply();
@@ -392,7 +392,7 @@ describe('ShootController', () => {
     it('should return 500 for internal errors', async () => {
       mockShootService.deleteShoot.mockRejectedValue(new Error('Database error'));
 
-      const request = createMockRequest({ 
+      const request = createMockRequest<{ Params: { shootId: string } }>({ 
         params: { shootId: 'shoot_1234567890abcdef1234567890abcdef' }
       });
       const reply = createMockReply();
