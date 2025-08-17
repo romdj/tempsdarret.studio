@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import { Kafka } from 'kafkajs';
 import { appConfig } from './config/app.config';
+import { dbConnection } from './config/database';
 import { EventPublisher } from './shared/messaging';
 import { ShootService } from './features/shoots/services/shoot.service';
 import { ShootController } from './features/shoots/controllers/shoot.controller';
@@ -24,6 +25,11 @@ class ShootServiceApp {
 
   async start() {
     try {
+      // Connect to MongoDB
+      await dbConnection.connect({
+        uri: appConfig.mongoUri || 'mongodb://localhost:27017/tempsdarret-shoots'
+      });
+
       // Connect to Kafka
       await this.eventPublisher.connect();
 
@@ -44,6 +50,7 @@ class ShootServiceApp {
   }
 
   async stop() {
+    await dbConnection.disconnect();
     await this.eventPublisher.disconnect();
     await this.fastify.close();
   }
