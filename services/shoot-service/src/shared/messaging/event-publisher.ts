@@ -7,7 +7,7 @@ export interface DomainEvent {
 }
 
 export class EventPublisher {
-  private producer: Producer;
+  private readonly producer: Producer;
 
   constructor(kafka: Kafka) {
     this.producer = kafka.producer();
@@ -25,7 +25,7 @@ export class EventPublisher {
     await this.producer.send({
       topic,
       messages: [{
-        key: key || event.eventId,
+        key: (key ?? "") || event.eventId,
         value: JSON.stringify(event),
         timestamp: Date.now().toString()
       }]
