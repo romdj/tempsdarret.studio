@@ -11,7 +11,6 @@ using TypeSpec.Rest;
 @OpenAPI.info(#{ version: "1.0.0" })
 namespace ShootService;
 
-
 @doc("Shoot status enumeration")
 enum ShootStatus {
   planned: "planned",

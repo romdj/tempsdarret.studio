@@ -9,13 +9,13 @@ import "./file-service.tsp";
 import "./invite-service.tsp";
 import "./notification-service.tsp";
 import "./portfolio-service.tsp";
+import "@typespec/openapi";
 
-@service(#{
-  title: "TempsDarret Photography Platform API",
-  version: "1.0.0",
-  description: "Comprehensive API for photography shoot management, client galleries, and portfolio showcase"
-})
+@service(#{ title: "TempsDarret Photography Platform API" })
+
+@OpenAPI.info(#{ version: "1.0.0"})
 namespace TempsDarretAPI;
 
+using TypeSpec.OpenAPI;
 using TypeSpec.Http;
 using TypeSpec.Rest;
