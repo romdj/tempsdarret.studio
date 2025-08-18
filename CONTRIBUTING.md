@@ -5,11 +5,11 @@ Thank you for contributing to the photographer portfolio and client portal platf
 
 ## 📋 Quick Start
 
-1. **Fork and clone** the repository
-2. **Create a feature branch** from `main`
+1. **Clone** the repository (no forking needed)
+2. **Work directly on `main`** with short-lived feature branches (< 1 day)
 3. **Use conventional commits** for all changes
-4. **Run local validation** before pushing
-5. **Create a Pull Request** to `main`
+4. **Push frequently** to `main` (multiple times per day)
+5. **Use feature flags** for incomplete features
 
 ## 🏗️ Project Structure
 
@@ -31,18 +31,25 @@ tempsdarret.studio/
 └── dev-tools/          # Development utilities
 ```
 
-## 🌳 Branching Strategy
+## 🌳 Trunk-Based Development
 
-We use a **Feature Branch Workflow** with controlled releases.
+We use **Trunk-Based Development** for fast iteration and continuous delivery.
 
-### Branch Types
+### Branch Strategy
 
-| Branch Type | Purpose | Naming Convention | Example |
-|-------------|---------|-------------------|---------|
-| `main` | Production-ready code | `main` | `main` |
-| Feature | New features or enhancements | `feat/description` | `feat/portfolio-filtering` |
-| Bugfix | Bug fixes | `fix/description` | `fix/magic-link-expiration` |
-| Hotfix | Critical production fixes | `hotfix/description` | `hotfix/security-patch` |
+| Branch Type | Purpose | Lifespan | Example |
+|-------------|---------|----------|---------|
+| `main` | Single source of truth | Permanent | `main` |
+| Feature | Short-lived development | < 1 day | `feat/portfolio-filtering` |
+| Hotfix | Critical production fixes | < 2 hours | `hotfix/security-patch` |
+
+### Key Principles
+
+- **All commits to `main` must pass CI/CD**
+- **Feature branches live < 24 hours**
+- **Use feature flags for incomplete features**
+- **Push to `main` multiple times per day**
+- **No long-lived feature branches**
 
 ## 🚀 Development Process
 
@@ -65,15 +72,24 @@ npm run install:all
 cd shared && npm run build && cd ..
 ```
 
-### Creating a Feature Branch
+### Trunk-Based Development Workflow
 
 ```bash
 # Start from latest main
 git checkout main
 git pull origin main
 
-# Create and switch to feature branch
+# Option 1: Work directly on main (preferred for small changes)
+# Make changes and commit frequently
+git commit -m "feat(portfolio): add client favorite marking system"
+git push origin main
+
+# Option 2: Short-lived feature branch (max 1 day)
 git checkout -b feat/client-gallery-improvements
+# Work, commit, and merge same day
+git checkout main && git merge feat/client-gallery-improvements
+git branch -d feat/client-gallery-improvements
+git push origin main
 ```
 
 ### Development with Conventional Commits
@@ -113,22 +129,31 @@ npm test
 npm run build
 ```
 
-### Creating Pull Requests
+### Feature Flags for Incomplete Features
 
-```bash
-# Push feature branch
-git push origin feat/client-gallery-improvements
+For incomplete features that need multiple commits, use feature flags:
 
-# Create PR through GitHub UI or CLI
-gh pr create --title "feat(frontend): add client gallery improvements" --body "Description of changes"
+```typescript
+// Example: Feature flag in configuration
+const FEATURES = {
+  ENABLE_NEW_GALLERY_UI: process.env.ENABLE_NEW_GALLERY_UI === 'true',
+  ADVANCED_FILTERING: process.env.ADVANCED_FILTERING === 'true'
+};
+
+// Usage in components
+if (FEATURES.ENABLE_NEW_GALLERY_UI) {
+  // New gallery component
+} else {
+  // Existing gallery component
+}
 ```
 
-**PR Requirements:**
-- ✅ All pre-commit hooks pass
-- ✅ Code review approval required
-- ✅ Conventional commit format
-- ✅ Tests included for new features
-- ✅ Documentation updated if needed
+**Trunk-Based Requirements:**
+- ✅ All commits to `main` must pass CI/CD
+- ✅ Feature branches live < 24 hours
+- ✅ Use feature flags for multi-commit features
+- ✅ Push frequently (multiple times per day)
+- ✅ Tests included for all changes
 
 ## 🛠️ Development Commands
 
