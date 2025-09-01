@@ -6,6 +6,8 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     setupFiles: ['./tests/setup.ts'],
+    testTimeout: 60000, // 1 minute timeout for individual tests
+    hookTimeout: 60000, // 1 minute timeout for beforeAll/afterAll hooks
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [
