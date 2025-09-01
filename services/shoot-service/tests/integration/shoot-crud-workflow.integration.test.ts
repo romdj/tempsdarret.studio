@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ShootService } from '../features/shoots/services/shoot.service';
-import { ShootController } from '../features/shoots/controllers/shoot.controller';
+import { ShootService } from '../../src/features/shoots/services/shoot.service';
+import { ShootController } from '../../src/features/shoots/controllers/shoot.controller';
 import { CreateShootRequest } from '@tempsdarret/shared/schemas/shoot.schema';
 
 // Mock event publisher for integration tests
