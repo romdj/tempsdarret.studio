@@ -1,23 +1,50 @@
 {
   "name": "@tempsdarret/invite-service",
-  "version": "0.1.0",
-  "description": "Magic link generation and invite management service",
+  "version": "1.0.0",
+  "description": "Invite service for Temps D'arrêt Studio - handles invitations and magic link authentication (ADR-003)",
   "private": true,
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "start": "node dist/index.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "lint": "eslint src/**/*.{js,ts}",
-    "check": "tsc --noEmit"
+    "test": "vitest",
+    "test:unit": "vitest run tests/unit",
+    "test:component": "vitest run tests/component --timeout=60000",
+    "test:integration": "vitest run tests/integration --timeout=60000",
+    "test:contract": "vitest run tests/contract --timeout=60000",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "typecheck": "tsc --noEmit"
   },
-  "devDependencies": {},
+  "dependencies": {
+    "fastify": "^4.28.1",
+    "mongoose": "^8.5.1",
+    "zod": "^3.23.8",
+    "kafkajs": "^2.2.4",
+    "@tempsdarret/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3",
+    "tsc-alias": "^1.8.10",
+    "vitest": "^2.0.3",
+    "testcontainers": "^10.9.0",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0"
+  },
   "engines": {
     "node": ">=24.0.0",
     "npm": ">=10.0.0"
-  }
+  },
+  "keywords": [
+    "invite-service",
+    "magic-links",
+    "authentication",
+    "adr-003"
+  ]
 }
