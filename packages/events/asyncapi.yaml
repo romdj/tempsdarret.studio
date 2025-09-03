@@ -19,10 +19,58 @@ channels:
     messages:
       shoot.created:
         $ref: '#/components/messages/ShootCreated'
+      shoot.updated:
+        $ref: '#/components/messages/ShootUpdated'
       shoot.completed:
         $ref: '#/components/messages/ShootCompleted'
       shoot.delivered:
         $ref: '#/components/messages/ShootDelivered'
+  
+  users:
+    description: User lifecycle events (from sequence diagrams)
+    messages:
+      user.created:
+        $ref: '#/components/messages/UserCreated'
+      user.verified:
+        $ref: '#/components/messages/UserVerified'
+      user.updated:
+        $ref: '#/components/messages/UserUpdated'
+  
+  invites:
+    description: Invitation and magic link events (ADR-003)
+    messages:
+      invite.created:
+        $ref: '#/components/messages/InviteCreated'
+      invite.sent:
+        $ref: '#/components/messages/InviteSent'
+      invite.viewed:
+        $ref: '#/components/messages/InviteViewed'
+      invite.accepted:
+        $ref: '#/components/messages/InviteAccepted'
+      invite.expired:
+        $ref: '#/components/messages/InviteExpired'
+      invite.revoked:
+        $ref: '#/components/messages/InviteRevoked'
+  
+  auth:
+    description: Authentication events (ADR-003 magic links)
+    messages:
+      user.authenticated:
+        $ref: '#/components/messages/UserAuthenticated'
+      magic_link.generated:
+        $ref: '#/components/messages/MagicLinkGenerated'
+      magic_link.validated:
+        $ref: '#/components/messages/MagicLinkValidated'
+  
+  notifications:
+    description: Notification delivery events
+    messages:
+      email.sent:
+        $ref: '#/components/messages/EmailSent'
+      email.delivered:
+        $ref: '#/components/messages/EmailDelivered'
+      email.failed:
+        $ref: '#/components/messages/EmailFailed'
   
   files:
     description: File processing events
@@ -31,14 +79,6 @@ channels:
         $ref: '#/components/messages/FileUploaded'
       file.processed:
         $ref: '#/components/messages/FileProcessed'
-  
-  invitations:
-    description: Invitation events
-    messages:
-      invitation.created:
-        $ref: '#/components/messages/InvitationCreated'
-      invitation.used:
-        $ref: '#/components/messages/InvitationUsed'
 
 operations:
   publishShootCreated:
@@ -50,12 +90,21 @@ operations:
 
 components:
   messages:
+    # Shoot Events
     ShootCreated:
       name: ShootCreated
       title: Shoot Created Event
+      summary: Triggered when photographer creates a new shoot (sequence diagram step 1)
       contentType: application/json
       payload:
         $ref: '#/components/schemas/ShootCreatedPayload'
+    
+    ShootUpdated:
+      name: ShootUpdated  
+      title: Shoot Updated Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ShootUpdatedPayload'
     
     ShootCompleted:
       name: ShootCompleted
@@ -70,7 +119,124 @@ components:
       contentType: application/json
       payload:
         $ref: '#/components/schemas/ShootDeliveredPayload'
+
+    # User Events (from sequence diagram)
+    UserCreated:
+      name: UserCreated
+      title: User Created Event
+      summary: Triggered when new client user is created from shoot.created event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UserCreatedPayload'
     
+    UserVerified:
+      name: UserVerified
+      title: User Verified Event
+      summary: Triggered when existing client user is verified from shoot.created event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UserVerifiedPayload'
+    
+    UserUpdated:
+      name: UserUpdated
+      title: User Updated Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UserUpdatedPayload'
+
+    # Invite Events (ADR-003)
+    InviteCreated:
+      name: InviteCreated
+      title: Invite Created Event
+      summary: Triggered by user.created or user.verified events (sequence diagram step 2)
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/InviteCreatedPayload'
+    
+    InviteSent:
+      name: InviteSent
+      title: Invite Sent Event
+      summary: Triggered when email invitation is successfully sent (sequence diagram step 3)
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/InviteSentPayload'
+    
+    InviteViewed:
+      name: InviteViewed
+      title: Invite Viewed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/InviteViewedPayload'
+    
+    InviteAccepted:
+      name: InviteAccepted
+      title: Invite Accepted Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/InviteAcceptedPayload'
+    
+    InviteExpired:
+      name: InviteExpired
+      title: Invite Expired Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/InviteExpiredPayload'
+    
+    InviteRevoked:
+      name: InviteRevoked
+      title: Invite Revoked Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/InviteRevokedPayload'
+
+    # Authentication Events (ADR-003)
+    UserAuthenticated:
+      name: UserAuthenticated
+      title: User Authenticated Event
+      summary: Triggered when user successfully authenticates via magic link
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UserAuthenticatedPayload'
+    
+    MagicLinkGenerated:
+      name: MagicLinkGenerated
+      title: Magic Link Generated Event
+      summary: ADR-003 compliant 64-char hex magic link created
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MagicLinkGeneratedPayload'
+    
+    MagicLinkValidated:
+      name: MagicLinkValidated
+      title: Magic Link Validated Event
+      summary: Magic link successfully validated and marked as used (single-use per ADR-003)
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MagicLinkValidatedPayload'
+
+    # Notification Events
+    EmailSent:
+      name: EmailSent
+      title: Email Sent Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/EmailSentPayload'
+    
+    EmailDelivered:
+      name: EmailDelivered
+      title: Email Delivered Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/EmailDeliveredPayload'
+    
+    EmailFailed:
+      name: EmailFailed
+      title: Email Failed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/EmailFailedPayload'
+
+    # File Events
     FileUploaded:
       name: FileUploaded
       title: File Uploaded Event
@@ -84,172 +250,699 @@ components:
       contentType: application/json
       payload:
         $ref: '#/components/schemas/FileProcessedPayload'
-    
-    InvitationCreated:
-      name: InvitationCreated
-      title: Invitation Created Event
-      contentType: application/json
-      payload:
-        $ref: '#/components/schemas/InvitationCreatedPayload'
-    
-    InvitationUsed:
-      name: InvitationUsed
-      title: Invitation Used Event
-      contentType: application/json
-      payload:
-        $ref: '#/components/schemas/InvitationUsedPayload'
 
   schemas:
+    # Common Event Metadata (ADR-023 compliant)
+    BaseEvent:
+      type: object
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          description: Unique event identifier
+        eventType:
+          type: string
+          description: Type of event (domain.action format)
+        timestamp:
+          type: string
+          format: date-time
+          description: Event creation timestamp (ISO 8601)
+        version:
+          type: string
+          default: "1.0.0"
+          description: Event schema version
+        source:
+          type: string
+          description: Service that produced the event
+        correlationId:
+          type: string
+          format: uuid
+          description: Optional correlation ID for tracing
+      required:
+        - eventId
+        - eventType
+        - timestamp
+        - source
+
+    # Shoot Event Payloads
     ShootCreatedPayload:
-      type: object
-      properties:
-        eventId:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        shootId:
-          type: string
-        clientId:
-          type: string
-        photographerId:
-          type: string
-        title:
-          type: string
-        scheduledDate:
-          type: string
-          format: date-time
-      required:
-        - eventId
-        - timestamp
-        - shootId
-        - clientId
-        - photographerId
-        - title
-    
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["shoot.created"]
+            data:
+              type: object
+              properties:
+                shootId:
+                  type: string
+                  description: Unique shoot identifier
+                title:
+                  type: string
+                  description: Shoot title
+                clientEmail:
+                  type: string
+                  format: email
+                  description: Client email address
+                photographerId:
+                  type: string
+                  description: Photographer user ID
+                scheduledDate:
+                  type: string
+                  format: date-time
+                  description: Optional scheduled date
+                location:
+                  type: string
+                  description: Optional shoot location
+                status:
+                  type: string
+                  enum: ["planned"]
+                  default: "planned"
+                createdAt:
+                  type: string
+                  format: date-time
+              required:
+                - shootId
+                - title
+                - clientEmail
+                - photographerId
+                - createdAt
+
+    ShootUpdatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["shoot.updated"]
+            data:
+              type: object
+              properties:
+                shootId:
+                  type: string
+                title:
+                  type: string
+                scheduledDate:
+                  type: string
+                  format: date-time
+                location:
+                  type: string
+                status:
+                  type: string
+                  enum: ["planned", "in_progress", "completed", "delivered", "cancelled"]
+                updatedAt:
+                  type: string
+                  format: date-time
+              required:
+                - shootId
+                - updatedAt
+
     ShootCompletedPayload:
-      type: object
-      properties:
-        eventId:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        shootId:
-          type: string
-        totalPhotos:
-          type: integer
-        archiveSize:
-          type: integer
-          description: Size in bytes
-      required:
-        - eventId
-        - timestamp
-        - shootId
-        - totalPhotos
-        - archiveSize
-    
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["shoot.completed"]
+            data:
+              type: object
+              properties:
+                shootId:
+                  type: string
+                completedAt:
+                  type: string
+                  format: date-time
+                totalPhotos:
+                  type: integer
+                  minimum: 0
+                totalSizeMB:
+                  type: number
+                  minimum: 0
+                photographerId:
+                  type: string
+              required:
+                - shootId
+                - completedAt
+                - totalPhotos
+                - totalSizeMB
+                - photographerId
+
     ShootDeliveredPayload:
-      type: object
-      properties:
-        eventId:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        shootId:
-          type: string
-        deliveryUrl:
-          type: string
-      required:
-        - eventId
-        - timestamp
-        - shootId
-        - deliveryUrl
-    
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["shoot.delivered"]
+            data:
+              type: object
+              properties:
+                shootId:
+                  type: string
+                clientEmail:
+                  type: string
+                  format: email
+                deliveredAt:
+                  type: string
+                  format: date-time
+                deliveryMethod:
+                  type: string
+                  enum: ["gallery_link", "download_archive", "physical_media"]
+                archiveSize:
+                  type: number
+                  description: Archive size in MB
+                expiresAt:
+                  type: string
+                  format: date-time
+              required:
+                - shootId
+                - clientEmail
+                - deliveredAt
+                - deliveryMethod
+
+    # User Event Payloads (from sequence diagrams)
+    UserCreatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["user.created"]
+            data:
+              type: object
+              properties:
+                userId:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                role:
+                  type: string
+                  enum: ["photographer", "client", "guest"]
+                shootId:
+                  type: string
+                  description: Associated shoot that triggered creation
+                isActive:
+                  type: boolean
+                  default: true
+                emailVerified:
+                  type: boolean
+                  default: false
+                createdAt:
+                  type: string
+                  format: date-time
+              required:
+                - userId
+                - email
+                - role
+                - createdAt
+
+    UserVerifiedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["user.verified"]
+            data:
+              type: object
+              properties:
+                userId:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                shootId:
+                  type: string
+                  description: Associated shoot
+                verifiedAt:
+                  type: string
+                  format: date-time
+                verificationMethod:
+                  type: string
+                  enum: ["email_click", "magic_link", "existing_session"]
+                  default: "existing_session"
+              required:
+                - userId
+                - email
+                - verifiedAt
+
+    UserUpdatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["user.updated"]
+            data:
+              type: object
+              properties:
+                userId:
+                  type: string
+                updatedAt:
+                  type: string
+                  format: date-time
+                updatedBy:
+                  type: string
+                  description: User ID who made the change
+              required:
+                - userId
+                - updatedAt
+
+    # Invite Event Payloads (ADR-003)
+    InviteCreatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["invite.created"]
+            data:
+              type: object
+              properties:
+                inviteId:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                shootId:
+                  type: string
+                token:
+                  type: string
+                  pattern: "^[a-f0-9]{64}$"
+                  description: "ADR-003 compliant 64-character hex token"
+                expiresAt:
+                  type: string
+                  format: date-time
+                  description: "48-hour expiry per sequence diagram"
+                createdAt:
+                  type: string
+                  format: date-time
+              required:
+                - inviteId
+                - email
+                - shootId
+                - token
+                - expiresAt
+                - createdAt
+
+    InviteSentPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["invite.sent"]
+            data:
+              type: object
+              properties:
+                inviteId:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                sentAt:
+                  type: string
+                  format: date-time
+                status:
+                  type: string
+                  enum: ["sent"]
+                  default: "sent"
+              required:
+                - inviteId
+                - email
+                - sentAt
+                - status
+
+    InviteViewedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["invite.viewed"]
+            data:
+              type: object
+              properties:
+                inviteId:
+                  type: string
+                viewedAt:
+                  type: string
+                  format: date-time
+                ipAddress:
+                  type: string
+                userAgent:
+                  type: string
+              required:
+                - inviteId
+                - viewedAt
+
+    InviteAcceptedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["invite.accepted"]
+            data:
+              type: object
+              properties:
+                inviteId:
+                  type: string
+                userId:
+                  type: string
+                acceptedAt:
+                  type: string
+                  format: date-time
+              required:
+                - inviteId
+                - userId
+                - acceptedAt
+
+    InviteExpiredPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["invite.expired"]
+            data:
+              type: object
+              properties:
+                inviteId:
+                  type: string
+                expiredAt:
+                  type: string
+                  format: date-time
+              required:
+                - inviteId
+                - expiredAt
+
+    InviteRevokedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["invite.revoked"]
+            data:
+              type: object
+              properties:
+                inviteId:
+                  type: string
+                revokedAt:
+                  type: string
+                  format: date-time
+                reason:
+                  type: string
+                revokedBy:
+                  type: string
+                  description: User ID who revoked
+              required:
+                - inviteId
+                - revokedAt
+
+    # Authentication Event Payloads (ADR-003)
+    UserAuthenticatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["user.authenticated"]
+            data:
+              type: object
+              properties:
+                userId:
+                  type: string
+                method:
+                  type: string
+                  enum: ["magic_link", "password", "oauth"]
+                shootId:
+                  type: string
+                authenticatedAt:
+                  type: string
+                  format: date-time
+                ipAddress:
+                  type: string
+                userAgent:
+                  type: string
+              required:
+                - userId
+                - method
+                - authenticatedAt
+
+    MagicLinkGeneratedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["magic_link.generated"]
+            data:
+              type: object
+              properties:
+                token:
+                  type: string
+                  pattern: "^[a-f0-9]{64}$"
+                  description: "64-character hex token per ADR-003"
+                email:
+                  type: string
+                  format: email
+                shootId:
+                  type: string
+                expiresAt:
+                  type: string
+                  format: date-time
+                  description: "15-minute expiry per ADR-003"
+                generatedAt:
+                  type: string
+                  format: date-time
+              required:
+                - token
+                - email
+                - shootId
+                - expiresAt
+                - generatedAt
+
+    MagicLinkValidatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["magic_link.validated"]
+            data:
+              type: object
+              properties:
+                token:
+                  type: string
+                  pattern: "^[a-f0-9]{64}$"
+                userId:
+                  type: string
+                validatedAt:
+                  type: string
+                  format: date-time
+                singleUseEnforced:
+                  type: boolean
+                  default: true
+                  description: "Single-use enforcement per ADR-003"
+              required:
+                - token
+                - userId
+                - validatedAt
+                - singleUseEnforced
+
+    # Notification Event Payloads
+    EmailSentPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["email.sent"]
+            data:
+              type: object
+              properties:
+                messageId:
+                  type: string
+                to:
+                  type: string
+                  format: email
+                subject:
+                  type: string
+                template:
+                  type: string
+                sentAt:
+                  type: string
+                  format: date-time
+                provider:
+                  type: string
+                  enum: ["nodemailer", "resend", "sendgrid"]
+              required:
+                - messageId
+                - to
+                - subject
+                - sentAt
+
+    EmailDeliveredPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["email.delivered"]
+            data:
+              type: object
+              properties:
+                messageId:
+                  type: string
+                to:
+                  type: string
+                  format: email
+                deliveredAt:
+                  type: string
+                  format: date-time
+              required:
+                - messageId
+                - to
+                - deliveredAt
+
+    EmailFailedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["email.failed"]
+            data:
+              type: object
+              properties:
+                messageId:
+                  type: string
+                to:
+                  type: string
+                  format: email
+                error:
+                  type: string
+                failedAt:
+                  type: string
+                  format: date-time
+                retryCount:
+                  type: integer
+                  minimum: 0
+              required:
+                - messageId
+                - to
+                - error
+                - failedAt
+                - retryCount
+
+    # File Event Payloads  
     FileUploadedPayload:
-      type: object
-      properties:
-        eventId:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        fileId:
-          type: string
-        shootId:
-          type: string
-        filename:
-          type: string
-        size:
-          type: integer
-      required:
-        - eventId
-        - timestamp
-        - fileId
-        - filename
-        - size
-    
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["file.uploaded"]
+            data:
+              type: object
+              properties:
+                fileId:
+                  type: string
+                shootId:
+                  type: string
+                filename:
+                  type: string
+                originalPath:
+                  type: string
+                size:
+                  type: integer
+                  minimum: 0
+                  description: File size in bytes
+                mimeType:
+                  type: string
+                uploadedAt:
+                  type: string
+                  format: date-time
+                uploadedBy:
+                  type: string
+                  description: User ID who uploaded
+              required:
+                - fileId
+                - shootId
+                - filename
+                - size
+                - mimeType
+                - uploadedAt
+
     FileProcessedPayload:
-      type: object
-      properties:
-        eventId:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        fileId:
-          type: string
-        thumbnailUrl:
-          type: string
-        processingTime:
-          type: integer
-          description: Processing time in milliseconds
-      required:
-        - eventId
-        - timestamp
-        - fileId
-        - thumbnailUrl
-    
-    InvitationCreatedPayload:
-      type: object
-      properties:
-        eventId:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        invitationId:
-          type: string
-        email:
-          type: string
-        shootId:
-          type: string
-        expiresAt:
-          type: string
-          format: date-time
-      required:
-        - eventId
-        - timestamp
-        - invitationId
-        - email
-        - shootId
-        - expiresAt
-    
-    InvitationUsedPayload:
-      type: object
-      properties:
-        eventId:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        invitationId:
-          type: string
-        userId:
-          type: string
-      required:
-        - eventId
-        - timestamp
-        - invitationId
-        - userId
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            eventType:
+              type: string
+              enum: ["file.processed"]
+            data:
+              type: object
+              properties:
+                fileId:
+                  type: string
+                thumbnailUrl:
+                  type: string
+                  format: uri
+                webUrl:
+                  type: string
+                  format: uri
+                processingTime:
+                  type: integer
+                  minimum: 0
+                  description: Processing time in milliseconds
+                processedAt:
+                  type: string
+                  format: date-time
+                resolutions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      size:
+                        type: string
+                        enum: ["thumbnail", "web", "print", "original"]
+                      url:
+                        type: string
+                        format: uri
+                      dimensions:
+                        type: object
+                        properties:
+                          width:
+                            type: integer
+                          height:
+                            type: integer
+              required:
+                - fileId
+                - thumbnailUrl
+                - processedAt

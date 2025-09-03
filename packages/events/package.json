@@ -1,17 +1,34 @@
 {
   "name": "@tempsdarret/events",
-  "version": "0.1.0",
-  "description": "AsyncAPI event specifications and validation for photography platform",
+  "version": "1.0.0",
+  "description": "AsyncAPI event schemas for Temps D'arrêt Studio - sequence diagram compliant (ADR-023)",
+  "private": true,
   "type": "module",
-  "main": "dist/index.js",
+  "main": "asyncapi.yaml",
   "scripts": {
-    "build": "asyncapi generate fromTemplate asyncapi.yaml @asyncapi/nodejs-template -o dist",
     "validate": "asyncapi validate asyncapi.yaml",
-    "docs": "asyncapi generate fromTemplate asyncapi.yaml @asyncapi/html-template -o ../../docs/events --force-write",
+    "docs:generate": "asyncapi generate fromTemplate asyncapi.yaml @asyncapi/html-template -o ../../docs/events --force-write",
+    "docs:serve": "asyncapi start studio asyncapi.yaml",
+    "lint": "asyncapi validate asyncapi.yaml --diagnostics",
+    "bundle": "asyncapi bundle asyncapi.yaml -o dist/asyncapi-bundled.yaml",
+    "convert:openapi": "asyncapi convert asyncapi.yaml -t openapi -o dist/events-openapi.yaml",
+    "build": "npm run validate && npm run bundle && npm run docs:generate",
     "clean": "rm -rf dist ../../docs/events"
   },
-  "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "@asyncapi/cli": "^2.0.0",
+    "@asyncapi/html-template": "^2.0.0",
+    "@asyncapi/studio": "^2.0.0"
+  },
+  "keywords": [
+    "asyncapi",
+    "events",
+    "photography",
+    "sequence-diagrams",
+    "adr-003",
+    "magic-links",
+    "event-driven-architecture"
+  ],
   "engines": {
     "node": ">=24.0.0",
     "npm": ">=10.0.0"
