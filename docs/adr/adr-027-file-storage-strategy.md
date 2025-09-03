@@ -1,8 +1,12 @@
-# Decision Log: File Storage Strategy
+# ADR-027: File Storage Strategy
 
-**Date**: 2025-01-17  
-**Status**: Decided  
-**Deciders**: Development Team  
+## Status
+
+Accepted
+
+## Date
+
+2025-08-17
 
 ## Context
 
