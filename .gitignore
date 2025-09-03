@@ -52,3 +52,9 @@ yarn.lock
 *.tmp
 **/*.tmp
 
+# Claude Local logs
+.claude/collaboration-logs/
+
+
+working_roadmap.md
+
