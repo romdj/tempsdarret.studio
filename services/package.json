@@ -10,7 +10,7 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
-    "test:e2e": "vitest run test/integration",
+    "test:e2e": "vitest run common/tests/e2e",
     "test:monitor": "tsx test/monitor-test.ts",
     "lint": "eslint src/**/*.{js,ts}",
     "check": "tsc --noEmit",

@@ -11,12 +11,31 @@ using TypeSpec.Rest;
 @OpenAPI.info(#{ version: "1.0.0" })
 namespace FileService;
 
+/**
+Major Camera RAW File Formats
+Canon: .CR2, .CR3
+Nikon: .NEF, .NRW
+Sony: .ARW
+Olympus: .ORF
+Leica: .DNG, .RWL
+Hasselblad: .3FR, .FFF
+Phase One: .IIQ
+*/
+
+/*
+Sidecar/Config File Formats for Top Image Editors
+Adobe Lightroom: .XMP (sidecar for RAW edits/metadata)
+Adobe Photoshop: .PSD (internal), .XMP (for RAW), .PSB (large docs)
+Capture One: .COS, .COL, .XMP (sidecar for RAW edits/metadata)
+Affinity Photo: .AFPHOTO (internal project file)
+GIMP: .XCF (internal project file)
+*/
 @doc("File type enumeration")
 enum FileType {
   jpeg: "jpeg",
   png: "png",
   raw: "raw",
-  video: "video"
+  video: "video",
 }
 
 @doc("File processing status")
@@ -24,7 +43,7 @@ enum ProcessingStatus {
   pending: "pending",
   processing: "processing",
   completed: "completed",
-  failed: "failed"
+  failed: "failed",
 }
 
 @doc("File model")
@@ -66,7 +85,7 @@ model File {
   @doc("File tags")
   tags?: string[];
 
-  ...Timestamps
+  ...Timestamps;
 }
 
 @doc("File upload request metadata")
@@ -96,7 +115,7 @@ model FileQuery {
   @query
   tags?: string[];
 
-  ...PaginationQuery
+  ...PaginationQuery;
 }
 
 @doc("Archive generation request")
@@ -135,11 +154,10 @@ model Archive {
   @doc("Processing status")
   status: ProcessingStatus;
 
-  ...Timestamps
+  ...Timestamps;
 }
 
 /** ---------- Download response shapes (headers + body) ---------- */
-
 @doc("Binary file download response with progress-friendly headers")
 model FileDownloadResponse {
   @statusCode _: 200;
@@ -185,7 +203,6 @@ model ArchiveDownloadResponse {
 }
 
 /** ---------- Multipart body shape for upload ---------- */
-
 @doc("Multipart form-data for uploading a file with metadata")
 model FileUploadMultipart {
   /** Binary file part */
@@ -204,7 +221,7 @@ interface FileOperations {
   @doc("Upload a file")
   uploadFile(
     @header contentType: "multipart/form-data",
-    @multipartBody body: FileUploadMultipart
+    @multipartBody body: FileUploadMultipart,
   ): SuccessResponse<File> | ApiError;
 
   @get
@@ -224,7 +241,9 @@ interface FileOperations {
   @delete
   @route("/{fileId}")
   @doc("Delete file")
-  deleteFile(@path fileId: string): SuccessResponse<{ deleted: boolean }> | ApiError;
+  deleteFile(@path fileId: string): SuccessResponse<{
+    deleted: boolean;
+  }> | ApiError;
 
   @post
   @route("/archives")
