@@ -3,7 +3,7 @@
 ## Status
 Accepted
 
-Date: 2025-01-09
+Date: 2025-08-09
 
 ## Context
 The photography platform needs to store diverse data types including user profiles, photo metadata, shoot information, client access permissions, and business workflows. The data has varying structures - photo metadata can be highly flexible (different cameras, lenses, settings), shoot information has complex relationships, and client permissions need to be document-centric. The platform needs to scale horizontally as the photography business grows, and the team prefers working with JSON-native data structures that match JavaScript/TypeScript naturally.

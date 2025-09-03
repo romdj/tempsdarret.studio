@@ -3,7 +3,7 @@
 ## Status
 Accepted
 
-Date: 2025-01-09
+Date: 2025-08-09
 
 ## Context
 The photography platform requires strong API contracts between frontend and backend services, as well as between microservices. With multiple team members working on different services, we need a way to ensure type safety, generate documentation, and maintain consistency across APIs. The platform handles complex data structures for photography metadata, client permissions, and business workflows that require precise type definitions.

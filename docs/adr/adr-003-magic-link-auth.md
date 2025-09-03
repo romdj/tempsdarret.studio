@@ -3,7 +3,7 @@
 ## Status
 Accepted
 
-Date: 2025-01-09
+Date: 2025-08-09
 
 ## Context
 The photography platform serves two main user types: photographers (who manage the platform) and clients (who view and access their photos). Clients are typically non-technical users who may struggle with password management, while photographers need secure but convenient access to manage their business. The platform handles sensitive client photos and personal information, requiring strong security. However, user experience is critical for client adoption - complex authentication flows could prevent clients from accessing their photos.

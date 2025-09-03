@@ -3,7 +3,7 @@
 ## Status
 Accepted
 
-Date: 2025-01-09
+Date: 2025-08-09
 
 ## Context
 The photography platform uses event-driven architecture with Kafka for business workflows (shoot creation, file processing, client invitations). Events carry complex business data that must be consistently structured across services. The team needs:

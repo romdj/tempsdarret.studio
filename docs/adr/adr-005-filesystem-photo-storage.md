@@ -3,7 +3,7 @@
 ## Status
 Accepted
 
-Date: 2025-01-09
+Date: 2025-08-09
 
 ## Context
 The photography platform needs to store and serve high-resolution photos, thumbnails, and processed images. Files range from RAW camera files (50-100MB) to web-optimized versions (1-5MB). The business requirements include:
