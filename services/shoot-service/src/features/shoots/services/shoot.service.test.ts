@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ShootService } from './shoot.service';
-import { ShootModel } from '../schemas/shoot.mongoose';
+import { ShootModel } from '../../../shared/shoots.mongoose';
 import { CreateShootRequest, ShootStatus } from '@tempsdarret/shared/schemas/shoot.schema';
 import { ZodError } from 'zod';
 
@@ -77,11 +77,14 @@ describe('ShootService', () => {
       expect(topic).toBe('shoots');
       expect(event).toMatchObject({
         eventType: 'shoot.created',
-        clientEmail: 'client@example.com',
-        photographerId: 'photographer_789',
-        title: 'Event Photography'
+        data: {
+          clientEmail: 'client@example.com',
+          photographerId: 'photographer_789',
+          title: 'Event Photography',
+          status: 'planned'
+        }
       });
-      expect(event.shootId).toMatch(/^shoot_[a-f0-9]{32}$/);
+      expect(event.data.shootId).toMatch(/^shoot_[a-f0-9]{32}$/);
       expect(key).toMatch(/^shoot_[a-f0-9]{32}$/);
     });
 

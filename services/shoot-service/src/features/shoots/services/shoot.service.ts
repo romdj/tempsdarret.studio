@@ -1,6 +1,6 @@
-import { ShootModel, IShootDocument } from '../schemas/shoot.mongoose';
+import { ShootModel, IShootDocument } from '../../../shared/shoots.mongoose';
 import { EventPublisher } from '../../../shared/messaging';
-import { ShootCreatedEvent } from '../../../shared/types';
+import { ShootCreatedPayload, SHOOT_EVENT_TYPES } from '../../../shared/shoots.events';
 import { generateEventId, generateShootId } from '../../../shared/utils/id';
 import { CreateShootRequestSchema, UpdateShootRequestSchema, ShootQuerySchema, type CreateShootRequest, type UpdateShootRequest, type ShootQuery, type Shoot } from '@tempsdarret/shared/schemas/shoot.schema';
 import { ZodError } from 'zod';
@@ -23,15 +23,22 @@ export class ShootService {
     const savedShoot = await shootDoc.save();
 
     // Create and publish event
-    const event: ShootCreatedEvent = {
+    const event: ShootCreatedPayload = {
       eventId: generateEventId(),
       timestamp: new Date().toISOString(),
-      eventType: 'shoot.created',
-      shootId: savedShoot.id,
-      clientEmail: savedShoot.clientEmail,
-      photographerId: savedShoot.photographerId,
-      title: savedShoot.title,
-      ...(savedShoot.scheduledDate && { scheduledDate: savedShoot.scheduledDate.toISOString() })
+      version: '1.0.0',
+      source: 'shoot-service',
+      eventType: SHOOT_EVENT_TYPES.CREATED,
+      data: {
+        shootId: savedShoot.id,
+        clientEmail: savedShoot.clientEmail,
+        photographerId: savedShoot.photographerId,
+        title: savedShoot.title,
+        status: 'planned',
+        createdAt: savedShoot.createdAt.toISOString(),
+        ...(savedShoot.scheduledDate && { scheduledDate: savedShoot.scheduledDate.toISOString() }),
+        ...(savedShoot.location && { location: savedShoot.location })
+      }
     };
 
     // Publish event (this triggers the invitation flow)
