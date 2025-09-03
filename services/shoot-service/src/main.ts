@@ -3,9 +3,11 @@ import { Kafka } from 'kafkajs';
 import { appConfig } from './config/app.config';
 import { dbConnection } from './config/database';
 import { EventPublisher } from './shared/messaging';
-import { ShootService } from './features/shoots/services/shoot.service';
-import { ShootController } from './features/shoots/controllers/shoot.controller';
-import { registerShootRoutes } from './features/shoots/routes/shoot.routes';
+import { ShootService } from './services/shoot.service';
+import { ShootHandlers } from './handlers/shoot.handlers';
+import { ShootRepository } from './persistence/shoot.repository';
+import { ShootCreatedPublisher } from './events/publishers/shoot-created.publisher';
+import { registerShootRoutes } from './handlers/shoot.routes';
 
 class ShootServiceApp {
   private fastify: ReturnType<typeof Fastify>;
@@ -33,12 +35,14 @@ class ShootServiceApp {
       // Connect to Kafka
       await this.eventPublisher.connect();
 
-      // Setup services and controllers
-      const shootService = new ShootService(this.eventPublisher);
-      const shootController = new ShootController(shootService);
+      // Setup dependencies following functional structure
+      const shootRepository = new ShootRepository();
+      const shootCreatedPublisher = new ShootCreatedPublisher(this.eventPublisher);
+      const shootService = new ShootService(shootRepository, shootCreatedPublisher);
+      const shootHandlers = new ShootHandlers(shootService);
 
       // Register routes
-      registerShootRoutes(this.fastify, shootController);
+      registerShootRoutes(this.fastify, shootHandlers);
 
       // Start server
       await this.fastify.listen({ port: appConfig.port, host: '0.0.0.0' });

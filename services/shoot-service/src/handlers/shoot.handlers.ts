@@ -3,7 +3,7 @@ import { ShootService } from '../services/shoot.service';
 import { CreateShootRequest, UpdateShootRequest, ShootQuery } from '@tempsdarret/shared/schemas/shoot.schema';
 import { ZodError } from 'zod';
 
-export class ShootController {
+export class ShootHandlers {
   constructor(private readonly shootService: ShootService) {}
 
   async createShoot(request: FastifyRequest<{ Body: CreateShootRequest }>, reply: FastifyReply) {
