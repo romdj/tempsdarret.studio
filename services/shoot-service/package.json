@@ -10,7 +10,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "vitest run",
-    "test:watch": "vitest", 
+    "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:unit": "vitest run --reporter=verbose src",
     "test:component": "vitest run --reporter=verbose tests/component",
@@ -25,7 +25,8 @@
     "mongoose": "^8.16.4",
     "zod": "^4.0.10",
     "@tempsdarret/shared": "*",
-    "tsx": "^4.20.3"
+    "tsx": "^4.20.3",
+    "@tempsdarret/events": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
