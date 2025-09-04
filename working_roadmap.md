@@ -50,8 +50,11 @@ Phase One: .IIQ
   GIMP: .XCF (internal project file)
 */
 ```
-<!-- TODO -->
 Implement the notification service using Resend.dev. & payload cms (mongodb, self-hosted/community version)
+
+<!-- TODO -->
+
+did you manage to do the payloadcms implementation?
 
 Let's not forget the logging, and testing; we now have all the elements to start digging into our business flows, and implement a complete iteration of the e2e test according to `01-shoot-creation-and-invitation.mmd`. Let's complete the happy flow, and start thinking of a couple of alternate flows that would bring value to the testing completeness.
 
