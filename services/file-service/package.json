@@ -12,8 +12,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:integration": "jest --testPathPattern=integration",
-    "test:unit": "jest --testPathIgnorePatterns=integration",
+    "test:integration": "jest tests/integration",
+    "test:unit": "jest tests/services tests/handlers",
     "test:all": "jest --runInBand",
     "lint": "eslint src/**/*.{js,ts}",
     "check": "tsc --noEmit"
