@@ -23,12 +23,13 @@ Phase One: .IIQ
 */
 
 /*
-Sidecar/Config File Formats for Top Image Editors
-Adobe Lightroom: .XMP (sidecar for RAW edits/metadata)
-Adobe Photoshop: .PSD (internal), .XMP (for RAW), .PSB (large docs)
-Capture One: .COS, .COL, .XMP (sidecar for RAW edits/metadata)
-Affinity Photo: .AFPHOTO (internal project file)
-GIMP: .XCF (internal project file)
+  Sidecar/Config File Formats for Top Image Editors
+  Only Photographers have access to editing data
+  Adobe Lightroom: .XMP (sidecar for RAW edits/metadata)
+  Adobe Photoshop: .PSD (internal), .XMP (for RAW), .PSB (large docs)
+  Capture One: .COS, .COL, .XMP (sidecar for RAW edits/metadata)
+  Affinity Photo: .AFPHOTO (internal project file)
+  GIMP: .XCF (internal project file)
 */
 @doc("File type enumeration")
 enum FileType {
