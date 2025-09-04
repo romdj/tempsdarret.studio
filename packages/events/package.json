@@ -1,25 +1,45 @@
 {
   "name": "@tempsdarret/events",
   "version": "1.0.0",
-  "description": "AsyncAPI event schemas for Temps D'arrêt Studio - sequence diagram compliant (ADR-023)",
+  "description": "Shared event contracts for Temps D'arrêt Studio microservices - TypeScript as source of truth",
   "private": true,
   "type": "module",
-  "main": "asyncapi.yaml",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./asyncapi": "./asyncapi.yaml"
+  },
   "scripts": {
+    "generate:from-typescript": "node scripts/generate-from-typescript.js",
+    "validate:contracts": "node scripts/validate-contracts.js",
+    "compile": "tsc --build",
     "validate": "asyncapi validate asyncapi.yaml",
     "docs:generate": "asyncapi generate fromTemplate asyncapi.yaml @asyncapi/html-template -o ../../docs/events --force-write",
     "docs:serve": "asyncapi start studio asyncapi.yaml",
     "lint": "asyncapi validate asyncapi.yaml --diagnostics",
     "bundle": "asyncapi bundle asyncapi.yaml -o dist/asyncapi-bundled.yaml",
     "convert:openapi": "asyncapi convert asyncapi.yaml -t openapi -o dist/events-openapi.yaml",
-    "build": "npm run validate && npm run bundle && npm run docs:generate",
+    "publish:contracts": "node scripts/publish-contracts.js",
+    "build": "npm run generate:from-typescript && npm run validate:contracts && npm run validate && npm run compile && npm run bundle",
     "clean": "rm -rf dist ../../docs/events"
   },
   "devDependencies": {
     "@asyncapi/cli": "^2.0.0",
     "@asyncapi/html-template": "^2.0.0",
-    "@asyncapi/studio": "^2.0.0"
+    "@asyncapi/studio": "^2.0.0",
+    "js-yaml": "^4.1.0",
+    "typescript": "^5.0.0"
   },
+  "files": [
+    "dist/**/*",
+    "src/**/*",
+    "asyncapi.yaml",
+    "asyncapi-generated.yaml"
+  ],
   "keywords": [
     "asyncapi",
     "events",
