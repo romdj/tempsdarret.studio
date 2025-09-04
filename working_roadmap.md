@@ -23,12 +23,44 @@ And please stage and commit per service restructuring
 
 I'd also like to make a direct linkage between the shoot-service event definition and asyncapi, what are my options?  
 
+
+
+Implement the file service taking into account our adr 026 and 027? Also match the overall structure of the shoot service. Is there a need to make some choices on technology? Also I've added these comments to the file-service.tsp file. Please add those consideration in your implementation.
+
+So those were the comments, it doesn't seem that they're taken into account in the implementation? Is that a choice you made?
+```
+/**
+Major Camera RAW File Formats
+Canon: .CR2, .CR3
+Nikon: .NEF, .NRW
+Sony: .ARW
+Olympus: .ORF
+Leica: .DNG, .RWL
+Hasselblad: .3FR, .FFF
+Phase One: .IIQ
+*/
+
+/*
+  Sidecar/Config File Formats for Top Image Editors
+  Only Photographers have access to editing data
+  Adobe Lightroom: .XMP (sidecar for RAW edits/metadata)
+  Adobe Photoshop: .PSD (internal), .XMP (for RAW), .PSB (large docs)
+  Capture One: .COS, .COL, .XMP (sidecar for RAW edits/metadata)
+  Affinity Photo: .AFPHOTO (internal project file)
+  GIMP: .XCF (internal project file)
+*/
+```
 <!-- TODO -->
-
-Implement the file service taking 
-
 Implement the notification service using Resend.dev. & payload cms (mongodb, self-hosted/community version)
 
+Let's not forget the logging, and testing; we now have all the elements to start digging into our business flows, and implement a complete iteration of the e2e test according to `01-shoot-creation-and-invitation.mmd`. Let's complete the happy flow, and start thinking of a couple of alternate flows that would bring value to the testing completeness.
+
+pros/cons to enable pre-commit checks right now? are we in a mature enough state or should we wait for first ever release (ie first major bump). I think the pre-commit checks can be disabled as long as the major version is 0 throughout the different repos in this monorepo.
+
+
+Can you update the cicd in general gh pipelines so it correctly matches the renewed scripts and tests? 
+
+Let's start creating a pulumi infrastructure for hosting this application on my local server/machine using k3s.
 
 for the frontend/ project and directory, can you write in a SVELTE_BEST_PRACTICES.md document what are key best practices to be used in the context of a svelte web application?
 
