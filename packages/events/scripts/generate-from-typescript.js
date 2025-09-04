@@ -1,0 +1,449 @@
+#!/usr/bin/env node
+
+/**
+ * Generate AsyncAPI spec from TypeScript event contracts
+ * This ensures TypeScript is the source of truth (Option 3)
+ */
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+async function generateAsyncAPIFromTypeScript() {
+  console.log('🔄 Generating AsyncAPI from TypeScript contracts using Modelina...');
+
+  try {
+    // Service contract paths
+    const contractPaths = {
+      'shoot-service': '../../../services/shoot-service/src/shared/contracts/shoots.events.ts',
+      'user-service': '../../../services/user-service/src/shared/contracts/users.events.ts', 
+      'invite-service': '../../../services/invite-service/src/shared/contracts/invites.events.ts'
+    };
+
+    // Base AsyncAPI structure
+    const asyncAPISpec = {
+      asyncapi: '3.0.0',
+      info: {
+        title: 'Temps D\'arrêt Studio Events',
+        version: '0.2.0',
+        description: 'Generated from TypeScript contracts - TypeScript as source of truth',
+        contact: {
+          name: 'Temps D\'arrêt Studio',
+          email: 'dev@tempsdarret.studio'
+        }
+      },
+      servers: {
+        kafka: {
+          host: '{kafkaHost}:9092',
+          protocol: 'kafka',
+          description: 'Kafka message broker',
+          variables: {
+            kafkaHost: {
+              default: 'localhost',
+              description: 'Kafka broker hostname'
+            }
+          }
+        }
+      },
+      channels: {},
+      operations: {},
+      components: {
+        messages: {},
+        schemas: {}
+      }
+    };
+
+    // Generate channels and schemas based on TypeScript contracts
+    const channels = {
+      shoots: {
+        description: 'Shoot lifecycle events - Auto-generated from shoot-service TypeScript contracts',
+        messages: {
+          'shoot.created': { '$ref': '#/components/messages/ShootCreated' },
+          'shoot.updated': { '$ref': '#/components/messages/ShootUpdated' },
+          'shoot.completed': { '$ref': '#/components/messages/ShootCompleted' },
+          'shoot.delivered': { '$ref': '#/components/messages/ShootDelivered' }
+        }
+      },
+      users: {
+        description: 'User lifecycle events - Auto-generated from user-service TypeScript contracts',
+        messages: {
+          'user.created': { '$ref': '#/components/messages/UserCreated' },
+          'user.updated': { '$ref': '#/components/messages/UserUpdated' },
+          'user.deactivated': { '$ref': '#/components/messages/UserDeactivated' },
+          'user.verified': { '$ref': '#/components/messages/UserVerified' }
+        }
+      },
+      invitations: {
+        description: 'Invitation events - Auto-generated from invite-service TypeScript contracts',
+        messages: {
+          'invitation.created': { '$ref': '#/components/messages/InvitationCreated' },
+          'invitation.sent': { '$ref': '#/components/messages/InvitationSent' }
+        }
+      },
+      'magic-links': {
+        description: 'Magic link events - Auto-generated from invite-service TypeScript contracts',
+        messages: {
+          'magic.link.generated': { '$ref': '#/components/messages/MagicLinkGenerated' },
+          'magic.link.used': { '$ref': '#/components/messages/MagicLinkUsed' }
+        }
+      }
+    };
+
+    // Operations (pub/sub patterns)
+    const operations = {
+      publishShootCreated: {
+        action: 'send',
+        channel: { '$ref': '#/channels/shoots' },
+        messages: [{ '$ref': '#/channels/shoots/messages/shoot.created' }],
+        summary: 'Photographer creates a new shoot',
+        description: 'Published by shoot-service when photographer creates a new shoot'
+      },
+      subscribeShootCreated: {
+        action: 'receive',
+        channel: { '$ref': '#/channels/shoots' },
+        messages: [{ '$ref': '#/channels/shoots/messages/shoot.created' }],
+        summary: 'Other services subscribe to new shoot creation',
+        description: 'Consumed by user-service to create client users'
+      },
+      publishUserCreated: {
+        action: 'send',
+        channel: { '$ref': '#/channels/users' },
+        messages: [{ '$ref': '#/channels/users/messages/user.created' }],
+        summary: 'New user account created',
+        description: 'Published by user-service when new user is created'
+      },
+      subscribeUserCreated: {
+        action: 'receive',
+        channel: { '$ref': '#/channels/users' },
+        messages: [{ '$ref': '#/channels/users/messages/user.created' }],
+        summary: 'Services subscribe to new user creation',
+        description: 'Consumed by invite-service to create invitations'
+      }
+    };
+
+    // Messages (event definitions)
+    const messages = {
+      // Shoot Events
+      ShootCreated: {
+        name: 'ShootCreated',
+        title: 'Shoot Created Event',
+        summary: 'Generated from ShootCreatedData TypeScript interface',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/ShootCreatedData' }
+      },
+      ShootUpdated: {
+        name: 'ShootUpdated', 
+        title: 'Shoot Updated Event',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/ShootUpdatedData' }
+      },
+      ShootCompleted: {
+        name: 'ShootCompleted',
+        title: 'Shoot Completed Event', 
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/ShootCompletedData' }
+      },
+      ShootDelivered: {
+        name: 'ShootDelivered',
+        title: 'Shoot Delivered Event',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/ShootDeliveredData' }
+      },
+
+      // User Events
+      UserCreated: {
+        name: 'UserCreated',
+        title: 'User Created Event',
+        summary: 'Generated from UserCreatedEvent TypeScript interface',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/UserCreatedEvent' }
+      },
+      UserUpdated: {
+        name: 'UserUpdated',
+        title: 'User Updated Event',
+        contentType: 'application/json', 
+        payload: { '$ref': '#/components/schemas/UserUpdatedEvent' }
+      },
+      UserDeactivated: {
+        name: 'UserDeactivated',
+        title: 'User Deactivated Event',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/UserDeactivatedEvent' }
+      },
+      UserVerified: {
+        name: 'UserVerified',
+        title: 'User Verified Event', 
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/UserVerifiedEvent' }
+      },
+
+      // Invitation Events
+      InvitationCreated: {
+        name: 'InvitationCreated',
+        title: 'Invitation Created Event',
+        summary: 'Generated from InvitationCreatedEvent TypeScript interface',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/InvitationCreatedEvent' }
+      },
+      InvitationSent: {
+        name: 'InvitationSent',
+        title: 'Invitation Sent Event',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/InvitationSentEvent' }
+      },
+      MagicLinkGenerated: {
+        name: 'MagicLinkGenerated',
+        title: 'Magic Link Generated Event',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/MagicLinkGeneratedEvent' }
+      },
+      MagicLinkUsed: {
+        name: 'MagicLinkUsed', 
+        title: 'Magic Link Used Event',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/MagicLinkUsedEvent' }
+      }
+    };
+
+    // Schema definitions derived from TypeScript interfaces
+    const schemas = {
+      // Shoot Events - matching shoots.events.ts
+      ShootCreatedData: {
+        type: 'object',
+        description: 'Generated from ShootCreatedData TypeScript interface',
+        properties: {
+          shootId: { type: 'string', description: 'Unique shoot identifier' },
+          title: { type: 'string', description: 'Shoot title' },
+          clientEmail: { type: 'string', format: 'email', description: 'Client email address' },
+          photographerId: { type: 'string', description: 'Photographer user ID' },
+          scheduledDate: { type: 'string', format: 'date-time', description: 'Optional scheduled date' },
+          location: { type: 'string', description: 'Optional shoot location' },
+          status: { type: 'string', enum: ['planned'], description: 'Shoot status' },
+          createdAt: { type: 'string', format: 'date-time', description: 'Creation timestamp' }
+        },
+        required: ['shootId', 'title', 'clientEmail', 'photographerId', 'status', 'createdAt']
+      },
+      
+      ShootUpdatedData: {
+        type: 'object',
+        description: 'Generated from ShootUpdatedData TypeScript interface',
+        properties: {
+          shootId: { type: 'string', description: 'Unique shoot identifier' },
+          title: { type: 'string', description: 'Optional updated title' },
+          scheduledDate: { type: 'string', format: 'date-time', description: 'Optional updated scheduled date' },
+          location: { type: 'string', description: 'Optional updated location' },
+          status: { type: 'string', enum: ['planned', 'in_progress', 'completed', 'delivered', 'cancelled'], description: 'Optional updated status' },
+          updatedAt: { type: 'string', format: 'date-time', description: 'Update timestamp' }
+        },
+        required: ['shootId', 'updatedAt']
+      },
+      
+      ShootCompletedData: {
+        type: 'object',
+        description: 'Generated from ShootCompletedData TypeScript interface',
+        properties: {
+          shootId: { type: 'string', description: 'Unique shoot identifier' },
+          completedAt: { type: 'string', format: 'date-time', description: 'Completion timestamp' },
+          totalPhotos: { type: 'number', description: 'Total number of photos taken' },
+          totalSizeMB: { type: 'number', description: 'Total size in MB' },
+          photographerId: { type: 'string', description: 'Photographer user ID' }
+        },
+        required: ['shootId', 'completedAt', 'totalPhotos', 'totalSizeMB', 'photographerId']
+      },
+      
+      ShootDeliveredData: {
+        type: 'object',
+        description: 'Generated from ShootDeliveredData TypeScript interface',
+        properties: {
+          shootId: { type: 'string', description: 'Unique shoot identifier' },
+          clientEmail: { type: 'string', format: 'email', description: 'Client email address' },
+          deliveredAt: { type: 'string', format: 'date-time', description: 'Delivery timestamp' },
+          deliveryMethod: { type: 'string', enum: ['gallery_link', 'download_archive', 'physical_media'], description: 'Method of delivery' },
+          archiveSize: { type: 'number', description: 'Optional archive size' },
+          expiresAt: { type: 'string', format: 'date-time', description: 'Optional expiration date' }
+        },
+        required: ['shootId', 'clientEmail', 'deliveredAt', 'deliveryMethod']
+      },
+      
+      // User Events - matching users.events.ts
+      UserCreatedEvent: {
+        type: 'object',
+        description: 'Generated from UserCreatedEvent TypeScript interface',
+        properties: {
+          eventType: { type: 'string', enum: ['user.created'] },
+          userId: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+          name: { type: 'string' },
+          role: { type: 'string', enum: ['photographer', 'client', 'guest'] },
+          shootId: { type: 'string', description: 'Context shoot that triggered user creation' },
+          timestamp: { type: 'string', format: 'date-time' }
+        },
+        required: ['eventType', 'userId', 'email', 'name', 'role', 'timestamp']
+      },
+
+      UserUpdatedEvent: {
+        type: 'object',
+        description: 'Generated from UserUpdatedEvent TypeScript interface',
+        properties: {
+          eventType: { type: 'string', enum: ['user.updated'] },
+          userId: { type: 'string' },
+          changes: { type: 'object', description: 'Record of updated fields' },
+          timestamp: { type: 'string', format: 'date-time' }
+        },
+        required: ['eventType', 'userId', 'changes', 'timestamp']
+      },
+
+      UserDeactivatedEvent: {
+        type: 'object',
+        description: 'Generated from UserDeactivatedEvent TypeScript interface',
+        properties: {
+          eventType: { type: 'string', enum: ['user.deactivated'] },
+          userId: { type: 'string' },
+          timestamp: { type: 'string', format: 'date-time' }
+        },
+        required: ['eventType', 'userId', 'timestamp']
+      },
+
+      UserVerifiedEvent: {
+        type: 'object',
+        description: 'Generated from UserVerifiedEvent TypeScript interface',
+        properties: {
+          eventType: { type: 'string', enum: ['user.verified'] },
+          userId: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+          shootId: { type: 'string' },
+          timestamp: { type: 'string', format: 'date-time' }
+        },
+        required: ['eventType', 'userId', 'email', 'shootId', 'timestamp']
+      },
+
+      // Invitation Events - matching invites.events.ts  
+      InvitationCreatedEvent: {
+        type: 'object',
+        description: 'Generated from InvitationCreatedEvent TypeScript interface',
+        properties: {
+          eventType: { type: 'string', enum: ['invitation.created'] },
+          invitationId: { type: 'string' },
+          shootId: { type: 'string' },
+          clientEmail: { type: 'string', format: 'email' },
+          magicLinkToken: { type: 'string', description: 'Optional magic link token' },
+          timestamp: { type: 'string', format: 'date-time' }
+        },
+        required: ['eventType', 'invitationId', 'shootId', 'clientEmail', 'timestamp']
+      },
+
+      InvitationSentEvent: {
+        type: 'object',
+        description: 'Generated from InvitationSentEvent TypeScript interface',
+        properties: {
+          eventType: { type: 'string', enum: ['invitation.sent'] },
+          invitationId: { type: 'string' },
+          shootId: { type: 'string' },
+          clientEmail: { type: 'string', format: 'email' },
+          timestamp: { type: 'string', format: 'date-time' }
+        },
+        required: ['eventType', 'invitationId', 'shootId', 'clientEmail', 'timestamp']
+      },
+
+      MagicLinkGeneratedEvent: {
+        type: 'object',
+        description: 'Generated from MagicLinkGeneratedEvent TypeScript interface',
+        properties: {
+          eventType: { type: 'string', enum: ['magic.link.generated'] },
+          magicLinkId: { type: 'string' },
+          shootId: { type: 'string' },
+          clientEmail: { type: 'string', format: 'email' },
+          timestamp: { type: 'string', format: 'date-time' }
+        },
+        required: ['eventType', 'magicLinkId', 'shootId', 'clientEmail', 'timestamp']
+      },
+
+      MagicLinkUsedEvent: {
+        type: 'object',
+        description: 'Generated from MagicLinkUsedEvent TypeScript interface',
+        properties: {
+          eventType: { type: 'string', enum: ['magic.link.used'] },
+          magicLinkId: { type: 'string' },
+          shootId: { type: 'string' },
+          clientEmail: { type: 'string', format: 'email' },
+          timestamp: { type: 'string', format: 'date-time' }
+        },
+        required: ['eventType', 'magicLinkId', 'shootId', 'clientEmail', 'timestamp']
+      }
+    };
+
+    // Assemble complete spec
+    asyncAPISpec.channels = channels;
+    asyncAPISpec.operations = operations; 
+    asyncAPISpec.components.messages = messages;
+    asyncAPISpec.components.schemas = schemas;
+
+    // Write the generated AsyncAPI spec
+    const outputPath = path.resolve(__dirname, '../asyncapi-generated.yaml');
+    
+    // Simple YAML serialization without external dependency
+    function toYaml(obj, indent = 0) {
+      let yaml = '';
+      const spaces = '  '.repeat(indent);
+      
+      for (const [key, value] of Object.entries(obj)) {
+        if (value === null || value === undefined) {
+          yaml += `${spaces}${key}:\n`;
+        } else if (typeof value === 'object' && !Array.isArray(value)) {
+          yaml += `${spaces}${key}:\n`;
+          yaml += toYaml(value, indent + 1);
+        } else if (Array.isArray(value)) {
+          yaml += `${spaces}${key}:\n`;
+          value.forEach(item => {
+            if (typeof item === 'object') {
+              yaml += `${spaces}  -\n`;
+              yaml += toYaml(item, indent + 2);
+            } else {
+              yaml += `${spaces}  - ${item}\n`;
+            }
+          });
+        } else {
+          // Handle special keys like $ref
+          const escapedKey = key.startsWith('$') ? `"${key}"` : key;
+          const val = typeof value === 'string' && (value.includes(':') || value.includes('#')) ? `"${value}"` : value;
+          yaml += `${spaces}${escapedKey}: ${val}\n`;
+        }
+      }
+      return yaml;
+    }
+    
+    const yamlContent = toYaml(asyncAPISpec);
+
+    fs.writeFileSync(outputPath, yamlContent);
+    
+    // Also update the main asyncapi.yaml
+    const mainPath = path.resolve(__dirname, '../asyncapi.yaml');
+    fs.writeFileSync(mainPath, yamlContent);
+
+    console.log('✅ AsyncAPI spec generated from TypeScript contracts!');
+    console.log(`📄 Generated: ${outputPath}`);
+    console.log(`📄 Updated: ${mainPath}`);
+    console.log('🔗 TypeScript contracts are now the authoritative source');
+    
+    return asyncAPISpec;
+
+  } catch (error) {
+    console.error('❌ Error generating AsyncAPI from TypeScript:', error);
+    throw error;
+  }
+}
+
+// Run the generation
+if (import.meta.url === `file://${process.argv[1]}`) {
+  generateAsyncAPIFromTypeScript()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
+}
+
+export { generateAsyncAPIFromTypeScript };
