@@ -52,9 +52,15 @@ Phase One: .IIQ
 ```
 Implement the notification service using Resend.dev. & payload cms (mongodb, self-hosted/community version)
 
-<!-- TODO -->
 
 did you manage to do the payloadcms implementation?
+<!-- TODO -->
+
+Can you create a new file that is called run_locally.md ? The idea is for the whole project to be run locally whether that's on linux (ubuntu), mac or windows 10+. This wouldn't be just for test but rather to do an on-prem run of the solution. If there are tools to make it an optimal build that's also fine. Then in the readme.md, please add a section linking to it.
+
+one thing I really enjoy in gh pipelines is to see in one page all the builds, and not having to navigate on multiple build scripts. can you ensure that this would be the case?
+
+for the email functionality to work, what additional setting up would I need to do?
 
 Let's not forget the logging, and testing; we now have all the elements to start digging into our business flows, and implement a complete iteration of the e2e test according to `01-shoot-creation-and-invitation.mmd`. Let's complete the happy flow, and start thinking of a couple of alternate flows that would bring value to the testing completeness.
 
