@@ -1,6 +1,6 @@
 /**
- * Template Service
- * Manages notification templates with Payload CMS integration
+ * Template Service with Payload CMS Integration
+ * Manages notification templates using Payload CMS as the data source
  */
 
 import Handlebars from 'handlebars';
@@ -12,27 +12,7 @@ import {
   NotificationChannel,
   TemplateType
 } from '../shared/contracts/notifications.types.js';
-
-export interface PayloadTemplate {
-  id: string;
-  name: string;
-  type: TemplateType;
-  channel: NotificationChannel;
-  subject?: string;
-  textContent: string;
-  htmlContent?: string;
-  variables: Array<{
-    name: string;
-    description: string;
-    type: string;
-    required: boolean;
-    defaultValue?: any;
-  }>;
-  isActive: boolean;
-  language: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { PayloadClient } from '../payload/PayloadClient.js';
 
 export class TemplateService implements TemplateRepository {
   private compiledTemplates: Map<string, {
@@ -40,28 +20,19 @@ export class TemplateService implements TemplateRepository {
     text: HandlebarsTemplateDelegate;
     html?: HandlebarsTemplateDelegate;
   }> = new Map();
+  
+  private payloadClient: PayloadClient;
 
   constructor() {
+    this.payloadClient = new PayloadClient();
     this.registerHandlebarsHelpers();
-    console.log('📄 Template service initialized');
+    console.log('📄 Template service initialized with Payload CMS integration');
   }
 
   async getTemplate(type: TemplateType, channel: NotificationChannel): Promise<NotificationTemplate | null> {
     try {
-      // TODO: Replace with actual Payload CMS API call
-      // const response = await payload.find({
-      //   collection: 'notification-templates',
-      //   where: {
-      //     type: { equals: type },
-      //     channel: { equals: channel },
-      //     isActive: { equals: true }
-      //   }
-      // });
-
-      // For now, return mock templates
-      const mockTemplate = this.getMockTemplate(type, channel);
-      return mockTemplate;
-
+      const template = await this.payloadClient.getTemplate(type, channel);
+      return template;
     } catch (error) {
       console.error(`Failed to get template ${type}/${channel}:`, error);
       return null;
@@ -69,12 +40,11 @@ export class TemplateService implements TemplateRepository {
   }
 
   async renderTemplate(template: NotificationTemplate, variables: Record<string, any>): Promise<RenderedTemplate> {
-    const templateKey = `${template.type}_${template.channel}`;
-    
     try {
-      // Get or compile templates
-      let compiled = this.compiledTemplates.get(templateKey);
+      const cacheKey = `${template.id}-${template.updatedAt?.getTime()}`;
       
+      // Get or compile templates
+      let compiled = this.compiledTemplates.get(cacheKey);
       if (!compiled) {
         compiled = {
           text: Handlebars.compile(template.templates.text),
@@ -88,61 +58,55 @@ export class TemplateService implements TemplateRepository {
           compiled.html = Handlebars.compile(template.templates.html);
         }
         
-        this.compiledTemplates.set(templateKey, compiled);
+        this.compiledTemplates.set(cacheKey, compiled);
       }
 
-      // Prepare variables with defaults
-      const templateVariables = this.prepareVariables(template, variables);
+      // Prepare variables with defaults and utilities
+      const preparedVariables = this.prepareVariables(template, variables);
       
+      // Validate required variables
+      this.validateRequiredVariables(template, preparedVariables);
+
       // Render templates
       const rendered: RenderedTemplate = {
-        text: compiled.text(templateVariables),
-        variables: templateVariables,
+        text: compiled.text(preparedVariables),
+        variables: preparedVariables,
       };
 
       if (compiled.subject) {
-        rendered.subject = compiled.subject(templateVariables);
+        rendered.subject = compiled.subject(preparedVariables);
       }
 
       if (compiled.html) {
-        const htmlContent = compiled.html(templateVariables);
+        const htmlContent = compiled.html(preparedVariables);
         // Inline CSS for email compatibility
         rendered.html = juice(htmlContent);
       }
 
       return rendered;
-
     } catch (error) {
-      console.error(`Failed to render template ${templateKey}:`, error);
-      throw new Error(`Template rendering failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Template rendering failed:', error);
+      throw new Error(`Template rendering failed: ${error}`);
     }
   }
 
   async getAllTemplates(channel?: NotificationChannel): Promise<NotificationTemplate[]> {
     try {
-      // TODO: Replace with actual Payload CMS API call
-      // const response = await payload.find({
-      //   collection: 'notification-templates',
-      //   where: channel ? { channel: { equals: channel } } : undefined
-      // });
-
-      // For now, return mock templates
-      const allTypes: TemplateType[] = ['magic-link', 'photos-ready', 'shoot-update', 'reminder', 'welcome'];
-      const channels = channel ? [channel] : (['email', 'slack', 'sms'] as NotificationChannel[]);
-      
-      const templates: NotificationTemplate[] = [];
-      
-      for (const type of allTypes) {
+      if (channel) {
+        // Get templates for specific channel
+        return await this.payloadClient.getTemplatesByChannel(channel);
+      } else {
+        // Get templates for all channels
+        const channels: NotificationChannel[] = ['email', 'slack', 'sms'];
+        const templates: NotificationTemplate[] = [];
+        
         for (const ch of channels) {
-          const template = this.getMockTemplate(type, ch);
-          if (template) {
-            templates.push(template);
-          }
+          const channelTemplates = await this.payloadClient.getTemplatesByChannel(ch);
+          templates.push(...channelTemplates);
         }
+        
+        return templates;
       }
-
-      return templates;
-
     } catch (error) {
       console.error('Failed to get all templates:', error);
       return [];
@@ -167,6 +131,16 @@ export class TemplateService implements TemplateRepository {
     return prepared;
   }
 
+  private validateRequiredVariables(template: NotificationTemplate, variables: Record<string, any>): void {
+    const missing = template.variables
+      .filter(v => v.required && !(v.name in variables))
+      .map(v => v.name);
+
+    if (missing.length > 0) {
+      throw new Error(`Missing required variables: ${missing.join(', ')}`);
+    }
+  }
+
   private registerHandlebarsHelpers(): void {
     // Date formatting helper
     Handlebars.registerHelper('formatDate', (date: string | Date) => {
@@ -189,187 +163,33 @@ export class TemplateService implements TemplateRepository {
       return count === 1 ? singular : plural;
     });
 
+    // URL helper
+    Handlebars.registerHelper('urlEncode', (str: string) => {
+      return encodeURIComponent(str || '');
+    });
+
+    // Safe HTML helper
+    Handlebars.registerHelper('safeHtml', (str: string) => {
+      return new Handlebars.SafeString(str || '');
+    });
+
     console.log('📄 Handlebars helpers registered');
-  }
-
-  // Mock template data (to be replaced with Payload CMS)
-  private getMockTemplate(type: TemplateType, channel: NotificationChannel): NotificationTemplate | null {
-    const templates: Record<string, Record<string, Partial<NotificationTemplate>>> = {
-      'magic-link': {
-        'email': {
-          id: 'magic-link-email',
-          name: 'Magic Link Email',
-          type: 'magic-link',
-          channel: 'email',
-          templates: {
-            subject: '🔗 Access Your {{eventName}} Photos',
-            text: `Hi {{clientName}},
-
-Your photos from {{eventName}} are ready for viewing and download.
-
-Access your gallery: {{magicLinkUrl}}
-
-This link will expire on {{formatDate expirationDate}}.
-
-If you have any questions, simply reply to this email.
-
-Best regards,
-{{photographerName}}`,
-            html: `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Your Photos Are Ready</title>
-  <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { text-align: center; margin-bottom: 30px; }
-    .button { display: inline-block; padding: 12px 24px; background-color: #007cba; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-    .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 14px; color: #666; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>Your {{eventName}} Photos Are Ready! 📸</h1>
-    </div>
-    
-    <p>Hi {{clientName}},</p>
-    
-    <p>Great news! Your photos from <strong>{{eventName}}</strong> have been processed and are now available for viewing and download.</p>
-    
-    <div style="text-align: center;">
-      <a href="{{magicLinkUrl}}" class="button">View Your Photos</a>
-    </div>
-    
-    <p><strong>Important:</strong> This link will expire on {{formatDate expirationDate}}.</p>
-    
-    {{#if eventDate}}
-    <p><em>Event Date: {{formatDate eventDate}}</em></p>
-    {{/if}}
-    
-    {{#if eventLocation}}
-    <p><em>Location: {{eventLocation}}</em></p>
-    {{/if}}
-    
-    <div class="footer">
-      <p>If you have any questions, simply reply to this email.</p>
-      <p>Best regards,<br>{{photographerName}}</p>
-    </div>
-  </div>
-</body>
-</html>
-            `
-          },
-          variables: [
-            { name: 'clientName', description: 'Client full name', type: 'string', required: true },
-            { name: 'eventName', description: 'Name of the event/shoot', type: 'string', required: true },
-            { name: 'magicLinkUrl', description: 'Secure gallery access URL', type: 'url', required: true },
-            { name: 'expirationDate', description: 'Link expiration date', type: 'date', required: true },
-            { name: 'photographerName', description: 'Photographer name', type: 'string', required: true },
-            { name: 'photographerEmail', description: 'Photographer email', type: 'string', required: false },
-            { name: 'eventDate', description: 'Date of the event', type: 'date', required: false },
-            { name: 'eventLocation', description: 'Event location', type: 'string', required: false },
-          ],
-          isActive: true,
-          language: 'en',
-        }
-      },
-      'photos-ready': {
-        'email': {
-          id: 'photos-ready-email',
-          name: 'Photos Ready Email',
-          type: 'photos-ready',
-          channel: 'email',
-          templates: {
-            subject: '📸 Your {{eventType}} photos are ready!',
-            text: `Hello {{clientName}},
-
-Great news! All your photos from {{eventName}} have been processed and are now available for download.
-
-Gallery highlights:
-• {{totalPhotoCount}} high-quality images
-• Full resolution downloads available
-• Professional editing complete
-
-Access your gallery: {{galleryUrl}}
-
-Thank you for choosing us for your special day!
-
-{{photographerName}}`,
-            html: `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Your Photos Are Ready</title>
-  <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .highlight { background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin: 20px 0; }
-    .button { display: inline-block; padding: 12px 24px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>📸 Your {{capitalize eventType}} Photos Are Ready!</h1>
-    
-    <p>Hello {{clientName}},</p>
-    
-    <p>Great news! All your photos from <strong>{{eventName}}</strong> have been processed and are now available for download.</p>
-    
-    <div class="highlight">
-      <h3>Gallery Highlights:</h3>
-      <ul>
-        <li><strong>{{totalPhotoCount}}</strong> {{pluralize totalPhotoCount 'high-quality image' 'high-quality images'}}</li>
-        <li>Full resolution downloads available</li>
-        <li>Professional editing complete</li>
-      </ul>
-    </div>
-    
-    <div style="text-align: center;">
-      <a href="{{galleryUrl}}" class="button">Access Your Gallery</a>
-    </div>
-    
-    <p>Thank you for choosing us for your special day!</p>
-    
-    <p>Best regards,<br>{{photographerName}}</p>
-  </div>
-</body>
-</html>
-            `
-          },
-          variables: [
-            { name: 'clientName', description: 'Client full name', type: 'string', required: true },
-            { name: 'eventName', description: 'Name of the event', type: 'string', required: true },
-            { name: 'eventType', description: 'Type of event (wedding, portrait, etc.)', type: 'string', required: true },
-            { name: 'totalPhotoCount', description: 'Number of photos in gallery', type: 'number', required: true },
-            { name: 'galleryUrl', description: 'Gallery access URL', type: 'url', required: true },
-            { name: 'photographerName', description: 'Photographer name', type: 'string', required: true },
-            { name: 'eventDate', description: 'Date of the event', type: 'date', required: false },
-          ],
-          isActive: true,
-          language: 'en',
-        }
-      }
-    };
-
-    const template = templates[type]?.[channel];
-    if (!template) return null;
-
-    return {
-      ...template,
-      settings: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as NotificationTemplate;
   }
 
   // Clear compiled template cache
   clearCache(): void {
     this.compiledTemplates.clear();
     console.log('📄 Template cache cleared');
+  }
+
+  // Health check for Payload CMS connection
+  async healthCheck(): Promise<boolean> {
+    return this.payloadClient.healthCheck();
+  }
+
+  // Get template variables from Payload CMS
+  async getTemplateVariables() {
+    return this.payloadClient.getTemplateVariables();
   }
 
   // Get cache statistics
