@@ -7,7 +7,7 @@ import { TemplateService } from '../../src/services/TemplateService.js';
 import { EmailRepository } from '../../src/services/repositories/EmailRepository.js';
 import { MultiChannelNotificationService } from '../../src/services/repositories/NotificationRepository.js';
 import { EventFactory, generateBatchEvents } from '../fixtures/events.js';
-import { mockResend, setupResendMock } from '../mocks/resend.js';
+import { mockResend, setupResendMock } from '../mocks/resend.mock.js';
 import {
   NotificationMessage,
   NotificationChannel,

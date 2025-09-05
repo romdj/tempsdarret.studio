@@ -11,7 +11,7 @@ import {
   NotificationPriority,
   DeliveryStatus
 } from '../../../../src/services/repositories/NotificationRepository.js';
-import { mockResend, setupResendMock } from '../../../mocks/resend.js';
+import { mockResend, setupResendMock } from '../../../mocks/resend.mock.js';
 
 // Mock the Resend import
 jest.mock('resend', () => ({

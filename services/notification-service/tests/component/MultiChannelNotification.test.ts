@@ -17,7 +17,7 @@ import {
   SendResult,
   DeliveryStatus
 } from '../../src/shared/contracts/notifications.types.js';
-import { mockResend, setupResendMock } from '../mocks/resend.js';
+import { mockResend, setupResendMock } from '../mocks/resend.mock.js';
 
 // Mock all repository implementations
 jest.mock('../../src/services/repositories/EmailRepository.js');

@@ -21,7 +21,7 @@ import {
   magicLinkExpiringEvent,
   EventFactory
 } from '../fixtures/events.js';
-import { mockResend, setupResendMock } from '../mocks/resend.js';
+import { mockResend, setupResendMock } from '../mocks/resend.mock.js';
 
 // Mock Kafka and external services
 const mockKafka = {
