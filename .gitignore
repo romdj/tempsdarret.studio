@@ -49,6 +49,7 @@ yarn.lock
 # Local development
 *.local
 # Temporary files
+tmp/
 *.tmp
 **/*.tmp
 
