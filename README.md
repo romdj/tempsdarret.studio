@@ -71,13 +71,29 @@ This platform provides a complete photography business solution:
 
 ## 🚀 Quick Start
 
+For detailed setup instructions including cross-platform support (Linux, macOS, Windows) and Docker-based development, see **[📋 Local Development Guide](run_locally.md)**.
+
 ### Prerequisites
 - **Node.js 24+** and **npm 10+** (check with `node --version`)
-- **MongoDB** (local installation or Atlas cloud)
-- **Docker & Docker Compose** (for production deployment)
+- **Docker & Docker Compose** (recommended for easy setup)
 - **Git** for version control
 
-### Development Setup
+### Quick Setup with Docker (Recommended)
+```bash
+# Clone and setup
+git clone <repository-url>
+cd tempsdarret-studio
+cp .env.example .env
+
+# Start all services
+docker-compose up -d
+
+# Access the platform
+open http://localhost:5173  # Frontend
+open http://localhost:3001  # Admin UI
+```
+
+### Manual Development Setup
 
 1. **Clone and Install Dependencies**
    ```bash
