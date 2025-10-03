@@ -54,9 +54,10 @@ Implement the notification service using Resend.dev. & payload cms (mongodb, sel
 
 
 did you manage to do the payloadcms implementation?
-<!-- TODO -->
 
 Can you create a new file that is called run_locally.md ? The idea is for the whole project to be run locally whether that's on linux (ubuntu), mac or windows 10+. This wouldn't be just for test but rather to do an on-prem run of the solution. If there are tools to make it an optimal build that's also fine. Then in the readme.md, please add a section linking to it.
+
+<!-- TODO -->
 
 one thing I really enjoy in gh pipelines is to see in one page all the builds, and not having to navigate on multiple build scripts. can you ensure that this would be the case?
 

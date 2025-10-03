@@ -17,6 +17,10 @@ export class ShootRepository {
     return await ShootModel.findOne({ id: shootId }).exec();
   }
 
+  async findByReference(reference: string): Promise<IShootDocument | null> {
+    return await ShootModel.findOne({ reference }).exec();
+  }
+
   async updateById(shootId: string, updateData: UpdateShootRequest): Promise<IShootDocument | null> {
     return await ShootModel.findOneAndUpdate(
       { id: shootId },
