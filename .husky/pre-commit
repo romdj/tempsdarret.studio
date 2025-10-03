@@ -4,7 +4,7 @@
 
 echo "🔍 Running pre-commit quality checks..."
 
-# Run lint (allow to fail for now - some services need tsconfig)
-npm run lint || echo "⚠️  Linting issues detected - please fix before pushing"
+# Run lint (warning mode until existing lint errors are fixed)
+npm run lint || echo "⚠️  Linting issues detected - please address in future commits"
 
 echo "✅ Pre-commit checks completed!"
