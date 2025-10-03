@@ -79,7 +79,9 @@ export const createFileStoragePath = (shootId: string, resolution: string, filen
 };
 
 export const extractFileExtension = (filename: string): string => {
-  return filename.split('.').pop()?.toLowerCase() || '';
+  const parts = filename.split('.');
+  const extension = parts.pop()?.toLowerCase();
+  return extension ?? '';
 };
 
 export const isImageFile = (filename: string): boolean => {

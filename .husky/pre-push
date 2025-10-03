@@ -1,1 +1,15 @@
 #!/bin/sh
+# Pre-push quality gates
+# Runs tests and builds to ensure push won't break CI/CD
+
+echo "🧪 Running pre-push quality checks..."
+
+# Run all tests
+echo "Running tests..."
+npm run test
+
+# Run builds to ensure everything compiles
+echo "Running builds..."
+npm run build
+
+echo "✅ Pre-push checks passed! Safe to push."

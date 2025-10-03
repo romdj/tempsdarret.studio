@@ -17,7 +17,7 @@
     "test:service-integration": "vitest run --reporter=verbose tests/integration",
     "test:integration": "vitest run --reporter=verbose tests/integration",
     "test:contract": "vitest run --reporter=verbose tests/contract",
-    "lint": "eslint src/**/*.{js,ts}",
+    "lint": "eslint src --ext .ts",
     "check": "tsc --noEmit"
   },
   "dependencies": {

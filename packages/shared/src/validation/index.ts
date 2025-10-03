@@ -1,4 +1,4 @@
-import { FILE_UPLOAD_LIMITS, MAGIC_LINK_CONFIG } from '../types/index.js';
+import { FILE_UPLOAD_LIMITS } from '../types/index.js';
 import { isValidEmail, isExpired } from '../utils/index.js';
 
 export interface ValidationResult {
@@ -42,7 +42,7 @@ export const validateFileUpload = (file: {
     ...FILE_UPLOAD_LIMITS.SUPPORTED_RAW_TYPES
   ];
   
-  if (!supportedTypes.includes(file.type as any)) {
+  if (!supportedTypes.includes(file.type)) {
     errors.push(`Unsupported file type: ${file.type}`);
   }
   
