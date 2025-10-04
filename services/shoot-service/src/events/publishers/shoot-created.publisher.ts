@@ -20,8 +20,12 @@ export class ShootCreatedPublisher {
         title: shoot.title,
         status: 'planned',
         createdAt: shoot.createdAt.toISOString(),
-        ...(shoot.scheduledDate && { scheduledDate: shoot.scheduledDate.toISOString() }),
-        ...(shoot.location && { location: shoot.location })
+        ...(shoot.scheduledDate
+          ? { scheduledDate: shoot.scheduledDate.toISOString() }
+          : {}),
+        ...(shoot.location
+          ? { location: shoot.location }
+          : {})
       }
     };
 

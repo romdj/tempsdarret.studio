@@ -10,48 +10,54 @@ import { ZodError } from 'zod';
 export class GalleryHandlers {
   constructor(private readonly galleryService: GalleryService) {}
 
-  async createGallery(request: FastifyRequest<{ Body: CreateGalleryRequest }>, reply: FastifyReply) {
+  async createGallery(
+    request: FastifyRequest<{ Body: CreateGalleryRequest }>,
+    reply: FastifyReply
+  ): Promise<FastifyReply> {
     try {
       const gallery = await this.galleryService.createGallery(request.body);
 
-      reply.code(201).send({
+      return reply.code(201).send({
         data: gallery,
         message: 'Gallery created successfully'
       });
     } catch (error) {
       if (error instanceof ZodError) {
-        reply.code(400).send({
+        return reply.code(400).send({
           code: 400,
           message: 'Validation error',
-          details: error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ')
+          details: error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
         });
-        return;
       }
 
+      // eslint-disable-next-line no-console
       console.error('Failed to create gallery:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: 'Failed to create gallery'
       });
     }
   }
 
-  async getGallery(request: FastifyRequest<{ Params: { galleryId: string } }>, reply: FastifyReply) {
+  async getGallery(
+    request: FastifyRequest<{ Params: { galleryId: string } }>,
+    reply: FastifyReply
+  ): Promise<FastifyReply> {
     try {
       const gallery = await this.galleryService.getGallery(request.params.galleryId);
 
-      if (!gallery) {
-        reply.code(404).send({
+      if (gallery === null) {
+        return reply.code(404).send({
           code: 404,
           message: 'Gallery not found'
         });
-        return;
       }
 
-      reply.send({ data: gallery });
+      return reply.send({ data: gallery });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to get gallery:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: 'Failed to get gallery'
       });
@@ -61,75 +67,82 @@ export class GalleryHandlers {
   async updateGallery(
     request: FastifyRequest<{ Params: { galleryId: string }, Body: Partial<CreateGalleryRequest> }>,
     reply: FastifyReply
-  ) {
+  ): Promise<FastifyReply> {
     try {
       const gallery = await this.galleryService.updateGallery(request.params.galleryId, request.body);
 
-      if (!gallery) {
-        reply.code(404).send({
+      if (gallery === null) {
+        return reply.code(404).send({
           code: 404,
           message: 'Gallery not found'
         });
-        return;
       }
 
-      reply.send({
+      return reply.send({
         data: gallery,
         message: 'Gallery updated successfully'
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to update gallery:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: 'Failed to update gallery'
       });
     }
   }
 
-  async listGalleries(request: FastifyRequest<{ Querystring: GalleryQuery }>, reply: FastifyReply) {
+  async listGalleries(
+    request: FastifyRequest<{ Querystring: GalleryQuery }>,
+    reply: FastifyReply
+  ): Promise<FastifyReply> {
     try {
       const { galleries, total } = await this.galleryService.listGalleries(request.query);
 
       const { page, limit } = request.query;
-      const totalPages = Math.ceil(total / (limit || 20));
+      const totalPages = Math.ceil(total / (limit ?? 20));
 
-      reply.send({
+      return reply.send({
         data: galleries,
         meta: {
-          page: page || 1,
-          limit: limit || 20,
+          page: page ?? 1,
+          limit: limit ?? 20,
           total,
           totalPages
         }
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to list galleries:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: 'Failed to list galleries'
       });
     }
   }
 
-  async deleteGallery(request: FastifyRequest<{ Params: { galleryId: string } }>, reply: FastifyReply) {
+  async deleteGallery(
+    request: FastifyRequest<{ Params: { galleryId: string } }>,
+    reply: FastifyReply
+  ): Promise<FastifyReply> {
     try {
       const deleted = await this.galleryService.deleteGallery(request.params.galleryId);
 
       if (!deleted) {
-        reply.code(404).send({
+        return reply.code(404).send({
           code: 404,
           message: 'Gallery not found'
         });
-        return;
       }
 
-      reply.send({
+      return reply.send({
         data: { deleted: true },
         message: 'Gallery deleted successfully'
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to delete gallery:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: 'Failed to delete gallery'
       });
@@ -139,31 +152,36 @@ export class GalleryHandlers {
   async addImagesToGallery(
     request: FastifyRequest<{ Params: { galleryId: string }, Body: AddGalleryImagesRequest }>,
     reply: FastifyReply
-  ) {
+  ): Promise<FastifyReply> {
     try {
       const images = await this.galleryService.addImagesToGallery(request.params.galleryId, request.body);
 
-      reply.code(201).send({
+      return reply.code(201).send({
         data: images,
         message: 'Images added to gallery successfully'
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to add images to gallery:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: 'Failed to add images to gallery'
       });
     }
   }
 
-  async getGalleryImages(request: FastifyRequest<{ Params: { galleryId: string } }>, reply: FastifyReply) {
+  async getGalleryImages(
+    request: FastifyRequest<{ Params: { galleryId: string } }>,
+    reply: FastifyReply
+  ): Promise<FastifyReply> {
     try {
       const images = await this.galleryService.getGalleryImages(request.params.galleryId);
 
-      reply.send({ data: images });
+      return reply.send({ data: images });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to get gallery images:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: 'Failed to get gallery images'
       });

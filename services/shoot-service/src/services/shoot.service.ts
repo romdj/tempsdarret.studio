@@ -1,7 +1,14 @@
 import { ShootRepository } from '../persistence/shoot.repository';
 import { ShootCreatedPublisher } from '../events/publishers/shoot-created.publisher';
-import { CreateShootRequestSchema, UpdateShootRequestSchema, ShootQuerySchema, type CreateShootRequest, type UpdateShootRequest, type ShootQuery, type Shoot } from '@tempsdarret/shared/schemas/shoot.schema';
-import { ZodError } from 'zod';
+import {
+  CreateShootRequestSchema,
+  UpdateShootRequestSchema,
+  ShootQuerySchema,
+  type CreateShootRequest,
+  type UpdateShootRequest,
+  type ShootQuery,
+  type Shoot
+} from '@tempsdarret/shared/schemas/shoot.schema';
 
 export class ShootService {
   constructor(

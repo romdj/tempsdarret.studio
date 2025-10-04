@@ -6,7 +6,7 @@ import { UserRepository } from './persistence/user.repository';
 import { KafkaEventPublisher } from './shared/messaging/event-publisher';
 import { registerUserRoutes } from './handlers/user.routes';
 
-async function buildApp() {
+async function buildApp(): Promise<ReturnType<typeof fastify>> {
   const app = fastify({ logger: true });
 
   // Initialize dependencies
@@ -21,17 +21,19 @@ async function buildApp() {
   return app;
 }
 
-async function start() {
+async function start(): Promise<void> {
   try {
     const app = await buildApp();
-    
+
     await app.listen({
       port: appConfig.port,
       host: appConfig.host
     });
 
+    // eslint-disable-next-line no-console
     console.log(`${appConfig.serviceName} running on http://${appConfig.host}:${appConfig.port}`);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error starting server:', error);
     process.exit(1);
   }

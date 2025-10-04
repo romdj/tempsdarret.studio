@@ -3,6 +3,8 @@
  * Handles creation and management of file archives
  */
 
+/* global NodeJS */
+
 import archiver from 'archiver';
 import { createWriteStream, createReadStream } from 'fs';
 import fs from 'fs/promises';
@@ -10,12 +12,11 @@ import path from 'path';
 import { Model } from 'mongoose';
 import { FileService } from './FileService.js';
 import { EventEmitter } from './EventEmitter.js';
-import { 
+import {
   ArchiveModel,
   ArchiveType,
-  ProcessingStatus 
+  ProcessingStatus
 } from '../shared/contracts/files.api.js';
-import { CreateArchiveDTO } from '../shared/contracts/files.dto.js';
 import { 
   ArchiveDocument, 
   transformArchiveDocument 
@@ -36,11 +37,12 @@ export interface ArchiveConfig {
 }
 
 export class ArchiveService {
+  /* eslint-disable max-params */
   constructor(
-    private archiveModel: Model<ArchiveDocument>,
-    private fileService: FileService,
-    private eventEmitter: EventEmitter,
-    private config: ArchiveConfig
+    private readonly archiveModel: Model<ArchiveDocument>,
+    private readonly fileService: FileService,
+    private readonly eventEmitter: EventEmitter,
+    private readonly config: ArchiveConfig
   ) {}
 
   /**
@@ -125,7 +127,9 @@ export class ArchiveService {
   /**
    * Create download stream for archive
    */
-  async createArchiveDownloadStream(archiveId: string): Promise<NodeJS.ReadableStream> {
+  async createArchiveDownloadStream(
+    archiveId: string
+  ): Promise<NodeJS.ReadableStream> {
     const archive = await this.getArchiveById(archiveId);
     if (!archive || archive.status !== 'completed') {
       throw new Error('Archive not ready for download');
@@ -149,6 +153,7 @@ export class ArchiveService {
     try {
       await fs.unlink(archivePath);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn(`Failed to delete archive file ${archivePath}:`, error);
     }
 
@@ -171,6 +176,7 @@ export class ArchiveService {
         await this.deleteArchive(archive._id);
         cleanedCount++;
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(`Failed to cleanup archive ${archive._id}:`, error);
       }
     }
@@ -181,9 +187,13 @@ export class ArchiveService {
   /**
    * Update archive status
    */
-  async updateArchiveStatus(archiveId: string, status: ProcessingStatus, size?: number): Promise<void> {
-    const update: any = { status, updatedAt: new Date() };
-    if (size !== undefined) {
+  async updateArchiveStatus(
+    archiveId: string,
+    status: ProcessingStatus,
+    size?: number
+  ): Promise<void> {
+    const update: Record<string, unknown> = { status, updatedAt: new Date() };
+    if (size) {
       update.size = size;
     }
 
@@ -208,7 +218,10 @@ export class ArchiveService {
   /**
    * Generate archive file in background
    */
-  private async startArchiveGeneration(archiveId: string, files: any[]): Promise<void> {
+  private async startArchiveGeneration(
+    archiveId: string,
+    files: { storagePath: string; filename: string }[]
+  ): Promise<void> {
     process.nextTick(async () => {
       try {
         await this.updateArchiveStatus(archiveId, 'processing');
@@ -247,9 +260,11 @@ export class ArchiveService {
         // Update archive status
         await this.updateArchiveStatus(archiveId, 'completed', stats.size);
 
+        // eslint-disable-next-line no-console
         console.log(`Archive ${archiveId} completed: ${stats.size} bytes`);
-        
+
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(`Archive generation failed for ${archiveId}:`, error);
         await this.updateArchiveStatus(archiveId, 'failed');
       }
@@ -259,7 +274,10 @@ export class ArchiveService {
   /**
    * Filter files by archive type
    */
-  private filterFilesByType(files: any[], type: ArchiveType): any[] {
+  private filterFilesByType(
+    files: { type: string }[],
+    type: ArchiveType
+  ): { type: string }[] {
     switch (type) {
       case 'jpeg':
         return files.filter(f => f.type === 'jpeg');

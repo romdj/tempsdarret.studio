@@ -1,8 +1,35 @@
-import { 
+import {
   CreateInvitationRequest,
   InvitationQuery,
-  Invitation 
+  Invitation
 } from '@tempsdarret/shared/schemas/invite.schema';
+
+interface MongooseDocument {
+  toObject: () => Invitation;
+}
+
+interface MongooseModel {
+  create: (data: unknown) => Promise<MongooseDocument>;
+  findOne: (filter: Record<string, unknown>) => Promise<MongooseDocument | null>;
+  find: (filter: Record<string, unknown>) => {
+    skip: (n: number) => {
+      limit: (n: number) => {
+        sort: (options: Record<string, unknown>) => Promise<MongooseDocument[]>;
+      };
+    };
+  };
+  findOneAndUpdate: (
+    filter: Record<string, unknown>,
+    updates: Record<string, unknown>,
+    options: Record<string, unknown>
+  ) => Promise<MongooseDocument | null>;
+  deleteOne: (filter: Record<string, unknown>) => Promise<{ deletedCount: number }>;
+  updateMany: (
+    filter: Record<string, unknown>,
+    updates: Record<string, unknown>
+  ) => Promise<{ modifiedCount: number }>;
+  countDocuments: (filter: Record<string, unknown>) => Promise<number>;
+}
 
 export interface IInvitationRepository {
   create(invitation: CreateInvitationRequest): Promise<Invitation>;
@@ -17,7 +44,7 @@ export interface IInvitationRepository {
 }
 
 export class InvitationRepository implements IInvitationRepository {
-  constructor(private model: any) {}
+  constructor(private readonly model: MongooseModel) {}
 
   async create(invitation: CreateInvitationRequest): Promise<Invitation> {
     const created = await this.model.create({
@@ -33,17 +60,20 @@ export class InvitationRepository implements IInvitationRepository {
 
   async findById(id: string): Promise<Invitation | null> {
     const invitation = await this.model.findOne({ id });
-    return invitation ? invitation.toObject() : null;
+    if (invitation === null) {
+      return null;
+    }
+    return invitation.toObject();
   }
 
   async findByShootId(shootId: string): Promise<Invitation[]> {
-    const invitations = await this.model.find({ shootId });
-    return invitations.map((inv: any) => inv.toObject());
+    const invitations = await this.model.find({ shootId }).skip(0).limit(1000).sort({ createdAt: -1 });
+    return invitations.map((inv) => inv.toObject());
   }
 
   async findByEmail(email: string): Promise<Invitation[]> {
-    const invitations = await this.model.find({ clientEmail: email });
-    return invitations.map((inv: any) => inv.toObject());
+    const invitations = await this.model.find({ clientEmail: email }).skip(0).limit(1000).sort({ createdAt: -1 });
+    return invitations.map((inv) => inv.toObject());
   }
 
   async update(id: string, updates: Partial<Invitation>): Promise<Invitation> {
@@ -52,19 +82,32 @@ export class InvitationRepository implements IInvitationRepository {
       { ...updates, updatedAt: new Date() },
       { new: true }
     );
+    if (updated === null) {
+      throw new Error('Invitation not found');
+    }
     return updated.toObject();
   }
 
   async list(query: InvitationQuery): Promise<Invitation[]> {
-    const filter: any = {};
-    
-    if (query.shootId) filter.shootId = query.shootId;
-    if (query.clientEmail) filter.clientEmail = query.clientEmail;
-    if (query.status) filter.status = query.status;
+    const filter: Record<string, unknown> = {};
+
+    if (query.shootId) {
+      filter.shootId = query.shootId;
+    }
+    if (query.clientEmail) {
+      filter.clientEmail = query.clientEmail;
+    }
+    if (query.status) {
+      filter.status = query.status;
+    }
     if (query.fromDate || query.toDate) {
       filter.createdAt = {};
-      if (query.fromDate) filter.createdAt.$gte = query.fromDate;
-      if (query.toDate) filter.createdAt.$lte = query.toDate;
+      if (query.fromDate) {
+        (filter.createdAt as Record<string, unknown>).$gte = query.fromDate;
+      }
+      if (query.toDate) {
+        (filter.createdAt as Record<string, unknown>).$lte = query.toDate;
+      }
     }
 
     const skip = (query.page - 1) * query.limit;
@@ -74,19 +117,29 @@ export class InvitationRepository implements IInvitationRepository {
       .limit(query.limit)
       .sort({ createdAt: -1 });
 
-    return invitations.map((inv: any) => inv.toObject());
+    return invitations.map((inv) => inv.toObject());
   }
 
   async count(query: InvitationQuery): Promise<number> {
-    const filter: any = {};
-    
-    if (query.shootId) filter.shootId = query.shootId;
-    if (query.clientEmail) filter.clientEmail = query.clientEmail;
-    if (query.status) filter.status = query.status;
+    const filter: Record<string, unknown> = {};
+
+    if (query.shootId) {
+      filter.shootId = query.shootId;
+    }
+    if (query.clientEmail) {
+      filter.clientEmail = query.clientEmail;
+    }
+    if (query.status) {
+      filter.status = query.status;
+    }
     if (query.fromDate || query.toDate) {
       filter.createdAt = {};
-      if (query.fromDate) filter.createdAt.$gte = query.fromDate;
-      if (query.toDate) filter.createdAt.$lte = query.toDate;
+      if (query.fromDate) {
+        (filter.createdAt as Record<string, unknown>).$gte = query.fromDate;
+      }
+      if (query.toDate) {
+        (filter.createdAt as Record<string, unknown>).$lte = query.toDate;
+      }
     }
 
     return this.model.countDocuments(filter);

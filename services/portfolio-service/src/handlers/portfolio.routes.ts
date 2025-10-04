@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { PortfolioHandlers } from './portfolio.handlers.js';
 
-export function registerPortfolioRoutes(fastify: FastifyInstance, handlers: PortfolioHandlers) {
+export function registerPortfolioRoutes(fastify: FastifyInstance, handlers: PortfolioHandlers): void {
   // Portfolio CRUD operations
   fastify.post('/portfolios', handlers.createPortfolio.bind(handlers));
   fastify.get('/portfolios', handlers.listPortfolios.bind(handlers));

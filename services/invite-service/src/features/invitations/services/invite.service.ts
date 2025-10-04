@@ -1,4 +1,7 @@
-import { 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable max-params */
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
+import {
   CreateInvitationRequest,
   SendInvitationRequest,
   InvitationQuery,
@@ -8,10 +11,10 @@ import { EmailSchema } from '@tempsdarret/shared/schemas/base.schema';
 
 export class InviteService {
   constructor(
-    private invitationRepository: any,
-    private magicLinkRepository: any,
-    private eventPublisher: any,
-    private emailService: any
+    private readonly invitationRepository: any,
+    private readonly magicLinkRepository: any,
+    private readonly eventPublisher: any,
+    private readonly emailService: any
   ) {}
 
   async handleUserCreatedEvent(event: any): Promise<Invitation> {
@@ -91,7 +94,13 @@ export class InviteService {
     return this.invitationRepository.create(request);
   }
 
-  async listInvitations(query: InvitationQuery) {
+  async listInvitations(query: InvitationQuery): Promise<{
+    invitations: Invitation[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const invitations = await this.invitationRepository.list(query);
     const total = await this.invitationRepository.count(query);
     const totalPages = Math.ceil(total / query.limit);

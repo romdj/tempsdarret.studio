@@ -12,7 +12,7 @@ export interface UserCreatedEvent {
 export interface UserUpdatedEvent {
   eventType: 'user.updated';
   userId: string;
-  changes: Record<string, any>;
+  changes: Record<string, unknown>;
   timestamp: string;
 }
 

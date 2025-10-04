@@ -32,7 +32,7 @@ export class ShootAccessService {
     }
 
     // Check if client access is enabled
-    if (!shoot.access?.allowClientAccess) {
+    if (shoot.access?.allowClientAccess !== true) {
       return {
         allowed: false,
         shootId: shoot.id,
@@ -41,7 +41,10 @@ export class ShootAccessService {
     }
 
     // Check if access has expired
-    if (shoot.access.expiresAt && new Date(shoot.access.expiresAt) < new Date()) {
+    if (
+      shoot.access.expiresAt &&
+      new Date(shoot.access.expiresAt) < new Date()
+    ) {
       return {
         allowed: false,
         shootId: shoot.id,
@@ -64,11 +67,11 @@ export class ShootAccessService {
     };
   }
 
-  private async logAccess(shootId: string, token?: string): Promise<void> {
+  private async logAccess(shootId: string, _token?: string): Promise<void> {
     // Update last access timestamp
     await this.shootRepository.updateById(shootId, {
       'status.lastClientAccess': new Date()
-    } as any);
+    } as Record<string, unknown>);
 
     // TODO: Publish access event for analytics
   }

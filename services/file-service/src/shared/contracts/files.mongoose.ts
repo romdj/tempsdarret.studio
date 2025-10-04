@@ -4,7 +4,7 @@
  */
 
 import { Schema, Document, Model } from 'mongoose';
-import { FileModel, ArchiveModel, FileType, ProcessingStatus, ArchiveType } from './files.api.js';
+import { FileModel, ArchiveModel } from './files.api.js';
 
 // File document interface
 export interface FileDocument extends Omit<FileModel, 'id'>, Document {
@@ -109,11 +109,11 @@ chunkSchema.index({ fileId: 1, chunkIndex: 1 }, { unique: true });
 
 // Pre-save middleware for storage path generation
 fileSchema.pre('save', function(next) {
-  if (this.isNew && !this.storagePath) {
+  if (this.isNew && this.storagePath === undefined) {
     const date = new Date();
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    const fileExtension = this.filename.split('.').pop() || 'bin';
+    const fileExtension = this.filename.split('.').pop() ?? 'bin';
     this.storagePath = `/data/files/${year}/${month}/${this._id}.${fileExtension}`;
   }
   next();

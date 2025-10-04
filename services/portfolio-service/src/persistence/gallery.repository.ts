@@ -34,19 +34,25 @@ export class GalleryRepository {
   }
 
   async findMany(query: GalleryQuery): Promise<{ galleries: IGalleryDocument[], total: number }> {
-    const filter: any = {};
-    if (query.portfolioId) filter.portfolioId = query.portfolioId;
-    if (query.shootId) filter.shootId = query.shootId;
-    if (query.type) filter.type = query.type;
-    if (query.isPublished !== undefined) filter.isPublished = query.isPublished;
+    const filter: Record<string, unknown> = {};
+    if (query.portfolioId) {
+      filter.portfolioId = query.portfolioId;
+    }
+    if (query.shootId) {
+      filter.shootId = query.shootId;
+    }
+    if (query.type) {
+      filter.type = query.type;
+    }
+    if (query.isPublished !== undefined) {filter.isPublished = query.isPublished;}
 
-    const skip = ((query.page || 1) - 1) * (query.limit || 20);
+    const skip = ((query.page ?? 1) - 1) * (query.limit ?? 20);
 
     const [galleries, total] = await Promise.all([
       GalleryModel.find(filter)
         .sort({ displayOrder: 1, createdAt: -1 })
         .skip(skip)
-        .limit(query.limit || 20)
+        .limit(query.limit ?? 20)
         .exec(),
       GalleryModel.countDocuments(filter).exec()
     ]);
@@ -61,7 +67,7 @@ export class GalleryRepository {
 
   // Gallery Images
   async addImages(galleryId: string, request: AddGalleryImagesRequest): Promise<IGalleryImageDocument[]> {
-    const startOrder = request.startOrder || 0;
+    const startOrder = request.startOrder ?? 0;
 
     const imageDocs = request.fileIds.map((fileId, index) => ({
       id: generateGalleryImageId(),

@@ -1,5 +1,5 @@
 import { Schema, model, Document } from 'mongoose';
-import { User, UserRole } from './users.dto';
+import { User } from './users.dto';
 
 // Mongoose document interface
 export interface UserDocument extends Omit<User, 'id' | 'createdAt' | 'updatedAt'>, Document {
@@ -34,7 +34,7 @@ const userSchema = new Schema<UserDocument>({
   profilePictureUrl: {
     type: String,
     validate: {
-      validator: function(v: string) {
+      validator: function(v: string): boolean {
         return !v || /^https?:\/\/.+/.test(v);
       },
       message: 'Profile picture URL must be a valid URL'
@@ -48,7 +48,7 @@ const userSchema = new Schema<UserDocument>({
 }, {
   timestamps: true,
   toJSON: {
-    transform: function(doc, ret) {
+    transform: function(doc, ret): Record<string, unknown> {
       ret.id = ret._id;
       delete ret._id;
       delete ret.__v;

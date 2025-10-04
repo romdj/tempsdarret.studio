@@ -28,32 +28,32 @@ export interface FileServiceConfig {
 }
 
 export const config: FileServiceConfig = {
-  port: parseInt(process.env.PORT || '3003'),
-  mongoUrl: process.env.MONGO_URL || 'mongodb://localhost:27017/file-service',
-  kafkaUrl: process.env.KAFKA_URL || 'localhost:9092',
-  
+  port: parseInt(process.env.PORT ?? '3003'),
+  mongoUrl: process.env.MONGO_URL ?? 'mongodb://localhost:27017/file-service',
+  kafkaUrl: process.env.KAFKA_URL ?? 'localhost:9092',
+
   // Storage configuration per ADR-027
   storage: {
-    basePath: process.env.STORAGE_BASE_PATH || '/data/files',
-    chunkSize: parseInt(process.env.CHUNK_SIZE || '261120'), // 255KB (GridFS default)
-    largeFileThreshold: parseInt(process.env.LARGE_FILE_THRESHOLD || '26214400'), // 25MB
-    chunkTTLHours: parseInt(process.env.CHUNK_TTL_HOURS || '24'), // 24 hours
+    basePath: process.env.STORAGE_BASE_PATH ?? '/data/files',
+    chunkSize: parseInt(process.env.CHUNK_SIZE ?? '261120'), // 255KB (GridFS default)
+    largeFileThreshold: parseInt(process.env.LARGE_FILE_THRESHOLD ?? '26214400'), // 25MB
+    chunkTTLHours: parseInt(process.env.CHUNK_TTL_HOURS ?? '24'), // 24 hours
   },
-  
+
   // Processing configuration
   processing: {
-    thumbnailSize: parseInt(process.env.THUMBNAIL_SIZE || '300'),
-    thumbnailQuality: parseInt(process.env.THUMBNAIL_QUALITY || '85'),
+    thumbnailSize: parseInt(process.env.THUMBNAIL_SIZE ?? '300'),
+    thumbnailQuality: parseInt(process.env.THUMBNAIL_QUALITY ?? '85'),
     enableMetadataExtraction: process.env.ENABLE_METADATA_EXTRACTION === 'true',
-    maxProcessingTimeMs: parseInt(process.env.MAX_PROCESSING_TIME_MS || '30000'), // 30 seconds
+    maxProcessingTimeMs: parseInt(process.env.MAX_PROCESSING_TIME_MS ?? '30000'), // 30 seconds
   },
-  
+
   // Archive configuration
   archive: {
-    basePath: process.env.ARCHIVE_BASE_PATH || '/data',
-    maxArchiveSize: parseInt(process.env.MAX_ARCHIVE_SIZE || '53687091200'), // 50GB
-    defaultExpirationDays: parseInt(process.env.ARCHIVE_EXPIRATION_DAYS || '7'),
-    compressionLevel: parseInt(process.env.COMPRESSION_LEVEL || '6'),
+    basePath: process.env.ARCHIVE_BASE_PATH ?? '/data',
+    maxArchiveSize: parseInt(process.env.MAX_ARCHIVE_SIZE ?? '53687091200'), // 50GB
+    defaultExpirationDays: parseInt(process.env.ARCHIVE_EXPIRATION_DAYS ?? '7'),
+    compressionLevel: parseInt(process.env.COMPRESSION_LEVEL ?? '6'),
   },
 };
 

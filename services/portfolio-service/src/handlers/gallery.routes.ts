@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { GalleryHandlers } from './gallery.handlers.js';
 
-export function registerGalleryRoutes(fastify: FastifyInstance, handlers: GalleryHandlers) {
+export function registerGalleryRoutes(fastify: FastifyInstance, handlers: GalleryHandlers): void {
   // Gallery CRUD operations
   fastify.post('/galleries', handlers.createGallery.bind(handlers));
   fastify.get('/galleries', handlers.listGalleries.bind(handlers));

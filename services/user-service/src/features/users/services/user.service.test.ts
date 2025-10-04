@@ -1,14 +1,16 @@
+/* eslint-disable max-lines-per-function */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { UserService } from './user.service';
 import { UserRepository } from '../repositories/user.repository';
 import { EventPublisher } from '../../../events/event-publisher';
 import { CreateUserRequest, UpdateUserRequest } from '@tempsdarret/shared/schemas/user.schema';
+import type { MockedObject } from 'vitest';
 
 // Unit tests for UserService class
 describe('UserService Unit Tests', () => {
   let userService: UserService;
-  let mockRepository: jest.Mocked<UserRepository>;
-  let mockEventPublisher: jest.Mocked<EventPublisher>;
+  let mockRepository: MockedObject<UserRepository>;
+  let mockEventPublisher: MockedObject<EventPublisher>;
 
   beforeEach(() => {
     // Create mocked dependencies

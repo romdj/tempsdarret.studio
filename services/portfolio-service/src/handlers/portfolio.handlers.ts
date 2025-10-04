@@ -13,71 +13,77 @@ export class PortfolioHandlers {
   async createPortfolio(
     request: FastifyRequest<{ Body: CreatePortfolioRequest & { photographerId: string } }>,
     reply: FastifyReply
-  ) {
+  ): Promise<FastifyReply> {
     try {
       const { photographerId, ...portfolioData } = request.body;
       const portfolio = await this.portfolioService.createPortfolio(photographerId, portfolioData);
 
-      reply.code(201).send({
+      return reply.code(201).send({
         data: portfolio,
         message: 'Portfolio created successfully'
       });
     } catch (error) {
       if (error instanceof ZodError) {
-        reply.code(400).send({
+        return reply.code(400).send({
           code: 400,
           message: 'Validation error',
-          details: error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ')
+          details: error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
         });
-        return;
       }
 
+      // eslint-disable-next-line no-console
       console.error('Failed to create portfolio:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: error instanceof Error ? error.message : 'Failed to create portfolio'
       });
     }
   }
 
-  async getPortfolio(request: FastifyRequest<{ Params: { portfolioId: string } }>, reply: FastifyReply) {
+  async getPortfolio(
+    request: FastifyRequest<{ Params: { portfolioId: string } }>,
+    reply: FastifyReply
+  ): Promise<FastifyReply> {
     try {
       const portfolio = await this.portfolioService.getPortfolio(request.params.portfolioId);
 
-      if (!portfolio) {
-        reply.code(404).send({
+      if (portfolio === null) {
+        return reply.code(404).send({
           code: 404,
           message: 'Portfolio not found'
         });
-        return;
       }
 
-      reply.send({ data: portfolio });
+      return reply.send({ data: portfolio });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to get portfolio:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: 'Failed to get portfolio'
       });
     }
   }
 
-  async getPortfolioBySlug(request: FastifyRequest<{ Params: { urlSlug: string } }>, reply: FastifyReply) {
+  async getPortfolioBySlug(
+    request: FastifyRequest<{ Params: { urlSlug: string } }>,
+    reply: FastifyReply
+  ): Promise<FastifyReply> {
     try {
       const portfolio = await this.portfolioService.getPortfolioBySlug(request.params.urlSlug);
 
-      if (!portfolio) {
-        reply.code(404).send({
+      if (portfolio === null) {
+        return reply.code(404).send({
           code: 404,
           message: 'Portfolio not found'
         });
-        return;
       }
 
-      reply.send({ data: portfolio });
+      return reply.send({ data: portfolio });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to get portfolio by slug:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: 'Failed to get portfolio'
       });
@@ -87,84 +93,90 @@ export class PortfolioHandlers {
   async updatePortfolio(
     request: FastifyRequest<{ Params: { portfolioId: string }, Body: UpdatePortfolioRequest }>,
     reply: FastifyReply
-  ) {
+  ): Promise<FastifyReply> {
     try {
       const portfolio = await this.portfolioService.updatePortfolio(request.params.portfolioId, request.body);
 
-      if (!portfolio) {
-        reply.code(404).send({
+      if (portfolio === null) {
+        return reply.code(404).send({
           code: 404,
           message: 'Portfolio not found'
         });
-        return;
       }
 
-      reply.send({
+      return reply.send({
         data: portfolio,
         message: 'Portfolio updated successfully'
       });
     } catch (error) {
       if (error instanceof ZodError) {
-        reply.code(400).send({
+        return reply.code(400).send({
           code: 400,
           message: 'Validation error',
-          details: error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ')
+          details: error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
         });
-        return;
       }
 
+      // eslint-disable-next-line no-console
       console.error('Failed to update portfolio:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: error instanceof Error ? error.message : 'Failed to update portfolio'
       });
     }
   }
 
-  async listPortfolios(request: FastifyRequest<{ Querystring: PortfolioQuery }>, reply: FastifyReply) {
+  async listPortfolios(
+    request: FastifyRequest<{ Querystring: PortfolioQuery }>,
+    reply: FastifyReply
+  ): Promise<FastifyReply> {
     try {
       const { portfolios, total } = await this.portfolioService.listPortfolios(request.query);
 
       const { page, limit } = request.query;
-      const totalPages = Math.ceil(total / (limit || 20));
+      const totalPages = Math.ceil(total / (limit ?? 20));
 
-      reply.send({
+      return reply.send({
         data: portfolios,
         meta: {
-          page: page || 1,
-          limit: limit || 20,
+          page: page ?? 1,
+          limit: limit ?? 20,
           total,
           totalPages
         }
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to list portfolios:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: 'Failed to list portfolios'
       });
     }
   }
 
-  async deletePortfolio(request: FastifyRequest<{ Params: { portfolioId: string } }>, reply: FastifyReply) {
+  async deletePortfolio(
+    request: FastifyRequest<{ Params: { portfolioId: string } }>,
+    reply: FastifyReply
+  ): Promise<FastifyReply> {
     try {
       const deleted = await this.portfolioService.deletePortfolio(request.params.portfolioId);
 
       if (!deleted) {
-        reply.code(404).send({
+        return reply.code(404).send({
           code: 404,
           message: 'Portfolio not found'
         });
-        return;
       }
 
-      reply.send({
+      return reply.send({
         data: { deleted: true },
         message: 'Portfolio deleted successfully'
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to delete portfolio:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         code: 500,
         message: 'Failed to delete portfolio'
       });

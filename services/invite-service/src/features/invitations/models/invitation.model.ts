@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { InvitationStatusSchema } from '@tempsdarret/shared/schemas/invite.schema';
 
 const invitationSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },

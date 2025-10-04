@@ -10,8 +10,8 @@ import { EventPublisher } from '../shared/messaging/event-publisher';
 
 export class MagicLinkService {
   constructor(
-    private magicLinkRepository: MagicLinkRepository,
-    private eventPublisher: EventPublisher
+    private readonly magicLinkRepository: MagicLinkRepository,
+    private readonly eventPublisher: EventPublisher
   ) {}
 
   async generateMagicLink(request: MagicLinkGenerationRequest): Promise<MagicLink> {

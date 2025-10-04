@@ -33,7 +33,10 @@ export class GalleryCompilationService {
    * 3. Sort by display order and featured status
    * 4. Include download permissions per file
    */
-  async compileShootGallery(shootId: string, includeDownloadUrls: boolean = false): Promise<GalleryView> {
+  async compileShootGallery(
+    shootId: string,
+    _includeDownloadUrls = false
+  ): Promise<GalleryView> {
     const shoot = await this.shootRepository.findById(shootId);
 
     if (!shoot) {
@@ -42,10 +45,9 @@ export class GalleryCompilationService {
 
     // TODO: Fetch images from file-service
     // For now, return placeholder structure
-    const images: GalleryImage[] = [];
 
-    // Get featured images first
-    const featuredImages = shoot.media?.featuredImageIds || [];
+    // Get featured images first (currently unused until file-service integration)
+    // const featuredImages = shoot.media?.featuredImageIds ?? [];
 
     // TODO: Map featured image IDs to actual image data from file-service
     // const featuredGalleryImages = await this.fetchImagesFromFileService(
@@ -62,7 +64,7 @@ export class GalleryCompilationService {
     // );
 
     // Sort: featured first, then by upload date
-    const sortedImages = [
+    const sortedImages: GalleryImage[] = [
       // ...featuredGalleryImages,
       // ...regularImages
     ];
@@ -76,9 +78,9 @@ export class GalleryCompilationService {
         : undefined,
       images: sortedImages,
       metadata: {
-        totalImages: shoot.media?.totalImages || 0,
-        allowDownloads: shoot.access?.allowDownloads || false,
-        lastUpdated: shoot.media?.lastUpdated || shoot.updatedAt
+        totalImages: shoot.media?.totalImages ?? 0,
+        allowDownloads: shoot.access?.allowDownloads ?? false,
+        lastUpdated: shoot.media?.lastUpdated ?? shoot.updatedAt
       }
     };
   }
@@ -88,9 +90,9 @@ export class GalleryCompilationService {
    * This is a placeholder - actual implementation would call file-service API
    */
   private async fetchImagesFromFileService(
-    shootId: string,
-    imageIds: string[],
-    includeDownloadUrls: boolean
+    _shootId: string,
+    _imageIds: string[],
+    _includeDownloadUrls: boolean
   ): Promise<GalleryImage[]> {
     // TODO: Implement actual file-service integration
     // Example:
@@ -101,14 +103,19 @@ export class GalleryCompilationService {
     return [];
   }
 
-  private mapToGalleryImage(fileData: any, includeDownloadUrl: boolean): GalleryImage {
+  private mapToGalleryImage(
+    fileData: Record<string, unknown>,
+    includeDownloadUrl: boolean
+  ): GalleryImage {
     return {
-      id: fileData.id,
-      url: fileData.urls.high,
-      thumbnailUrl: fileData.urls.thumb,
-      caption: fileData.caption,
-      isFeatured: fileData.isFeatured || false,
-      downloadUrl: includeDownloadUrl ? fileData.downloadUrl : undefined
+      id: fileData.id as string,
+      url: (fileData.urls as Record<string, unknown>).high as string,
+      thumbnailUrl: (fileData.urls as Record<string, unknown>).thumb as string,
+      caption: fileData.caption as string | undefined,
+      isFeatured: (fileData.isFeatured as boolean | undefined) ?? false,
+      downloadUrl: includeDownloadUrl
+        ? (fileData.downloadUrl as string | undefined)
+        : undefined
     };
   }
 }

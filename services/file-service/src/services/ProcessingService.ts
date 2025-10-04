@@ -16,7 +16,7 @@ export interface ProcessingConfig {
 }
 
 export class ProcessingService {
-  private config: ProcessingConfig;
+  private readonly config: ProcessingConfig;
 
   constructor(config: ProcessingConfig) {
     this.config = config;
@@ -46,9 +46,11 @@ export class ProcessingService {
             const exifData = await this.extractMetadata(file.storagePath);
             metadata.exif = exifData.exif;
             metadata.technical = exifData.technical;
-            metadata.processing!.metadataExtracted = true;
+            if (metadata.processing) {
+              metadata.processing.metadataExtracted = true;
+            }
           } catch (error) {
-            metadata.processing!.processingErrors!.push(
+            metadata.processing?.processingErrors?.push(
               `Metadata extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`
             );
           }
@@ -57,25 +59,31 @@ export class ProcessingService {
         // Generate thumbnail for images
         if (file.type === 'jpeg' || file.type === 'png') {
           try {
-            const thumbnailPath = await this.generateThumbnail(file.storagePath, file.id);
-            metadata.processing!.thumbnailGenerated = true;
+            await this.generateThumbnail(file.storagePath, file.id);
+            if (metadata.processing) {
+              metadata.processing.thumbnailGenerated = true;
+            }
             // TODO: Update file record with thumbnail URL
           } catch (error) {
-            metadata.processing!.processingErrors!.push(
+            metadata.processing?.processingErrors?.push(
               `Thumbnail generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
             );
           }
         }
       }
 
-      metadata.processing!.processingTime = Date.now() - startTime;
+      if (metadata.processing) {
+        metadata.processing.processingTime = Date.now() - startTime;
+      }
       return metadata;
 
     } catch (error) {
-      metadata.processing!.processingTime = Date.now() - startTime;
-      metadata.processing!.processingErrors!.push(
-        `Processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      if (metadata.processing) {
+        metadata.processing.processingTime = Date.now() - startTime;
+        metadata.processing.processingErrors?.push(
+          `Processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
       throw error;
     }
   }
@@ -146,18 +154,18 @@ export class ProcessingService {
         const tags = result.tags;
         
         // Camera information
-        if (tags.Make) exif.camera = `${tags.Make} ${tags.Model || ''}`.trim();
-        if (tags.LensModel) exif.lens = tags.LensModel;
+        if (tags.Make) {exif.camera = `${tags.Make} ${tags.Model ?? ''}`.trim();}
+        if (tags.LensModel) {exif.lens = tags.LensModel;}
         
         // Technical settings
-        if (tags.FocalLength) exif.focalLength = tags.FocalLength;
-        if (tags.FNumber) exif.aperture = `f/${tags.FNumber}`;
+        if (tags.FocalLength) {exif.focalLength = tags.FocalLength;}
+        if (tags.FNumber) {exif.aperture = `f/${tags.FNumber}`;}
         if (tags.ExposureTime) {
           exif.shutterSpeed = tags.ExposureTime > 1 
             ? `${tags.ExposureTime}s` 
             : `1/${Math.round(1/tags.ExposureTime)}s`;
         }
-        if (tags.ISO) exif.iso = tags.ISO;
+        if (tags.ISO) {exif.iso = tags.ISO;}
         
         // Date taken
         if (tags.DateTimeOriginal) {

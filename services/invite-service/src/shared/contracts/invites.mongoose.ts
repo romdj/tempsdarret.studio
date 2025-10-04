@@ -1,5 +1,5 @@
 import { Schema, model, Document } from 'mongoose';
-import { Invitation, MagicLink, InvitationStatus } from './invites.dto';
+import { Invitation, MagicLink } from './invites.dto';
 
 // Invitation mongoose interface
 export interface InvitationDocument extends Omit<Invitation, 'id' | 'createdAt' | 'updatedAt'>, Document {
@@ -41,7 +41,7 @@ const invitationSchema = new Schema<InvitationDocument>({
 }, {
   timestamps: true,
   toJSON: {
-    transform: function(doc, ret) {
+    transform: function(_doc, ret): Record<string, unknown> {
       ret.id = ret._id;
       delete ret._id;
       delete ret.__v;
@@ -92,7 +92,7 @@ const magicLinkSchema = new Schema<MagicLinkDocument>({
 }, {
   timestamps: true,
   toJSON: {
-    transform: function(doc, ret) {
+    transform: function(_doc, ret): Record<string, unknown> {
       ret.id = ret._id;
       delete ret._id;
       delete ret.__v;

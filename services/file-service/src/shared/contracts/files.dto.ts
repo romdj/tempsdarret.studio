@@ -100,12 +100,12 @@ export function validateCreateFileDTO(dto: Partial<CreateFileDTO>): dto is Creat
 
 export function validateUpdateFileDTO(dto: Partial<UpdateFileDTO>): boolean {
   // All fields are optional, just validate types if present
-  if (dto.filename && typeof dto.filename !== 'string') return false;
-  if (dto.processingStatus && !['pending', 'processing', 'completed', 'failed'].includes(dto.processingStatus)) return false;
-  if (dto.publicUrl && typeof dto.publicUrl !== 'string') return false;
-  if (dto.thumbnailUrl && typeof dto.thumbnailUrl !== 'string') return false;
-  if (dto.metadata && typeof dto.metadata !== 'object') return false;
-  if (dto.tags && !Array.isArray(dto.tags)) return false;
+  if (dto.filename && typeof dto.filename !== 'string') {return false;}
+  if (dto.processingStatus && !['pending', 'processing', 'completed', 'failed'].includes(dto.processingStatus)) {return false;}
+  if (dto.publicUrl && typeof dto.publicUrl !== 'string') {return false;}
+  if (dto.thumbnailUrl && typeof dto.thumbnailUrl !== 'string') {return false;}
+  if (dto.metadata && typeof dto.metadata !== 'object') {return false;}
+  if (dto.tags && !Array.isArray(dto.tags)) {return false;}
   
   return true;
 }

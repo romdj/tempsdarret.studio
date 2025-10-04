@@ -33,18 +33,22 @@ export class PortfolioRepository {
   }
 
   async findMany(query: PortfolioQuery): Promise<{ portfolios: IPortfolioDocument[], total: number }> {
-    const filter: any = {};
-    if (query.photographerId) filter.photographerId = query.photographerId;
-    if (query.visibility) filter.visibility = query.visibility;
-    if (query.isFeatured !== undefined) filter.isFeatured = query.isFeatured;
+    const filter: Record<string, unknown> = {};
+    if (query.photographerId) {
+      filter.photographerId = query.photographerId;
+    }
+    if (query.visibility) {
+      filter.visibility = query.visibility;
+    }
+    if (query.isFeatured !== undefined) {filter.isFeatured = query.isFeatured;}
 
-    const skip = ((query.page || 1) - 1) * (query.limit || 20);
+    const skip = ((query.page ?? 1) - 1) * (query.limit ?? 20);
 
     const [portfolios, total] = await Promise.all([
       PortfolioModel.find(filter)
         .sort({ displayOrder: 1, createdAt: -1 })
         .skip(skip)
-        .limit(query.limit || 20)
+        .limit(query.limit ?? 20)
         .exec(),
       PortfolioModel.countDocuments(filter).exec()
     ]);

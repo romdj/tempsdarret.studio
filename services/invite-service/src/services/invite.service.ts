@@ -18,15 +18,19 @@ export interface UserCreatedEvent {
 
 export class InviteService {
   constructor(
-    private invitationRepository: InvitationRepository,
-    private magicLinkRepository: MagicLinkRepository,
-    private eventPublisher: EventPublisher
+    private readonly invitationRepository: InvitationRepository,
+    private readonly magicLinkRepository: MagicLinkRepository,
+    private readonly eventPublisher: EventPublisher
   ) {}
 
   async handleUserCreatedEvent(event: UserCreatedEvent): Promise<Invitation> {
+    if (event.shootId === undefined) {
+      throw new Error('shootId is required for user created event');
+    }
+
     // Create invitation
     const invitationData = {
-      shootId: event.shootId!,
+      shootId: event.shootId,
       clientEmail: event.email,
       status: 'pending' as const
     };
@@ -35,7 +39,7 @@ export class InviteService {
 
     // Generate magic link (ADR-003: 64-char hex, 15-minute expiry)
     const magicLinkData = {
-      shootId: event.shootId!,
+      shootId: event.shootId,
       clientEmail: event.email,
       expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
       isActive: true
@@ -78,9 +82,9 @@ export class InviteService {
     return this.invitationRepository.findById(inviteId);
   }
 
-  async sendInvitation(inviteId: string, request: SendInvitationRequest): Promise<{ sent: boolean }> {
+  async sendInvitation(inviteId: string, _request: SendInvitationRequest): Promise<{ sent: boolean }> {
     const invitation = await this.invitationRepository.findById(inviteId);
-    if (!invitation) {
+    if (invitation === null) {
       throw new Error('Invitation not found');
     }
 

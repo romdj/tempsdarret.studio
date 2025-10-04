@@ -1,9 +1,8 @@
-import { 
-  User, 
-  CreateUserRequest, 
-  UpdateUserRequest, 
-  UserQuery,
-  UserRole
+import {
+  User,
+  CreateUserRequest,
+  UpdateUserRequest,
+  UserQuery
 } from '@tempsdarret/shared/schemas/user.schema';
 import { EmailSchema } from '@tempsdarret/shared/schemas/base.schema';
 import { UserRepository } from '../repositories/user.repository';
@@ -27,8 +26,8 @@ export interface UserListResult {
 
 export class UserService {
   constructor(
-    private userRepository: UserRepository,
-    private eventPublisher: EventPublisher
+    private readonly userRepository: UserRepository,
+    private readonly eventPublisher: EventPublisher
   ) {}
 
   async createUser(request: CreateUserRequest): Promise<User> {
@@ -56,14 +55,20 @@ export class UserService {
 
   async listUsers(query: UserQuery): Promise<UserListResult> {
     // Apply default values
-    const page = query.page || 1;
-    const limit = query.limit || 20;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
 
     // Build filter object
-    const filter: any = {};
-    if (query.role) filter.role = query.role;
-    if (query.isActive !== undefined) filter.isActive = query.isActive;
-    if (query.search) filter.search = query.search;
+    const filter: Record<string, unknown> = {};
+    if (query.role) {
+      filter.role = query.role;
+    }
+    if (query.isActive !== undefined) {
+      filter.isActive = query.isActive;
+    }
+    if (query.search) {
+      filter.search = query.search;
+    }
 
     // Get users and count
     const [users, total] = await Promise.all([

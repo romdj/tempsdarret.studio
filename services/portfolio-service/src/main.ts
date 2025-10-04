@@ -13,9 +13,9 @@ import { registerPortfolioRoutes } from './handlers/portfolio.routes.js';
 import { registerGalleryRoutes } from './handlers/gallery.routes.js';
 
 class PortfolioServiceApp {
-  private fastify: ReturnType<typeof Fastify>;
-  private kafka: Kafka;
-  private eventPublisher: EventPublisher;
+  private readonly fastify: ReturnType<typeof Fastify>;
+  private readonly kafka: Kafka;
+  private readonly eventPublisher: EventPublisher;
 
   constructor() {
     this.fastify = Fastify({ logger: true });
@@ -28,11 +28,11 @@ class PortfolioServiceApp {
     this.eventPublisher = new EventPublisher(this.kafka);
   }
 
-  async start() {
+  async start(): Promise<void> {
     try {
       // Connect to MongoDB
       await dbConnection.connect({
-        uri: appConfig.mongoUri || 'mongodb://localhost:27017/tempsdarret-portfolios'
+        uri: appConfig.mongoUri
       });
 
       // Connect to Kafka
@@ -54,25 +54,27 @@ class PortfolioServiceApp {
 
       // Health check
       this.fastify.get('/health', async (request, reply) => {
-        reply.send({ status: 'ok', service: 'portfolio-service' });
+        return reply.send({ status: 'ok', service: 'portfolio-service' });
       });
 
       // Start server
       await this.fastify.listen({ port: appConfig.port, host: '0.0.0.0' });
+      // eslint-disable-next-line no-console
       console.log(`Portfolio Service running on port ${appConfig.port}`);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to start Portfolio Service:', error);
       process.exit(1);
     }
   }
 
-  async stop() {
+  async stop(): Promise<void> {
     await dbConnection.disconnect();
     await this.eventPublisher.disconnect();
     await this.fastify.close();
   }
 
-  getServer() {
+  getServer(): ReturnType<typeof Fastify> {
     return this.fastify;
   }
 }
@@ -83,11 +85,13 @@ if (require.main === module) {
 
   // Graceful shutdown
   process.on('SIGINT', async () => {
+    // eslint-disable-next-line no-console
     console.log('Shutting down Portfolio Service...');
     await app.stop();
     process.exit(0);
   });
 
+  // eslint-disable-next-line no-console
   app.start().catch(console.error);
 }
 

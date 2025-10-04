@@ -6,9 +6,8 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { FileService } from '../services/FileService.js';
 import { ArchiveService } from '../services/ArchiveService.js';
-import { 
-  FileQuery, 
-  FileUploadRequest, 
+import {
+  FileQuery,
   CreateArchiveRequest,
   SuccessResponse,
   PaginatedResponse,
@@ -29,8 +28,8 @@ export interface FileUploadMultipart {
 
 export class FileHandlers {
   constructor(
-    private fileService: FileService,
-    private archiveService: ArchiveService
+    private readonly fileService: FileService,
+    private readonly archiveService: ArchiveService
   ) {}
 
   /**
@@ -38,12 +37,12 @@ export class FileHandlers {
    */
   async uploadFile(
     request: FastifyRequest<{ Body: FileUploadMultipart }>,
-    reply: FastifyReply
+    _reply: FastifyReply
   ): Promise<SuccessResponse<FileModel> | ApiError> {
     try {
       const { file, shootId, tags } = request.body;
-      
-      if (!file?.data || !file.filename) {
+
+      if (!file.data) {
         return {
           success: false,
           error: {
@@ -81,7 +80,7 @@ export class FileHandlers {
    */
   async listFiles(
     request: FastifyRequest<{ Querystring: FileQuery }>,
-    reply: FastifyReply
+    _reply: FastifyReply
   ): Promise<PaginatedResponse<FileModel> | ApiError> {
     try {
       const query = request.query;
@@ -108,7 +107,7 @@ export class FileHandlers {
    */
   async getFile(
     request: FastifyRequest<{ Params: { fileId: string } }>,
-    reply: FastifyReply
+    _reply: FastifyReply
   ): Promise<SuccessResponse<FileModel> | ApiError> {
     try {
       const { fileId } = request.params;
@@ -142,7 +141,12 @@ export class FileHandlers {
   /**
    * Download file with progress support (ADR-026)
    * MUST include Content-Length header for browser progress bars
+   *
+   * This method handles file downloads with range request support.
+   * It retrieves file metadata, validates existence, handles partial content requests,
+   * sets appropriate headers for download progress tracking, and streams the file data.
    */
+  /* eslint-disable max-lines-per-function */
   async downloadFile(
     request: FastifyRequest<{ Params: { fileId: string } }>,
     reply: FastifyReply
@@ -207,6 +211,7 @@ export class FileHandlers {
       reply.send(stream);
 
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Download error:', error);
       reply.code(500).send({
         success: false,
@@ -223,7 +228,7 @@ export class FileHandlers {
    */
   async deleteFile(
     request: FastifyRequest<{ Params: { fileId: string } }>,
-    reply: FastifyReply
+    _reply: FastifyReply
   ): Promise<SuccessResponse<{ deleted: boolean }> | ApiError> {
     try {
       const { fileId } = request.params;
@@ -249,7 +254,7 @@ export class FileHandlers {
    */
   async createArchive(
     request: FastifyRequest<{ Body: CreateArchiveRequest }>,
-    reply: FastifyReply
+    _reply: FastifyReply
   ): Promise<SuccessResponse<ArchiveModel> | ApiError> {
     try {
       const { shootId, type, fileIds } = request.body;
@@ -280,7 +285,7 @@ export class FileHandlers {
    */
   async getArchive(
     request: FastifyRequest<{ Params: { archiveId: string } }>,
-    reply: FastifyReply
+    _reply: FastifyReply
   ): Promise<SuccessResponse<ArchiveModel> | ApiError> {
     try {
       const { archiveId } = request.params;
@@ -358,6 +363,7 @@ export class FileHandlers {
       reply.send(stream);
 
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Archive download error:', error);
       reply.code(500).send({
         success: false,

@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { InvitationController } from '../features/invitations/controllers/invitation.controller';
 
-export async function invitationRoutes(fastify: FastifyInstance) {
+export async function invitationRoutes(fastify: FastifyInstance): Promise<void> {
   const controller = fastify.diContainer.resolve<InvitationController>('invitationController');
 
   // TypeSpec InvitationOperations interface implementation

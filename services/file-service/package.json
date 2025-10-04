@@ -15,7 +15,7 @@
     "test:integration": "jest tests/integration",
     "test:unit": "jest tests/services tests/handlers",
     "test:all": "jest --runInBand",
-    "lint": "eslint src/**/*.{js,ts}",
+    "lint": "eslint src --ext .ts",
     "check": "tsc --noEmit"
   },
   "dependencies": {

@@ -25,12 +25,13 @@ export class EventPublisher {
     await this.producer.send({
       topic,
       messages: [{
-        key: (key ?? "") || event.eventId,
+        key: key ?? event.eventId,
         value: JSON.stringify(event),
         timestamp: Date.now().toString()
       }]
     });
 
+    // eslint-disable-next-line no-console
     console.log(`Published ${event.eventType} event to ${topic} topic`);
   }
 }

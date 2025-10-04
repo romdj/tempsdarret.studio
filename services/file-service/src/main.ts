@@ -24,7 +24,14 @@ import {
 
 // Mock Kafka producer - replace with actual implementation
 class MockEventProducer {
-  async publish(topic: string, key: string, value: any, headers?: Record<string, string>): Promise<void> {
+  /* eslint-disable max-params */
+  async publish(
+    topic: string,
+    key: string,
+    value: Record<string, unknown>,
+    headers?: Record<string, string>
+  ): Promise<void> {
+    // eslint-disable-next-line no-console
     console.log(`[EVENT] ${topic}:${key}`, { type: value.eventType, headers });
   }
 }
@@ -51,10 +58,11 @@ async function createServer(): Promise<FastifyInstance> {
 
 async function connectDatabase(): Promise<{
   fileModel: mongoose.Model<FileDocument>;
-  archiveModel: mongoose.Model<ArchiveDocument>;  
+  archiveModel: mongoose.Model<ArchiveDocument>;
   chunkModel: mongoose.Model<ChunkDocument>;
 }> {
   await mongoose.connect(config.mongoUrl);
+  // eslint-disable-next-line no-console
   console.log('Connected to MongoDB');
 
   const fileModel = mongoose.model<FileDocument>('File', fileSchema);
@@ -68,7 +76,13 @@ async function setupServices(models: {
   fileModel: mongoose.Model<FileDocument>;
   archiveModel: mongoose.Model<ArchiveDocument>;
   chunkModel: mongoose.Model<ChunkDocument>;
-}) {
+}): Promise<{
+  fileService: FileService;
+  archiveService: ArchiveService;
+  storageService: StorageService;
+  processingService: ProcessingService;
+  eventEmitter: EventEmitter;
+}> {
   // Initialize services
   const eventProducer = new MockEventProducer();
   const eventEmitter = new EventEmitter(eventProducer);
@@ -102,9 +116,9 @@ async function setupServices(models: {
 }
 
 async function setupRoutes(
-  fastify: FastifyInstance, 
+  fastify: FastifyInstance,
   handlers: FileHandlers
-) {
+): Promise<void> {
   // File operations
   fastify.post('/files', handlers.uploadFile.bind(handlers));
   fastify.get('/files', handlers.listFiles.bind(handlers));
@@ -128,15 +142,17 @@ async function setupRoutes(
 async function setupCleanupTasks(services: {
   storageService: StorageService;
   archiveService: ArchiveService;
-}) {
+}): Promise<void> {
   // Cleanup expired chunks every hour (ADR-027)
   setInterval(async () => {
     try {
       const cleanedChunks = await services.storageService.cleanupExpiredChunks();
       if (cleanedChunks > 0) {
+        // eslint-disable-next-line no-console
         console.log(`Cleaned up ${cleanedChunks} expired chunks`);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Chunk cleanup failed:', error);
     }
   }, 60 * 60 * 1000); // 1 hour
@@ -146,16 +162,19 @@ async function setupCleanupTasks(services: {
     try {
       const cleanedArchives = await services.archiveService.cleanupExpiredArchives();
       if (cleanedArchives > 0) {
+        // eslint-disable-next-line no-console
         console.log(`Cleaned up ${cleanedArchives} expired archives`);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Archive cleanup failed:', error);
     }
   }, 6 * 60 * 60 * 1000); // 6 hours
 }
 
-async function main() {
+async function main(): Promise<void> {
   try {
+    // eslint-disable-next-line no-console
     console.log('Starting File Service...');
 
     // Connect to database
@@ -180,14 +199,21 @@ async function main() {
       host: '0.0.0.0',
     });
 
+    // eslint-disable-next-line no-console
     console.log(`File Service started on port ${config.port}`);
+    // eslint-disable-next-line no-console
     console.log('Configuration:');
+    // eslint-disable-next-line no-console
     console.log(`- Storage: ${config.storage.basePath}`);
+    // eslint-disable-next-line no-console
     console.log(`- Large file threshold: ${config.storage.largeFileThreshold} bytes`);
+    // eslint-disable-next-line no-console
     console.log(`- Chunk TTL: ${config.storage.chunkTTLHours} hours`);
+    // eslint-disable-next-line no-console
     console.log(`- Archive expiration: ${config.archive.defaultExpirationDays} days`);
 
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Failed to start File Service:', error);
     process.exit(1);
   }
@@ -195,15 +221,21 @@ async function main() {
 
 // Handle graceful shutdown
 process.on('SIGINT', async () => {
+  // eslint-disable-next-line no-console
   console.log('Shutting down File Service...');
   await mongoose.disconnect();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
+  // eslint-disable-next-line no-console
   console.log('Shutting down File Service...');
   await mongoose.disconnect();
   process.exit(0);
 });
 
-main().catch(console.error);
+main().catch((error: Error) => {
+  // eslint-disable-next-line no-console
+  console.error(error);
+  process.exit(1);
+});

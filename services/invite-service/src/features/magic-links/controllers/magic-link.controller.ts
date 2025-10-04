@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { MagicLinkService } from '../services/magic-link.service';
 import { MagicLinkValidationRequestSchema } from '@tempsdarret/shared/schemas/invite.schema';
 
 export class MagicLinkController {
-  constructor(private magicLinkService: MagicLinkService) {}
+  constructor(private readonly magicLinkService: MagicLinkService) {}
 
-  async validateMagicLink(request: FastifyRequest, reply: FastifyReply) {
+  async validateMagicLink(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
       const { token } = request.params as { token: string };
       const shootId = (request.query as any)?.shootId;
@@ -33,7 +34,7 @@ export class MagicLinkController {
     }
   }
 
-  async recordAccess(request: FastifyRequest, reply: FastifyReply) {
+  async recordAccess(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
       const { token } = request.params as { token: string };
       const result = await this.magicLinkService.recordAccess(token);

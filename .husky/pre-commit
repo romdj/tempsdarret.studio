@@ -4,7 +4,7 @@
 
 echo "🔍 Running pre-commit quality checks..."
 
-# Run lint (warning mode until existing lint errors are fixed)
-npm run lint || echo "⚠️  Linting issues detected - please address in future commits"
+# Run lint (warning mode - will enable strict mode once all services are clean)
+npm run lint || echo "⚠️  Linting issues detected - fixing in progress"
 
 echo "✅ Pre-commit checks completed!"

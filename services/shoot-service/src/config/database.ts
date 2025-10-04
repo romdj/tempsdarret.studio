@@ -6,20 +6,20 @@ export interface DatabaseConfig {
 }
 
 export class DatabaseConnection {
-  private static instance: DatabaseConnection;
+  private static instance: DatabaseConnection | undefined;
   private isConnected = false;
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 
   public static getInstance(): DatabaseConnection {
-    if (!DatabaseConnection.instance) {
-      DatabaseConnection.instance = new DatabaseConnection();
-    }
+    DatabaseConnection.instance ??= new DatabaseConnection();
     return DatabaseConnection.instance;
   }
 
   public async connect(config: DatabaseConfig): Promise<void> {
     if (this.isConnected) {
+      // eslint-disable-next-line no-console
       console.log('Database already connected');
       return;
     }
@@ -38,25 +38,30 @@ export class DatabaseConnection {
       });
 
       this.isConnected = true;
+      // eslint-disable-next-line no-console
       console.log('MongoDB connected successfully');
 
       // Handle connection events
       mongoose.connection.on('error', (error) => {
+        // eslint-disable-next-line no-console
         console.error('MongoDB connection error:', error);
         this.isConnected = false;
       });
 
       mongoose.connection.on('disconnected', () => {
+        // eslint-disable-next-line no-console
         console.log('MongoDB disconnected');
         this.isConnected = false;
       });
 
       mongoose.connection.on('reconnected', () => {
+        // eslint-disable-next-line no-console
         console.log('MongoDB reconnected');
         this.isConnected = true;
       });
 
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to connect to MongoDB:', error);
       throw error;
     }
@@ -70,8 +75,10 @@ export class DatabaseConnection {
     try {
       await mongoose.disconnect();
       this.isConnected = false;
+      // eslint-disable-next-line no-console
       console.log('MongoDB disconnected successfully');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error disconnecting from MongoDB:', error);
       throw error;
     }

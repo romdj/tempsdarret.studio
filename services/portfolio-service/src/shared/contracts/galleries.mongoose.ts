@@ -43,7 +43,7 @@ export interface IGalleryImageDocument extends Document {
   displayOrder: number;
   caption?: string;
   isFeatured: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }

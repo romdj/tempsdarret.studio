@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { UserController } from '../controllers/user.controller';
 
-export function registerUserRoutes(fastify: FastifyInstance, controller: UserController) {
+export function registerUserRoutes(fastify: FastifyInstance, controller: UserController): void {
   // Health check
   fastify.get('/health', controller.healthCheck.bind(controller));
   

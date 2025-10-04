@@ -118,7 +118,7 @@ export class TemplateService implements TemplateRepository {
 
     // Apply default values for missing variables
     for (const variable of template.variables) {
-      if (!(variable.name in prepared) && variable.defaultValue !== undefined) {
+      if (!(variable.name in prepared) && variable.defaultValue) {
         prepared[variable.name] = variable.defaultValue;
       }
     }

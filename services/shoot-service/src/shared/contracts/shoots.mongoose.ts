@@ -1,4 +1,5 @@
 import { Schema, model, Document } from 'mongoose';
+import crypto from 'crypto';
 import { Shoot, ShootStatus } from '@tempsdarret/shared/schemas/shoot.schema';
 
 // Mongoose document interface that extends our Zod schema type
@@ -53,11 +54,12 @@ const shootSchema = new Schema<IShootDocument>({
 }, {
   timestamps: true,
   toJSON: {
-    transform: function(doc, ret) {
-      ret.id = ret.id;
-      delete (ret as any)._id;
-      delete (ret as any).__v;
-      return ret;
+    transform: function(_doc, ret): Record<string, unknown> {
+      // id is already set, no need to reassign
+      const result = ret as Record<string, unknown>;
+      delete result._id;
+      delete result.__v;
+      return result;
     }
   }
 });
@@ -70,9 +72,8 @@ shootSchema.index({ scheduledDate: 1 });
 
 // Middleware to ensure the ID is set before saving
 shootSchema.pre('save', function(next) {
-  if (this.isNew && !this.id) {
+  if (this.isNew && (this.id === null || this.id === undefined || this.id === '')) {
     // This should not happen as ID is generated in the model, but safety check
-    const crypto = require('crypto');
     this.id = `shoot_${crypto.randomBytes(16).toString('hex')}`;
   }
   next();

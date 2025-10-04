@@ -15,12 +15,17 @@ import { generateId } from '../shared/utils/id.js';
 
 // Mock Kafka producer interface - replace with actual implementation
 interface EventProducer {
-  publish(topic: string, key: string, value: any, headers?: Record<string, string>): Promise<void>;
+  publish(
+    topic: string,
+    key: string,
+    value: Record<string, unknown>,
+    headers?: Record<string, string>
+  ): Promise<void>;
 }
 
 export class EventEmitter {
-  private producer: EventProducer;
-  private serviceName = 'file-service';
+  private readonly producer: EventProducer;
+  private readonly serviceName = 'file-service';
 
   constructor(producer: EventProducer) {
     this.producer = producer;

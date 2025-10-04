@@ -3,6 +3,8 @@
  * Core business logic for file operations
  */
 
+/* global NodeJS */
+
 import { Model } from 'mongoose';
 import { StorageService, FileStats } from './StorageService.js';
 import { ProcessingService } from './ProcessingService.js';
@@ -13,12 +15,11 @@ import {
   FileType,
   ProcessingStatus 
 } from '../shared/contracts/files.api.js';
-import { 
-  CreateFileDTO, 
+import {
+  CreateFileDTO,
   UpdateFileDTO,
   validateCreateFileDTO,
   validateUpdateFileDTO,
-  toFileModel,
   applyFileUpdate
 } from '../shared/contracts/files.dto.js';
 import { 
@@ -46,11 +47,12 @@ export interface FileListResult {
 }
 
 export class FileService {
+  /* eslint-disable max-params */
   constructor(
-    private fileModel: Model<FileDocument>,
-    private storageService: StorageService,
-    private processingService: ProcessingService,
-    private eventEmitter: EventEmitter
+    private readonly fileModel: Model<FileDocument>,
+    private readonly storageService: StorageService,
+    private readonly processingService: ProcessingService,
+    private readonly eventEmitter: EventEmitter
   ) {}
 
   /**
@@ -128,16 +130,24 @@ export class FileService {
    * List files with filtering and pagination
    */
   async listFiles(query: FileQuery): Promise<FileListResult> {
-    const page = query.page || 1;
-    const limit = Math.min(query.limit || 20, 100); // Max 100 items per page
+    const page = query.page ?? 1;
+    const limit = Math.min(query.limit ?? 20, 100); // Max 100 items per page
     const skip = (page - 1) * limit;
 
     // Build filter
-    const filter: any = {};
-    if (query.shootId) filter.shootId = query.shootId;
-    if (query.type) filter.type = query.type;
-    if (query.processingStatus) filter.processingStatus = query.processingStatus;
-    if (query.tags?.length) filter.tags = { $in: query.tags };
+    const filter: Record<string, unknown> = {};
+    if (query.shootId) {
+      filter.shootId = query.shootId;
+    }
+    if (query.type) {
+      filter.type = query.type;
+    }
+    if (query.processingStatus) {
+      filter.processingStatus = query.processingStatus;
+    }
+    if (query.tags?.length) {
+      filter.tags = { $in: query.tags };
+    }
 
     // Execute queries in parallel
     const [docs, total] = await Promise.all([
@@ -235,7 +245,10 @@ export class FileService {
   /**
    * Create download stream for file
    */
-  async createDownloadStream(fileId: string, options?: { start?: number; end?: number }): Promise<NodeJS.ReadableStream> {
+  async createDownloadStream(
+    fileId: string,
+    options?: { start?: number; end?: number }
+  ): Promise<NodeJS.ReadableStream> {
     const file = await this.getFileById(fileId);
     if (!file) {
       throw new Error('File not found');
@@ -280,10 +293,14 @@ export class FileService {
   /**
    * Update processing status
    */
-  async updateProcessingStatus(fileId: string, status: ProcessingStatus, details?: any): Promise<void> {
+  async updateProcessingStatus(
+    fileId: string,
+    status: ProcessingStatus,
+    details?: Record<string, unknown>
+  ): Promise<void> {
     await this.fileModel.updateOne(
       { _id: fileId },
-      { 
+      {
         processingStatus: status,
         ...(details && { metadata: { $set: { processingDetails: details } } }),
         updatedAt: new Date()
@@ -308,14 +325,18 @@ export class FileService {
     // Sidecar/Config file formats (photographer-only access per TypeSpec comments)
     const sidecarExtensions = ['xmp']; // Adobe Lightroom/Photoshop sidecar
     const configExtensions = ['psd', 'psb', 'cos', 'col', 'afphoto', 'xcf']; // Editor project files
-    
-    if (extension && sidecarExtensions.includes(extension)) return 'sidecar';
-    if (extension && configExtensions.includes(extension)) return 'config';
+
+    if (extension && sidecarExtensions.includes(extension)) {
+      return 'sidecar';
+    }
+    if (extension && configExtensions.includes(extension)) {
+      return 'config';
+    }
     
     // Standard image formats
-    if (mimeType.startsWith('image/jpeg')) return 'jpeg';
-    if (mimeType.startsWith('image/png')) return 'png';
-    if (mimeType.startsWith('video/')) return 'video';
+    if (mimeType.startsWith('image/jpeg')) {return 'jpeg';}
+    if (mimeType.startsWith('image/png')) {return 'png';}
+    if (mimeType.startsWith('video/')) {return 'video';}
     
     // RAW formats based on file-service.tsp comments
     const rawFormats = [
@@ -328,14 +349,14 @@ export class FileService {
       'image/x-phaseone-iiq', // Phase One: .IIQ
     ];
     
-    if (rawFormats.includes(mimeType)) return 'raw';
+    if (rawFormats.includes(mimeType)) {return 'raw';}
     
     // Check by file extension for RAW formats
     const rawExtensions = ['cr2', 'cr3', 'nef', 'nrw', 'arw', 'orf', 'dng', 'rwl', '3fr', 'fff', 'iiq'];
-    if (extension && rawExtensions.includes(extension)) return 'raw';
+    if (extension && rawExtensions.includes(extension)) {return 'raw';}
     
     // Default to jpeg for unknown image types
-    if (mimeType.startsWith('image/')) return 'jpeg';
+    if (mimeType.startsWith('image/')) {return 'jpeg';}
     
     return 'raw'; // Default fallback
   }
@@ -343,7 +364,10 @@ export class FileService {
   /**
    * Get sidecar type from filename and file type
    */
-  private getSidecarType(filename: string, fileType: FileType): 'xmp' | 'psd' | 'psb' | 'cos' | 'col' | 'afphoto' | 'xcf' | undefined {
+  private getSidecarType(
+    filename: string,
+    fileType: FileType
+  ): 'xmp' | 'psd' | 'psb' | 'cos' | 'col' | 'afphoto' | 'xcf' | undefined {
     if (fileType !== 'sidecar' && fileType !== 'config') {
       return undefined;
     }

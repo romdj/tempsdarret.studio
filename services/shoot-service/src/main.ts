@@ -10,9 +10,9 @@ import { ShootCreatedPublisher } from './events/publishers/shoot-created.publish
 import { registerShootRoutes } from './handlers/shoot.routes';
 
 class ShootServiceApp {
-  private fastify: ReturnType<typeof Fastify>;
-  private kafka: Kafka;
-  private eventPublisher: EventPublisher;
+  private readonly fastify: ReturnType<typeof Fastify>;
+  private readonly kafka: Kafka;
+  private readonly eventPublisher: EventPublisher;
 
   constructor() {
     this.fastify = Fastify({ logger: true });
@@ -25,11 +25,11 @@ class ShootServiceApp {
     this.eventPublisher = new EventPublisher(this.kafka);
   }
 
-  async start() {
+  async start(): Promise<void> {
     try {
       // Connect to MongoDB
       await dbConnection.connect({
-        uri: appConfig.mongoUri || 'mongodb://localhost:27017/tempsdarret-shoots'
+        uri: appConfig.mongoUri
       });
 
       // Connect to Kafka
@@ -46,20 +46,22 @@ class ShootServiceApp {
 
       // Start server
       await this.fastify.listen({ port: appConfig.port, host: '0.0.0.0' });
+      // eslint-disable-next-line no-console
       console.log(`Shoot Service running on port ${appConfig.port}`);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to start Shoot Service:', error);
       process.exit(1);
     }
   }
 
-  async stop() {
+  async stop(): Promise<void> {
     await dbConnection.disconnect();
     await this.eventPublisher.disconnect();
     await this.fastify.close();
   }
 
-  getServer() {
+  getServer(): ReturnType<typeof Fastify> {
     return this.fastify;
   }
 }
@@ -70,11 +72,13 @@ if (require.main === module) {
   
   // Graceful shutdown
   process.on('SIGINT', async () => {
+    // eslint-disable-next-line no-console
     console.log('Shutting down Shoot Service...');
     await app.stop();
     process.exit(0);
   });
-  
+
+  // eslint-disable-next-line no-console
   app.start().catch(console.error);
 }
 

@@ -18,16 +18,22 @@ export class InvitationRepository {
   }
 
   async list(query: InvitationQuery): Promise<Invitation[]> {
-    const filter: any = {};
-    
-    if (query.shootId) filter.shootId = query.shootId;
-    if (query.status) filter.status = query.status;
-    if (query.clientEmail) filter.clientEmail = query.clientEmail;
+    const filter: Record<string, unknown> = {};
+
+    if (query.shootId) {
+      filter.shootId = query.shootId;
+    }
+    if (query.status) {
+      filter.status = query.status;
+    }
+    if (query.clientEmail) {
+      filter.clientEmail = query.clientEmail;
+    }
 
     const invitations = await InvitationModel
       .find(filter)
       .sort({ createdAt: -1 })
-      .limit(query.limit || 20);
+      .limit(query.limit);
 
     return invitations.map(invitation => this.documentToInvitation(invitation));
   }
@@ -39,7 +45,7 @@ export class InvitationRepository {
       { new: true }
     );
     
-    if (!updatedInvitation) {
+    if (updatedInvitation === null) {
       throw new Error('Invitation not found');
     }
     

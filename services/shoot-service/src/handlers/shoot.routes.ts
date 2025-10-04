@@ -1,7 +1,10 @@
 import { FastifyInstance } from 'fastify';
 import { ShootHandlers } from './shoot.handlers';
 
-export function registerShootRoutes(fastify: FastifyInstance, handlers: ShootHandlers) {
+export function registerShootRoutes(
+  fastify: FastifyInstance,
+  handlers: ShootHandlers
+): void {
   // Health check
   fastify.get('/health', handlers.healthCheck.bind(handlers));
   

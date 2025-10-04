@@ -47,11 +47,15 @@ export class UserRepository {
   }
 
   async list(options: UserListOptions): Promise<User[]> {
-    const filter: any = {};
-    
+    const filter: Record<string, unknown> = {};
+
     // Apply filters
-    if (options.role) filter.role = options.role;
-    if (options.isActive !== undefined) filter.isActive = options.isActive;
+    if (options.role) {
+      filter.role = options.role;
+    }
+    if (options.isActive !== undefined) {
+      filter.isActive = options.isActive;
+    }
     
     // Handle text search
     if (options.search) {
@@ -73,11 +77,15 @@ export class UserRepository {
   }
 
   async count(options: UserCountOptions): Promise<number> {
-    const filter: any = {};
-    
+    const filter: Record<string, unknown> = {};
+
     // Apply same filters as list
-    if (options.role) filter.role = options.role;
-    if (options.isActive !== undefined) filter.isActive = options.isActive;
+    if (options.role) {
+      filter.role = options.role;
+    }
+    if (options.isActive !== undefined) {
+      filter.isActive = options.isActive;
+    }
     
     if (options.search) {
       filter.$or = [

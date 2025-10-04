@@ -1,5 +1,9 @@
 import { ShootModel, IShootDocument } from '../shared/contracts/shoots.mongoose';
-import { CreateShootRequest, UpdateShootRequest, ShootQuery, Shoot } from '@tempsdarret/shared/schemas/shoot.schema';
+import {
+  CreateShootRequest,
+  UpdateShootRequest,
+  ShootQuery
+} from '@tempsdarret/shared/schemas/shoot.schema';
 import { generateShootId } from '../shared/utils/id';
 
 export class ShootRepository {
@@ -29,16 +33,22 @@ export class ShootRepository {
     ).exec();
   }
 
-  async findMany(query: ShootQuery): Promise<{ shoots: IShootDocument[], total: number }> {
+  async findMany(
+    query: ShootQuery
+  ): Promise<{ shoots: IShootDocument[]; total: number }> {
     // Build MongoDB filter
-    const filter: any = {};
-    if (query.photographerId) filter.photographerId = query.photographerId;
-    if (query.clientEmail) filter.clientEmail = query.clientEmail;
-    if (query.status) filter.status = query.status;
+    const filter: Record<string, unknown> = {};
+    if (query.photographerId) {
+      filter.photographerId = query.photographerId;
+    }
+    if (query.clientEmail) {
+      filter.clientEmail = query.clientEmail;
+    }
+    if (query.status) {filter.status = query.status;}
     if (query.fromDate || query.toDate) {
       filter.scheduledDate = {};
-      if (query.fromDate) filter.scheduledDate.$gte = query.fromDate;
-      if (query.toDate) filter.scheduledDate.$lte = query.toDate;
+      if (query.fromDate) {filter.scheduledDate.$gte = query.fromDate;}
+      if (query.toDate) {filter.scheduledDate.$lte = query.toDate;}
     }
 
     // Calculate pagination

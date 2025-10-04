@@ -3,9 +3,11 @@
  * Implements ADR-027: Direct Filesystem + On-Demand GridFS chunks
  */
 
+/* global NodeJS */
+
 import fs from 'fs/promises';
 import path from 'path';
-import { createReadStream, createWriteStream, existsSync } from 'fs';
+import { createReadStream, createWriteStream } from 'fs';
 import { pipeline } from 'stream/promises';
 import { Model } from 'mongoose';
 import { ChunkDocument } from '../shared/contracts/files.mongoose.js';
@@ -31,8 +33,8 @@ export interface ChunkInfo {
 }
 
 export class StorageService {
-  private config: StorageConfig;
-  private chunkModel: Model<ChunkDocument>;
+  private readonly config: StorageConfig;
+  private readonly chunkModel: Model<ChunkDocument>;
 
   constructor(config: StorageConfig, chunkModel: Model<ChunkDocument>) {
     this.config = config;
@@ -84,7 +86,7 @@ export class StorageService {
         size: stats.size,
         exists: true,
       };
-    } catch (error) {
+    } catch {
       return {
         size: 0,
         exists: false,
@@ -128,7 +130,7 @@ export class StorageService {
     const startTime = Date.now();
 
     const totalChunks = Math.ceil(stats.size / this.config.chunkSize);
-    const chunks: any[] = [];
+    const chunks: Record<string, unknown>[] = [];
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + this.config.chunkTTLHours);
 
@@ -174,7 +176,7 @@ export class StorageService {
    */
   async getChunk(fileId: string, chunkIndex: number): Promise<Buffer | null> {
     const chunk = await this.chunkModel.findOne({ fileId, chunkIndex });
-    return chunk?.data || null;
+    return chunk?.data ?? null;
   }
 
   /**
@@ -195,16 +197,19 @@ export class StorageService {
   /**
    * Create chunked read stream for large files
    */
-  async createChunkedReadStream(fileId: string, options?: { start?: number; end?: number }): Promise<NodeJS.ReadableStream> {
+  async createChunkedReadStream(
+    fileId: string,
+    options?: { start?: number; end?: number }
+  ): Promise<NodeJS.ReadableStream> {
     const { Readable } = await import('stream');
-    
+
     const fileInfo = await this.getChunkedFileInfo(fileId);
     if (!fileInfo) {
       throw new Error(`No chunks found for file ${fileId}`);
     }
 
-    const start = options?.start || 0;
-    const end = options?.end || fileInfo.totalSize - 1;
+    const start = options?.start ?? 0;
+    const end = options?.end ?? fileInfo.totalSize - 1;
     const startChunk = Math.floor(start / this.config.chunkSize);
     const endChunk = Math.floor(end / this.config.chunkSize);
 
@@ -212,7 +217,7 @@ export class StorageService {
     let currentPosition = start;
 
     return new Readable({
-      async read() {
+      async read(): Promise<void> {
         if (currentChunk > endChunk || currentPosition > end) {
           this.push(null); // End of stream
           return;

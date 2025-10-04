@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { UserRepository } from './user.repository';
 import { UserModel } from '../models/user.model';

@@ -28,15 +28,17 @@ export interface PaginatedShootsResponse {
 export interface ShootApiError {
   success: false;
   error: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
-export interface ShootApiSuccess<T = any> {
+export interface ShootApiSuccess<T = Record<string, unknown>> {
   success: true;
   data: T;
 }
 
-export type ShootApiResponse<T = any> = ShootApiSuccess<T> | ShootApiError;
+export type ShootApiResponse<T = Record<string, unknown>> =
+  | ShootApiSuccess<T>
+  | ShootApiError;
 
 // TypeSpec operation return types
 export type CreateShootResponse = ShootApiSuccess<Shoot> | ShootApiError;

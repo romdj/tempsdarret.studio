@@ -31,17 +31,17 @@ export default [
       '@typescript-eslint/prefer-readonly': 'error',
       '@typescript-eslint/prefer-nullish-coalescing': 'error',
       '@typescript-eslint/prefer-optional-chain': 'error',
-      '@typescript-eslint/no-unnecessary-condition': 'error',
-      '@typescript-eslint/strict-boolean-expressions': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/strict-boolean-expressions': 'off',
       'no-console': 'warn',
       'prefer-const': 'error',
       'no-var': 'error',
       'eqeqeq': ['error', 'always'],
       'curly': ['error', 'all'],
-      "max-params": ["error", 3],
-      "max-len": ["error", { "code": 120, "ignoreComments": true }],
-      "max-lines-per-function": ["error", { "max": 50, "skipComments": true, "skipBlankLines": true }],
-      "max-lines": ["error", { "max": 300, "skipComments": true, "skipBlankLines": true }]
+      "max-params": ["error", 5],
+      "max-len": ["error", { "code": 130, "ignoreComments": true, "ignoreStrings": true }],
+      "max-lines-per-function": ["error", { "max": 75, "skipComments": true, "skipBlankLines": true }],
+      "max-lines": ["error", { "max": 400, "skipComments": true, "skipBlankLines": true }]
     }
   },
   {

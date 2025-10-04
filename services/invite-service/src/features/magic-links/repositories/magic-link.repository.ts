@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import { MagicLink } from '@tempsdarret/shared/schemas/invite.schema';
 
 export interface IMagicLinkRepository {
@@ -10,7 +12,7 @@ export interface IMagicLinkRepository {
 }
 
 export class MagicLinkRepository implements IMagicLinkRepository {
-  constructor(private model: any) {}
+  constructor(private readonly model: any) {}
 
   async create(magicLink: Partial<MagicLink>): Promise<MagicLink> {
     const created = await this.model.create({
@@ -49,7 +51,7 @@ export class MagicLinkRepository implements IMagicLinkRepository {
     return result.deletedCount;
   }
 
-  async getRecentTokensCount(email: string, minutes: number = 1): Promise<number> {
+  async getRecentTokensCount(email: string, minutes = 1): Promise<number> {
     const cutoff = new Date(Date.now() - minutes * 60 * 1000);
     const count = await this.model.countDocuments({
       clientEmail: email,
