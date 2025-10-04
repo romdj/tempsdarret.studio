@@ -34,17 +34,12 @@ export class GalleryRepository {
   }
 
   async findMany(query: GalleryQuery): Promise<{ galleries: IGalleryDocument[], total: number }> {
-    const filter: Record<string, unknown> = {};
-    if (query.portfolioId) {
-      filter.portfolioId = query.portfolioId;
-    }
-    if (query.shootId) {
-      filter.shootId = query.shootId;
-    }
-    if (query.type) {
-      filter.type = query.type;
-    }
-    if (query.isPublished !== undefined) {filter.isPublished = query.isPublished;}
+    const filter = {
+      ...(query.portfolioId && { portfolioId: query.portfolioId }),
+      ...(query.shootId && { shootId: query.shootId }),
+      ...(query.type && { type: query.type }),
+      ...(query.isPublished !== undefined && { isPublished: query.isPublished })
+    };
 
     const skip = ((query.page ?? 1) - 1) * (query.limit ?? 20);
 

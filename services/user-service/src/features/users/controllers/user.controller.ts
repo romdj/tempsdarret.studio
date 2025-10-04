@@ -130,7 +130,7 @@ export class UserController {
       const { userId } = request.params;
       const user = await this.userService.getUser(userId);
 
-      if (user === null) {
+      if (!user) {
         return reply.code(404).send({
           error: 'Not Found',
           message: 'User not found',

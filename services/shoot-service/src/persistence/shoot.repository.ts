@@ -37,29 +37,27 @@ export class ShootRepository {
     query: ShootQuery
   ): Promise<{ shoots: IShootDocument[]; total: number }> {
     // Build MongoDB filter
-    const filter: Record<string, unknown> = {};
-    if (query.photographerId) {
-      filter.photographerId = query.photographerId;
-    }
-    if (query.clientEmail) {
-      filter.clientEmail = query.clientEmail;
-    }
-    if (query.status) {filter.status = query.status;}
-    if (query.fromDate || query.toDate) {
-      filter.scheduledDate = {};
-      if (query.fromDate) {filter.scheduledDate.$gte = query.fromDate;}
-      if (query.toDate) {filter.scheduledDate.$lte = query.toDate;}
-    }
+    const filter = {
+      ...(query.photographerId && { photographerId: query.photographerId }),
+      ...(query.clientEmail && { clientEmail: query.clientEmail }),
+      ...(query.status && { status: query.status }),
+      ...((query.fromDate ?? query.toDate) && {
+        scheduledDate: {
+          ...(query.fromDate && { $gte: query.fromDate }),
+          ...(query.toDate && { $lte: query.toDate })
+        }
+      })
+    };
 
     // Calculate pagination
-    const skip = ((query.page || 1) - 1) * (query.limit || 20);
+    const skip = ((query.page ?? 1) - 1) * (query.limit ?? 20);
 
     // Execute queries in parallel
     const [shoots, total] = await Promise.all([
       ShootModel.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(query.limit || 20)
+        .limit(query.limit ?? 20)
         .exec(),
       ShootModel.countDocuments(filter).exec()
     ]);

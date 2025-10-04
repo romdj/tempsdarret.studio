@@ -57,7 +57,35 @@ did you manage to do the payloadcms implementation?
 
 Can you create a new file that is called run_locally.md ? The idea is for the whole project to be run locally whether that's on linux (ubuntu), mac or windows 10+. This wouldn't be just for test but rather to do an on-prem run of the solution. If there are tools to make it an optimal build that's also fine. Then in the readme.md, please add a section linking to it.
 
+
+can you discard the changes to all files containing `!== undefined` I'd like to clean up the git staging queue 
+
+please have an in-depth look at all the "linting fixes" you made and revert to optimize the code a little and remove stuff like `=== undefined` 
+
+please have an in-depth look at all the "linting fixes" you made and revert to optimize the code a little and remove stuff like `if (portfolio === null) {` 
+
+Surely there's a cleaner way to write this, no? ```
+  async findMany(query: GalleryQuery): Promise<{ galleries: IGalleryDocument[], total: number }> {
+    const filter: Record<string, unknown> = {};
+    if (query.portfolioId) {
+      filter.portfolioId = query.portfolioId;
+    }
+    if (query.shootId) {
+      filter.shootId = query.shootId;
+    }
+    if (query.type) {
+      filter.type = query.type;
+    }
+    if (query.isPublished !== undefined) {filter.isPublished = query.isPublished;}
+```
 <!-- TODO -->
+Let's implement an API Guideline strategy in order to enforce a proper way of working. What would you suggest?
+
+
+Let's implement a kong gateway / api manager.
+Now that the kong gateway / api manager is installed Let's make sure that all api traffic goes through it
+
+What tools would you suggest for JSON schema enforcement in the case of using Kong?
 
 one thing I really enjoy in gh pipelines is to see in one page all the builds, and not having to navigate on multiple build scripts. can you ensure that this would be the case?
 

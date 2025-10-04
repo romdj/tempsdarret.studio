@@ -47,22 +47,19 @@ export class UserRepository {
   }
 
   async list(options: UserListOptions): Promise<User[]> {
-    const filter: Record<string, unknown> = {};
-
-    // Apply filters
-    if (options.role) {filter.role = options.role;}
-    if (options.isActive !== undefined) {filter.isActive = options.isActive;}
-
-    // Handle text search
-    if (options.search) {
-      filter.$or = [
-        { name: { $regex: options.search, $options: 'i' } },
-        { email: { $regex: options.search, $options: 'i' } }
-      ];
-    }
+    const filter = {
+      ...(options.role && { role: options.role }),
+      ...(options.isActive !== undefined && { isActive: options.isActive }),
+      ...(options.search && {
+        $or: [
+          { name: { $regex: options.search, $options: 'i' } },
+          { email: { $regex: options.search, $options: 'i' } }
+        ]
+      })
+    };
 
     const skip = (options.page - 1) * options.limit;
-    
+
     const users = await UserModel
       .find(filter)
       .sort({ createdAt: -1 })
@@ -73,25 +70,23 @@ export class UserRepository {
   }
 
   async count(options: UserCountOptions): Promise<number> {
-    const filter: Record<string, unknown> = {};
-
-    // Apply same filters as list
-    if (options.role) {filter.role = options.role;}
-    if (options.isActive !== undefined) {filter.isActive = options.isActive;}
-
-    if (options.search) {
-      filter.$or = [
-        { name: { $regex: options.search, $options: 'i' } },
-        { email: { $regex: options.search, $options: 'i' } }
-      ];
-    }
+    const filter = {
+      ...(options.role && { role: options.role }),
+      ...(options.isActive !== undefined && { isActive: options.isActive }),
+      ...(options.search && {
+        $or: [
+          { name: { $regex: options.search, $options: 'i' } },
+          { email: { $regex: options.search, $options: 'i' } }
+        ]
+      })
+    };
 
     return UserModel.countDocuments(filter);
   }
 
   async delete(id: string): Promise<boolean> {
     const result = await UserModel.findByIdAndDelete(id);
-    return result !== null;
+    return !!result;
   }
 
   private documentToUser(doc: UserDocument): User {

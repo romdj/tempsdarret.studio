@@ -52,14 +52,14 @@ export class PortfolioService {
     // If slug is being updated, check if it's available
     if (updateData.urlSlug) {
       const existing = await this.portfolioRepository.findBySlug(updateData.urlSlug);
-      if (existing !== null && existing.id !== portfolioId) {
+      if (existing && existing.id !== portfolioId) {
         throw new Error('Portfolio URL slug already exists');
       }
     }
 
     const updatedPortfolio = await this.portfolioRepository.updateById(portfolioId, updateData);
 
-    if (updatedPortfolio !== null) {
+    if (updatedPortfolio) {
       await this.eventPublisher.publish('portfolios', {
         eventType: 'portfolio.updated',
         portfolioId,
@@ -68,7 +68,7 @@ export class PortfolioService {
       }, portfolioId);
     }
 
-    return updatedPortfolio !== null ? updatedPortfolio.toJSON() as Portfolio : null;
+    return updatedPortfolio ? updatedPortfolio.toJSON() as Portfolio : null;
   }
 
   async listPortfolios(query: PortfolioQuery): Promise<{ portfolios: Portfolio[], total: number }> {

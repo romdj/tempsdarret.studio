@@ -59,16 +59,11 @@ export class UserService {
     const limit = query.limit ?? 20;
 
     // Build filter object
-    const filter: Record<string, unknown> = {};
-    if (query.role) {
-      filter.role = query.role;
-    }
-    if (query.isActive !== undefined) {
-      filter.isActive = query.isActive;
-    }
-    if (query.search) {
-      filter.search = query.search;
-    }
+    const filter = {
+      ...(query.role && { role: query.role }),
+      ...(query.isActive !== undefined && { isActive: query.isActive }),
+      ...(query.search && { search: query.search })
+    };
 
     // Get users and count
     const [users, total] = await Promise.all([

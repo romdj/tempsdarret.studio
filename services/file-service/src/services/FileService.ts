@@ -135,19 +135,12 @@ export class FileService {
     const skip = (page - 1) * limit;
 
     // Build filter
-    const filter: Record<string, unknown> = {};
-    if (query.shootId) {
-      filter.shootId = query.shootId;
-    }
-    if (query.type) {
-      filter.type = query.type;
-    }
-    if (query.processingStatus) {
-      filter.processingStatus = query.processingStatus;
-    }
-    if (query.tags?.length) {
-      filter.tags = { $in: query.tags };
-    }
+    const filter = {
+      ...(query.shootId && { shootId: query.shootId }),
+      ...(query.type && { type: query.type }),
+      ...(query.processingStatus && { processingStatus: query.processingStatus }),
+      ...(query.tags?.length && { tags: { $in: query.tags } })
+    };
 
     // Execute queries in parallel
     const [docs, total] = await Promise.all([

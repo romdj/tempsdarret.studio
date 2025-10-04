@@ -54,7 +54,7 @@ export class InvitationController {
       const { invitationId } = request.params as { invitationId: string };
       const invitation = await this.inviteService.getInvitation(invitationId);
 
-      if (invitation === null) {
+      if (!invitation) {
         await reply.status(404).send({
           success: false,
           error: 'Invitation not found'

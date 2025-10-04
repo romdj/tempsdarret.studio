@@ -60,7 +60,7 @@ export class InvitationRepository implements IInvitationRepository {
 
   async findById(id: string): Promise<Invitation | null> {
     const invitation = await this.model.findOne({ id });
-    if (invitation === null) {
+    if (!invitation) {
       return null;
     }
     return invitation.toObject();
@@ -82,33 +82,24 @@ export class InvitationRepository implements IInvitationRepository {
       { ...updates, updatedAt: new Date() },
       { new: true }
     );
-    if (updated === null) {
+    if (!updated) {
       throw new Error('Invitation not found');
     }
     return updated.toObject();
   }
 
   async list(query: InvitationQuery): Promise<Invitation[]> {
-    const filter: Record<string, unknown> = {};
-
-    if (query.shootId) {
-      filter.shootId = query.shootId;
-    }
-    if (query.clientEmail) {
-      filter.clientEmail = query.clientEmail;
-    }
-    if (query.status) {
-      filter.status = query.status;
-    }
-    if (query.fromDate || query.toDate) {
-      filter.createdAt = {};
-      if (query.fromDate) {
-        (filter.createdAt as Record<string, unknown>).$gte = query.fromDate;
-      }
-      if (query.toDate) {
-        (filter.createdAt as Record<string, unknown>).$lte = query.toDate;
-      }
-    }
+    const filter = {
+      ...(query.shootId && { shootId: query.shootId }),
+      ...(query.clientEmail && { clientEmail: query.clientEmail }),
+      ...(query.status && { status: query.status }),
+      ...((query.fromDate ?? query.toDate) && {
+        createdAt: {
+          ...(query.fromDate && { $gte: query.fromDate }),
+          ...(query.toDate && { $lte: query.toDate })
+        }
+      })
+    };
 
     const skip = (query.page - 1) * query.limit;
     const invitations = await this.model
@@ -121,26 +112,17 @@ export class InvitationRepository implements IInvitationRepository {
   }
 
   async count(query: InvitationQuery): Promise<number> {
-    const filter: Record<string, unknown> = {};
-
-    if (query.shootId) {
-      filter.shootId = query.shootId;
-    }
-    if (query.clientEmail) {
-      filter.clientEmail = query.clientEmail;
-    }
-    if (query.status) {
-      filter.status = query.status;
-    }
-    if (query.fromDate || query.toDate) {
-      filter.createdAt = {};
-      if (query.fromDate) {
-        (filter.createdAt as Record<string, unknown>).$gte = query.fromDate;
-      }
-      if (query.toDate) {
-        (filter.createdAt as Record<string, unknown>).$lte = query.toDate;
-      }
-    }
+    const filter = {
+      ...(query.shootId && { shootId: query.shootId }),
+      ...(query.clientEmail && { clientEmail: query.clientEmail }),
+      ...(query.status && { status: query.status }),
+      ...((query.fromDate ?? query.toDate) && {
+        createdAt: {
+          ...(query.fromDate && { $gte: query.fromDate }),
+          ...(query.toDate && { $lte: query.toDate })
+        }
+      })
+    };
 
     return this.model.countDocuments(filter);
   }
