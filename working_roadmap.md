@@ -78,9 +78,20 @@ Surely there's a cleaner way to write this, no? ```
     }
     if (query.isPublished !== undefined) {filter.isPublished = query.isPublished;}
 ```
-<!-- TODO -->
-Let's implement an API Guideline strategy in order to enforce a proper way of working. What would you suggest?
+Couldn't this be a 1 liner? from invitation.repository.ts ```
+  async findById(id: string): Promise<Invitation | null> {
+    const invitation = await this.model.findOne({ id });
+    if (invitation === null) {
+      return null;
+    }
+    return invitation.toObject();
+  }```
 
+<!-- TODO -->
+
+What are modern tools (definitely not jenkins, _maybe_ sonarqube) but I'm looking for newer stuff that could be part of the pre-commit push that assess the code quality? Ideally the tool would run locally for faster feedback
+
+Let's implement an API Guideline strategy in order to enforce a proper way of working. What would you suggest?
 
 Let's implement a kong gateway / api manager.
 Now that the kong gateway / api manager is installed Let's make sure that all api traffic goes through it

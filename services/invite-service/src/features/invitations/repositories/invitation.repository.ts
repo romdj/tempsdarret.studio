@@ -59,11 +59,7 @@ export class InvitationRepository implements IInvitationRepository {
   }
 
   async findById(id: string): Promise<Invitation | null> {
-    const invitation = await this.model.findOne({ id });
-    if (!invitation) {
-      return null;
-    }
-    return invitation.toObject();
+    return (await this.model.findOne({ id }))?.toObject() ?? null;
   }
 
   async findByShootId(shootId: string): Promise<Invitation[]> {
