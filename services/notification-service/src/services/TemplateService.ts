@@ -15,13 +15,13 @@ import {
 import { PayloadClient } from '../payload/PayloadClient.js';
 
 export class TemplateService implements TemplateRepository {
-  private compiledTemplates: Map<string, {
-    subject?: HandlebarsTemplateDelegate;
-    text: HandlebarsTemplateDelegate;
-    html?: HandlebarsTemplateDelegate;
-  }> = new Map();
+  private readonly compiledTemplates = new Map<string, {
+    subject?: Handlebars.TemplateDelegate;
+    text: Handlebars.TemplateDelegate;
+    html?: Handlebars.TemplateDelegate;
+  }>();
   
-  private payloadClient: PayloadClient;
+  private readonly payloadClient: PayloadClient;
 
   constructor() {
     this.payloadClient = new PayloadClient();
@@ -39,7 +39,7 @@ export class TemplateService implements TemplateRepository {
     }
   }
 
-  async renderTemplate(template: NotificationTemplate, variables: Record<string, any>): Promise<RenderedTemplate> {
+  async renderTemplate(template: NotificationTemplate, variables: Record<string, unknown>): Promise<RenderedTemplate> {
     try {
       const cacheKey = `${template.id}-${template.updatedAt?.getTime()}`;
       
@@ -113,8 +113,8 @@ export class TemplateService implements TemplateRepository {
     }
   }
 
-  private prepareVariables(template: NotificationTemplate, variables: Record<string, any>): Record<string, any> {
-    const prepared: Record<string, any> = { ...variables };
+  private prepareVariables(template: NotificationTemplate, variables: Record<string, unknown>): Record<string, unknown> {
+    const prepared: Record<string, unknown> = { ...variables };
 
     // Apply default values for missing variables
     for (const variable of template.variables) {
@@ -131,7 +131,7 @@ export class TemplateService implements TemplateRepository {
     return prepared;
   }
 
-  private validateRequiredVariables(template: NotificationTemplate, variables: Record<string, any>): void {
+  private validateRequiredVariables(template: NotificationTemplate, variables: Record<string, unknown>): void {
     const missing = template.variables
       .filter(v => v.required && !(v.name in variables))
       .map(v => v.name);
@@ -149,7 +149,7 @@ export class TemplateService implements TemplateRepository {
     });
 
     // Conditional helper
-    Handlebars.registerHelper('ifEquals', function(arg1: any, arg2: any, options: any) {
+    Handlebars.registerHelper('ifEquals', function(arg1: unknown, arg2: unknown, options: Handlebars.HelperOptions) {
       return (arg1 === arg2) ? options.fn(this) : options.inverse(this);
     });
 
@@ -188,7 +188,15 @@ export class TemplateService implements TemplateRepository {
   }
 
   // Get template variables from Payload CMS
-  async getTemplateVariables() {
+  async getTemplateVariables(): Promise<{
+    name: string;
+    displayName: string;
+    description: string;
+    type: string;
+    category: string;
+    required: boolean;
+    defaultValue?: string;
+  }[]> {
     return this.payloadClient.getTemplateVariables();
   }
 

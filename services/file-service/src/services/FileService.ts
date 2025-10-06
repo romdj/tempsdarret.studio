@@ -47,7 +47,6 @@ export interface FileListResult {
 }
 
 export class FileService {
-  /* eslint-disable max-params */
   constructor(
     private readonly fileModel: Model<FileDocument>,
     private readonly storageService: StorageService,

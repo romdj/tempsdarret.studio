@@ -5,7 +5,8 @@
 
 import payload from 'payload';
 
-export const seedTemplates = async () => {
+/* eslint-disable max-lines-per-function, max-lines, max-len */
+export const seedTemplates = async (): Promise<void> => {
   console.log('📦 Seeding default notification templates...');
 
   try {
@@ -475,7 +476,7 @@ Best regards,
   }
 };
 
-const seedTemplateVariables = async () => {
+const seedTemplateVariables = async (): Promise<void> => {
   console.log('📦 Seeding template variables...');
 
   const variables = [

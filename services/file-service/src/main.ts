@@ -24,7 +24,6 @@ import {
 
 // Mock Kafka producer - replace with actual implementation
 class MockEventProducer {
-  /* eslint-disable max-params */
   async publish(
     topic: string,
     key: string,

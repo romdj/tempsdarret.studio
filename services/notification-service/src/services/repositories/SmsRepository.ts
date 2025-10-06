@@ -18,7 +18,7 @@ export interface SmsConfig {
 }
 
 export class SmsRepository extends BaseNotificationRepository {
-  private config: SmsConfig;
+  private readonly config: SmsConfig;
 
   constructor(config: SmsConfig) {
     super('sms');
@@ -59,7 +59,7 @@ export class SmsRepository extends BaseNotificationRepository {
     return 'delivered';
   }
 
-  async updateDeliveryStatus(messageId: string, status: DeliveryStatus, details?: any): Promise<void> {
+  async updateDeliveryStatus(messageId: string, status: DeliveryStatus, _details?: unknown): Promise<void> {
     console.log(`📱 [PLACEHOLDER] SMS ${messageId} status: ${status}`);
   }
 }

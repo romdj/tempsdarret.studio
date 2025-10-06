@@ -1,24 +1,23 @@
 import express from 'express';
 import payload from 'payload';
 import { config as dotenvConfig } from 'dotenv';
-import path from 'path';
 import { fileURLToPath } from 'url';
 import { seedTemplates } from './seed-templates.js';
 
 // Load environment variables
 dotenvConfig();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+fileURLToPath(import.meta.url);
 
 const app = express();
-const PORT = process.env.PAYLOAD_PORT || 3001;
+const PORT = process.env.PAYLOAD_PORT ?? 3001;
 
 // Initialize Payload
+/* eslint-disable max-lines-per-function */
 const start = async (): Promise<void> => {
   // Initialize Payload
   await payload.init({
-    secret: process.env.PAYLOAD_SECRET || 'your-secret-here',
+    secret: process.env.PAYLOAD_SECRET ?? 'your-secret-here',
     express: app,
     onInit: async () => {
       payload.logger.info(`Payload Admin URL: ${payload.getAdminURL()}`);
@@ -32,7 +31,7 @@ const start = async (): Promise<void> => {
     res.status(200).json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      version: process.env.npm_package_version || '1.0.0',
+      version: process.env.npm_package_version ?? '1.0.0',
     });
   });
 
@@ -74,8 +73,8 @@ const start = async (): Promise<void> => {
               `<h2>Subject: ${template.templates.subject}</h2>` : ''
             }
             <h3>Content:</h3>
-            ${template.templates?.html || 
-              `<pre>${template.templates?.text || 'No content available'}</pre>`
+            ${template.templates?.html ??
+              `<pre>${template.templates?.text ?? 'No content available'}</pre>`
             }
           </div>
           ${template.variables?.length ? `
@@ -114,8 +113,8 @@ const start = async (): Promise<void> => {
         await payload.create({
           collection: 'users',
           data: {
-            email: process.env.PAYLOAD_ADMIN_EMAIL || 'admin@tempsdarret.com',
-            password: process.env.PAYLOAD_ADMIN_PASSWORD || 'admin123!',
+            email: process.env.PAYLOAD_ADMIN_EMAIL ?? 'admin@tempsdarret.com',
+            password: process.env.PAYLOAD_ADMIN_PASSWORD ?? 'admin123!',
             role: 'admin',
             firstName: 'System',
             lastName: 'Administrator',
@@ -143,8 +142,8 @@ const start = async (): Promise<void> => {
             priority: 1,
             configuration: {
               defaultFromName: "Temps D'arrêt Photography",
-              defaultFromEmail: process.env.DEFAULT_FROM_EMAIL || 'noreply@tempsdarret.com',
-              defaultReplyTo: process.env.DEFAULT_REPLY_TO || 'contact@tempsdarret.com',
+              defaultFromEmail: process.env.DEFAULT_FROM_EMAIL ?? 'noreply@tempsdarret.com',
+              defaultReplyTo: process.env.DEFAULT_REPLY_TO ?? 'contact@tempsdarret.com',
               trackOpens: true,
               trackClicks: true,
             },
@@ -162,7 +161,7 @@ const start = async (): Promise<void> => {
             },
             webhooks: {
               enabled: true,
-              endpoint: `${process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3000'}/webhooks/delivery-status`,
+              endpoint: `${process.env.NOTIFICATION_SERVICE_URL ?? 'http://localhost:3000'}/webhooks/delivery-status`,
             },
             healthCheck: {
               enabled: true,

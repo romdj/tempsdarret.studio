@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable max-params */
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import {
   CreateInvitationRequest,
   SendInvitationRequest,

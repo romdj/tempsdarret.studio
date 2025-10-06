@@ -272,7 +272,7 @@ export const NotificationTemplates: CollectionConfig = {
         console.log(`Template ${doc.name} was ${operation}d at ${new Date().toISOString()}`);
       },
     ],
-  ],
+  },
   versions: {
     drafts: true,
     max: 10,

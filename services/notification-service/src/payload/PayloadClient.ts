@@ -14,13 +14,13 @@ export interface PayloadTemplate {
     text: string;
     html?: string;
   };
-  variables: Array<{
+  variables: {
     name: string;
     description: string;
     type: string;
     required: boolean;
     defaultValue?: string;
-  }>;
+  }[];
   settings: {
     fromName?: string;
     fromEmail?: string;
@@ -38,7 +38,7 @@ export interface PayloadChannelConfig {
   channel: NotificationChannel;
   isEnabled: boolean;
   priority: number;
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
   rateLimits: {
     enabled: boolean;
     maxPerMinute: number;
@@ -64,18 +64,17 @@ export interface PayloadChannelConfig {
 export class PayloadClient {
   private initialized = false;
 
-  constructor() {}
 
   /**
    * Initialize Payload CMS connection
    */
   async initialize(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {return;}
 
     try {
       // Initialize Payload without Express (for API access only)
       await payload.init({
-        secret: process.env.PAYLOAD_SECRET || 'your-secret-here',
+        secret: process.env.PAYLOAD_SECRET ?? 'your-secret-here',
         local: true, // Use local API instead of HTTP requests
       });
       
@@ -93,7 +92,7 @@ export class PayloadClient {
   async getTemplate(
     type: TemplateType, 
     channel: NotificationChannel,
-    language: string = 'en'
+    language = 'en'
   ): Promise<NotificationTemplate | null> {
     await this.initialize();
 
@@ -182,7 +181,7 @@ export class PayloadClient {
   /**
    * Get all template variables for reference
    */
-  async getTemplateVariables(): Promise<Array<{
+  async getTemplateVariables(): Promise<{
     name: string;
     displayName: string;
     description: string;
@@ -190,7 +189,7 @@ export class PayloadClient {
     category: string;
     required: boolean;
     defaultValue?: string;
-  }>> {
+  }[]> {
     await this.initialize();
 
     try {
@@ -232,7 +231,7 @@ export class PayloadClient {
           and: [
             { type: { equals: templateData.type } },
             { channel: { equals: templateData.channel } },
-            { language: { equals: templateData.language || 'en' } },
+            { language: { equals: templateData.language ?? 'en' } },
           ],
         },
         limit: 1,
@@ -254,7 +253,7 @@ export class PayloadClient {
             ...templateData,
             isActive: templateData.isActive ?? true,
             priority: templateData.priority ?? 0,
-            language: templateData.language || 'en',
+            language: templateData.language ?? 'en',
           },
         });
       }
@@ -318,7 +317,7 @@ export class PayloadClient {
   /**
    * Get cache statistics (for monitoring)
    */
-  getCacheStats() {
+  getCacheStats(): { initialized: boolean; collections: string[] } {
     return {
       initialized: this.initialized,
       collections: ['notification-templates', 'template-variables', 'notification-channels'],

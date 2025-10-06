@@ -22,8 +22,8 @@
     "test:coverage": "jest --coverage --selectProjects unit component integration",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand --no-cache",
-    "lint": "eslint src/**/*.{js,ts}",
-    "lint:fix": "eslint src/**/*.{js,ts} --fix",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
     "check": "tsc --noEmit"
   },
   "dependencies": {

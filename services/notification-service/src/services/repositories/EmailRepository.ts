@@ -19,8 +19,8 @@ export interface ResendConfig {
 }
 
 export class EmailRepository extends BaseNotificationRepository {
-  private resend: Resend;
-  private config: ResendConfig;
+  private readonly resend: Resend;
+  private readonly config: ResendConfig;
 
   constructor(config: ResendConfig) {
     super('email');
@@ -97,7 +97,7 @@ export class EmailRepository extends BaseNotificationRepository {
     }
   }
 
-  async updateDeliveryStatus(messageId: string, status: DeliveryStatus, details?: any): Promise<void> {
+  async updateDeliveryStatus(messageId: string, status: DeliveryStatus, details?: unknown): Promise<void> {
     // This would typically be called from webhook handlers
     // For now, we'll just log the status update
     console.log(`📧 Email ${messageId} status updated to: ${status}`, details);
@@ -106,24 +106,30 @@ export class EmailRepository extends BaseNotificationRepository {
     // await this.updateMessageStatus(messageId, status, details);
   }
 
-  private prepareEmailData(message: NotificationMessage): any {
-    const fromEmail = message.content.subject?.includes('from') 
-      ? this.extractFromEmail(message.variables) 
+  private prepareEmailData(message: NotificationMessage): Record<string, unknown> {
+    const fromEmail = message.content.subject?.includes('from')
+      ? this.extractFromEmail(message.variables)
       : this.config.defaultFromEmail;
-    
-    const fromName = message.variables.photographerName || this.config.defaultFromName;
 
-    const emailData: any = {
+    const fromName = (message.variables.photographerName as string | undefined) ?? this.config.defaultFromName;
+
+    const recipientEmail = message.recipient.email;
+    if (!recipientEmail) {
+      throw new Error('Recipient email is required');
+    }
+
+    const emailData: Record<string, unknown> = {
       from: `${fromName} <${fromEmail}>`,
-      to: [message.recipient.email!],
-      subject: message.content.subject || this.getDefaultSubject(message.templateType),
+      to: [recipientEmail],
+      subject: message.content.subject ?? this.getDefaultSubject(message.templateType),
       html: message.content.html,
       text: message.content.message,
     };
 
     // Add reply-to if photographer email is provided
-    if (message.variables.photographerEmail) {
-      emailData.reply_to = message.variables.photographerEmail;
+    const photographerEmail = message.variables.photographerEmail as string | undefined;
+    if (photographerEmail) {
+      emailData.reply_to = photographerEmail;
     }
 
     // Add attachments if present
@@ -135,8 +141,8 @@ export class EmailRepository extends BaseNotificationRepository {
     emailData.headers = {
       'X-Notification-ID': message.id,
       'X-Template-Type': message.templateType,
-      'X-Shoot-ID': message.metadata.shootId || '',
-      'X-Correlation-ID': message.metadata.correlationId || '',
+      'X-Shoot-ID': message.metadata.shootId ?? '',
+      'X-Correlation-ID': message.metadata.correlationId ?? '',
     };
 
     // Add tags for analytics
@@ -152,18 +158,18 @@ export class EmailRepository extends BaseNotificationRepository {
     return emailData;
   }
 
-  private convertAttachment(attachment: Attachment): any {
+  private convertAttachment(attachment: Attachment): Record<string, unknown> {
     return {
       filename: attachment.filename,
       content: attachment.content,
       type: attachment.contentType,
-      disposition: attachment.disposition || 'attachment',
+      disposition: attachment.disposition ?? 'attachment',
     };
   }
 
-  private extractFromEmail(variables: Record<string, any>): string {
+  private extractFromEmail(variables: Record<string, unknown>): string {
     // Use photographer email if available, otherwise default
-    return variables.photographerEmail || this.config.defaultFromEmail;
+    return (variables.photographerEmail as string | undefined) ?? this.config.defaultFromEmail;
   }
 
   private getDefaultSubject(templateType: string): string {
@@ -179,7 +185,7 @@ export class EmailRepository extends BaseNotificationRepository {
   }
 
   // Webhook handler for Resend delivery events
-  async handleWebhook(event: any): Promise<void> {
+  async handleWebhook(event: { type: string; data?: { email_id?: string } }): Promise<void> {
     const { type, data } = event;
     
     if (!data?.email_id) {
@@ -235,7 +241,7 @@ export class EmailRepository extends BaseNotificationRepository {
   }
 
   // Get email statistics
-  async getStats(): Promise<any> {
+  async getStats(): Promise<Record<string, unknown>> {
     try {
       // Note: This would require additional Resend API endpoints for analytics
       // For now, return basic info

@@ -34,9 +34,9 @@ export default buildConfig({
     schemaOutputFile: path.resolve(__dirname, 'generated-schema.graphql'),
   },
   db: mongooseAdapter({
-    url: process.env.MONGODB_URI || 'mongodb://localhost/notification-templates',
+    url: process.env.MONGODB_URI ?? 'mongodb://localhost/notification-templates',
   }),
-  serverURL: process.env.PAYLOAD_SERVER_URL || 'http://localhost:3001',
+  serverURL: process.env.PAYLOAD_SERVER_URL ?? 'http://localhost:3001',
   cors: [
     'http://localhost:3000', // Frontend
     'http://localhost:3001', // Payload admin

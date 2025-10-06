@@ -16,12 +16,12 @@ import { EmailService } from '../services/EmailService.js';
 import { generateId } from '../shared/utils/id.js';
 
 export class EventConsumer {
-  private consumer: Consumer;
+  private readonly consumer: Consumer;
   private isRunning = false;
 
   constructor(
-    private kafka: Kafka,
-    private emailService: EmailService
+    private readonly kafka: Kafka,
+    private readonly emailService: EmailService
   ) {
     this.consumer = this.kafka.consumer({ 
       groupId: 'notification-service',
@@ -31,7 +31,7 @@ export class EventConsumer {
   }
 
   async start(): Promise<void> {
-    if (this.isRunning) return;
+    if (this.isRunning) {return;}
 
     await this.consumer.connect();
     console.log('📧 Notification service event consumer connected to Kafka');
@@ -57,7 +57,7 @@ export class EventConsumer {
   }
 
   async stop(): Promise<void> {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
 
     await this.consumer.disconnect();
     this.isRunning = false;
@@ -65,7 +65,7 @@ export class EventConsumer {
   }
 
   private async handleMessage(payload: EachMessagePayload): Promise<void> {
-    const { topic, partition, message } = payload;
+    const { topic, message } = payload;
     
     try {
       if (!message.value) {
@@ -108,12 +108,12 @@ export class EventConsumer {
 
   private async handleInvitationCreated(event: InvitationCreatedEvent): Promise<void> {
     console.log(`📧 Sending magic link email to ${event.clientEmail} for shoot ${event.shootId}`);
-    
+
     await this.emailService.sendMagicLinkEmail({
       recipientEmail: event.clientEmail,
       recipientName: event.clientName,
       variables: {
-        clientName: event.clientName || 'Valued Client',
+        clientName: event.clientName ?? 'Valued Client',
         eventName: event.shootDetails.eventName,
         magicLinkUrl: event.magicLinkUrl,
         expirationDate: event.expirationDate,
@@ -134,7 +134,7 @@ export class EventConsumer {
       recipientEmail: event.clientEmail,
       recipientName: event.clientName,
       variables: {
-        clientName: event.clientName || 'Valued Client',
+        clientName: event.clientName ?? 'Valued Client',
         eventName: event.shootDetails.eventName,
         eventType: event.shootDetails.eventType,
         totalPhotoCount: event.shootDetails.totalPhotoCount,
@@ -154,7 +154,7 @@ export class EventConsumer {
       recipientEmail: event.clientEmail,
       recipientName: event.clientName,
       variables: {
-        clientName: event.clientName || 'Valued Client',
+        clientName: event.clientName ?? 'Valued Client',
         eventName: event.updateDetails.eventName,
         updateMessage: event.updateDetails.updateMessage,
         projectUrl: event.projectUrl,
@@ -173,7 +173,7 @@ export class EventConsumer {
       recipientEmail: event.clientEmail,
       recipientName: event.clientName,
       variables: {
-        clientName: event.clientName || 'Valued Client',
+        clientName: event.clientName ?? 'Valued Client',
         eventName: `Shoot ${event.shootId}`, // We'll need to enhance this with actual event name
         expirationDate: event.expirationDate,
         magicLinkUrl: event.magicLinkUrl,

@@ -37,7 +37,6 @@ export interface ArchiveConfig {
 }
 
 export class ArchiveService {
-  /* eslint-disable max-params */
   constructor(
     private readonly archiveModel: Model<ArchiveDocument>,
     private readonly fileService: FileService,

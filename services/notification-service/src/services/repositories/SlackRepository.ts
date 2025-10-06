@@ -17,7 +17,7 @@ export interface SlackConfig {
 }
 
 export class SlackRepository extends BaseNotificationRepository {
-  private config: SlackConfig;
+  private readonly config: SlackConfig;
 
   constructor(config: SlackConfig) {
     super('slack');
@@ -31,8 +31,9 @@ export class SlackRepository extends BaseNotificationRepository {
 
     // TODO: Implement Slack Web API integration
     // This would use @slack/web-api package
-    
-    console.log(`💬 [PLACEHOLDER] Sending Slack message to ${message.recipient.slackUserId || message.recipient.email}`);
+
+
+    console.log(`💬 [PLACEHOLDER] Sending Slack message to ${message.recipient.slackUserId ?? message.recipient.email}`);
     console.log(`Content: ${message.content.message}`);
     
     // Simulated success for now
@@ -48,17 +49,17 @@ export class SlackRepository extends BaseNotificationRepository {
     return 'delivered';
   }
 
-  async updateDeliveryStatus(messageId: string, status: DeliveryStatus, details?: any): Promise<void> {
+  async updateDeliveryStatus(messageId: string, status: DeliveryStatus, _details?: unknown): Promise<void> {
     console.log(`💬 [PLACEHOLDER] Slack message ${messageId} status: ${status}`);
   }
 
   // Future methods for Slack-specific functionality
-  async sendToChannel(channel: string, message: string): Promise<SendResult> {
+  async sendToChannel(_channel: string, _message: string): Promise<SendResult> {
     // TODO: Implement channel messaging
     return { success: true, messageId: `channel_${Date.now()}` };
   }
 
-  async sendDirectMessage(userId: string, message: string): Promise<SendResult> {
+  async sendDirectMessage(_userId: string, _message: string): Promise<SendResult> {
     // TODO: Implement DM functionality
     return { success: true, messageId: `dm_${Date.now()}` };
   }

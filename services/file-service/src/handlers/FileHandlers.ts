@@ -146,7 +146,6 @@ export class FileHandlers {
    * It retrieves file metadata, validates existence, handles partial content requests,
    * sets appropriate headers for download progress tracking, and streams the file data.
    */
-  /* eslint-disable max-lines-per-function */
   async downloadFile(
     request: FastifyRequest<{ Params: { fileId: string } }>,
     reply: FastifyReply

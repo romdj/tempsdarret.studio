@@ -34,7 +34,7 @@ export interface NotificationMessage {
   };
   
   // Template variables
-  variables: Record<string, any>;
+  variables: Record<string, unknown>;
   
   // Delivery tracking
   delivery: {
@@ -109,7 +109,7 @@ export interface TemplateVariable {
   description: string;
   type: 'string' | 'number' | 'boolean' | 'date' | 'url';
   required: boolean;
-  defaultValue?: any;
+  defaultValue?: unknown;
   validation?: {
     pattern?: string;
     min?: number;
@@ -149,7 +149,7 @@ export interface WhatsAppSettings {
 export interface NotificationRepository {
   send(message: NotificationMessage): Promise<SendResult>;
   getDeliveryStatus(messageId: string): Promise<DeliveryStatus>;
-  updateDeliveryStatus(messageId: string, status: DeliveryStatus, details?: any): Promise<void>;
+  updateDeliveryStatus(messageId: string, status: DeliveryStatus, details?: unknown): Promise<void>;
 }
 
 // Send result from notification providers
@@ -166,7 +166,7 @@ export interface SendResult {
 // Template repository interface
 export interface TemplateRepository {
   getTemplate(type: TemplateType, channel: NotificationChannel): Promise<NotificationTemplate | null>;
-  renderTemplate(template: NotificationTemplate, variables: Record<string, any>): Promise<RenderedTemplate>;
+  renderTemplate(template: NotificationTemplate, variables: Record<string, unknown>): Promise<RenderedTemplate>;
   getAllTemplates(channel?: NotificationChannel): Promise<NotificationTemplate[]>;
 }
 
@@ -176,7 +176,7 @@ export interface RenderedTemplate {
   text: string;
   html?: string;
   markdown?: string;
-  variables: Record<string, any>; // Resolved variables
+  variables: Record<string, unknown>; // Resolved variables
 }
 
 // Notification job for queue processing
@@ -185,9 +185,9 @@ export interface NotificationJob {
   channel: NotificationChannel;
   templateType: TemplateType;
   priority: NotificationPriority;
-  
+
   recipient: NotificationMessage['recipient'];
-  variables: Record<string, any>;
+  variables: Record<string, unknown>;
   
   metadata: NotificationMessage['metadata'];
   

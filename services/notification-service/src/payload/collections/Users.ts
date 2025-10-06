@@ -12,7 +12,7 @@ export const Users: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
-      if (user?.role === 'admin') return true;
+      if (user?.role === 'admin') {return true;}
       return {
         id: {
           equals: user?.id,
@@ -21,7 +21,7 @@ export const Users: CollectionConfig = {
     },
     create: ({ req: { user } }) => user?.role === 'admin',
     update: ({ req: { user } }) => {
-      if (user?.role === 'admin') return true;
+      if (user?.role === 'admin') {return true;}
       return {
         id: {
           equals: user?.id,

@@ -1,7 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable max-params */
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
-/* eslint-disable max-lines-per-function */
 import crypto from 'crypto';
 import {
   MagicLinkGenerationRequest,

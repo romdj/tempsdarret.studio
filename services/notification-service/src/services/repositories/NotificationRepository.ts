@@ -21,7 +21,7 @@ export abstract class BaseNotificationRepository implements NotificationReposito
 
   abstract send(message: NotificationMessage): Promise<SendResult>;
   abstract getDeliveryStatus(messageId: string): Promise<DeliveryStatus>;
-  abstract updateDeliveryStatus(messageId: string, status: DeliveryStatus, details?: any): Promise<void>;
+  abstract updateDeliveryStatus(messageId: string, status: DeliveryStatus, details?: unknown): Promise<void>;
 
   // Common validation logic
   protected validateMessage(message: NotificationMessage): void {
@@ -51,39 +51,41 @@ export abstract class BaseNotificationRepository implements NotificationReposito
   }
 
   // Common error handling
-  protected handleProviderError(error: any): SendResult {
+  protected handleProviderError(error: unknown): SendResult {
     console.error(`${this.channel} provider error:`, error);
     
+    const errorObj = error as { code?: string; message?: string; status?: number };
     return {
       success: false,
       error: {
-        code: error.code || 'PROVIDER_ERROR',
-        message: error.message || `Failed to send ${this.channel} notification`,
+        code: errorObj.code ?? 'PROVIDER_ERROR',
+        message: errorObj.message ?? `Failed to send ${this.channel} notification`,
         retryable: this.isRetryableError(error),
       }
     };
   }
 
   // Determine if an error is retryable
-  protected isRetryableError(error: any): boolean {
+  protected isRetryableError(error: unknown): boolean {
+    const errorObj = error as { status?: number; code?: string };
     // Common retryable HTTP status codes
     const retryableStatuses = [429, 500, 502, 503, 504];
-    
-    if (error.status && retryableStatuses.includes(error.status)) {
+
+    if (errorObj.status && retryableStatuses.includes(errorObj.status)) {
       return true;
     }
-    
+
     // Network/connection errors are usually retryable
-    if (error.code === 'ECONNRESET' || error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT') {
+    if (errorObj.code === 'ECONNRESET' || errorObj.code === 'ENOTFOUND' || errorObj.code === 'ETIMEDOUT') {
       return true;
     }
-    
+
     return false;
   }
 
   // Format variables for template rendering
-  protected formatVariables(variables: Record<string, any>): Record<string, any> {
-    const formatted: Record<string, any> = {};
+  protected formatVariables(variables: Record<string, unknown>): Record<string, unknown> {
+    const formatted: Record<string, unknown> = {};
     
     for (const [key, value] of Object.entries(variables)) {
       if (value instanceof Date) {
@@ -113,9 +115,9 @@ export interface NotificationRepositoryFactory {
 
 // Multi-channel notification service
 export class MultiChannelNotificationService {
-  private repositories: Map<NotificationChannel, NotificationRepository> = new Map();
+  private readonly repositories = new Map<NotificationChannel, NotificationRepository>();
 
-  constructor(private factory: NotificationRepositoryFactory) {}
+  constructor(private readonly factory: NotificationRepositoryFactory) {}
 
   // Register a repository for a specific channel
   registerRepository(channel: NotificationChannel, repository: NotificationRepository): void {

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import { MagicLink } from '@tempsdarret/shared/schemas/invite.schema';
 
 export interface IMagicLinkRepository {
