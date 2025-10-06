@@ -1,0 +1,191 @@
+_format_version: "3.0"
+
+# Kong declarative configuration for Temps D'arrêt microservices
+# This file defines services, routes, and plugins for the API gateway
+
+services:
+  # User Service
+  - name: user-service
+    url: http://user-service:3002
+    tags:
+      - microservice
+      - backend
+    routes:
+      - name: user-service-route
+        paths:
+          - /api/v1/users
+        methods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+        strip_path: false
+        preserve_host: false
+
+  # Invite Service
+  - name: invite-service
+    url: http://invite-service:3003
+    tags:
+      - microservice
+      - backend
+    routes:
+      - name: invite-service-route
+        paths:
+          - /api/v1/invitations
+          - /api/v1/magic-links
+        methods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+        strip_path: false
+        preserve_host: false
+
+  # Portfolio Service
+  - name: portfolio-service
+    url: http://portfolio-service:3004
+    tags:
+      - microservice
+      - backend
+    routes:
+      - name: portfolio-service-route
+        paths:
+          - /api/v1/portfolios
+          - /api/v1/galleries
+        methods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+        strip_path: false
+        preserve_host: false
+
+  # Shoot Service
+  - name: shoot-service
+    url: http://shoot-service:3005
+    tags:
+      - microservice
+      - backend
+    routes:
+      - name: shoot-service-route
+        paths:
+          - /api/v1/shoots
+        methods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+        strip_path: false
+        preserve_host: false
+
+  # File Service
+  - name: file-service
+    url: http://file-service:3006
+    tags:
+      - microservice
+      - backend
+    routes:
+      - name: file-service-route
+        paths:
+          - /api/v1/files
+        methods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+        strip_path: false
+        preserve_host: false
+
+  # Notification Service
+  - name: notification-service
+    url: http://notification-service:3007
+    tags:
+      - microservice
+      - backend
+    routes:
+      - name: notification-service-route
+        paths:
+          - /api/v1/notifications
+        methods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+        strip_path: false
+        preserve_host: false
+
+# Global plugins
+plugins:
+  # CORS support for frontend
+  - name: cors
+    config:
+      origins:
+        - http://localhost:5173
+        - http://localhost:3000
+        - https://tempsdarret.studio
+      methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      headers:
+        - Accept
+        - Authorization
+        - Content-Type
+        - X-Request-ID
+      exposed_headers:
+        - X-Request-ID
+        - X-RateLimit-Limit
+        - X-RateLimit-Remaining
+      credentials: true
+      max_age: 3600
+
+  # Request ID for tracing
+  - name: correlation-id
+    config:
+      header_name: X-Request-ID
+      generator: uuid
+      echo_downstream: true
+
+  # Rate limiting (global)
+  - name: rate-limiting
+    config:
+      minute: 100
+      hour: 1000
+      policy: local
+      fault_tolerant: true
+      hide_client_headers: false
+
+  # Request size limiting
+  - name: request-size-limiting
+    config:
+      allowed_payload_size: 100
+      size_unit: megabytes
+      require_content_length: false
+
+  # Response compression
+  - name: response-transformer
+    config:
+      remove:
+        headers:
+          - X-Powered-By
+          - Server
+
+# Consumer definitions (for authentication)
+consumers:
+  - username: photographer
+    tags:
+      - admin
+      - photographer
+
+  - username: client
+    tags:
+      - client
