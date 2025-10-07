@@ -43,7 +43,32 @@ This platform provides a complete photography business solution:
 - **Event-Driven Architecture**: Scalable microservices with Kafka message coordination
 - **Monitoring & Operations**: Health checks, automated backups, and performance monitoring
 
+## 🚀 Quick Start
+
+```bash
+# 1. Clone repository
+git clone <repository-url>
+cd tempsdarret.studio
+
+# 2. Install dependencies
+npm install
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env with your configuration (see SETUP.md)
+
+# 4. Start all services (via Kong Gateway)
+./start.sh
+```
+
+**All API traffic routes through Kong Gateway on port 8000.**
+
+For detailed setup including email configuration, see **[SETUP.md](./SETUP.md)**.
+
 ## 🛠️ Technology Stack
+
+### API Gateway
+- **Kong Gateway OSS 3.7**: Centralized routing, CORS, rate limiting, authentication
 
 ### Frontend Layer
 - **Framework**: SvelteKit v2.26.0 with TypeScript v5.8.3
