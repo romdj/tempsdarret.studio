@@ -1,4 +1,4 @@
-[![Build Temps d'Arrêt Project](https://github.com/romdj/tempsdarret.studio/actions/workflows/build.yaml/badge.svg?branch=main)](https://github.com/romdj/tempsdarret.studio/actions/workflows/build.yaml)
+[![CI/CD Pipeline](https://github.com/romdj/tempsdarret.studio/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/romdj/tempsdarret.studio/actions/workflows/ci.yml)
 
 # Temps D'arrêt Studio - Photography Platform
 
