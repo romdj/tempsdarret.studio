@@ -1,14 +1,20 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import {
+  setupE2EEnvironment,
+  teardownE2EEnvironment,
+  type EventBusHelper
+} from '../setup/test-helpers.js';
+import { clearEvents } from '../setup/e2e-setup.js';
 
 /**
  * E2E Test: 01-shoot-creation-and-invitation.mmd
- * 
+ *
  * Mirrors the sequence diagram flow:
  * 1. Photographer creates shoot → shoot.created event
- * 2. User Service processes event → user.created/verified event  
+ * 2. User Service processes event → user.created/verified event
  * 3. Invite Service generates magic link → invite.created event
  * 4. Notification Service sends email → invite.sent event
- * 
+ *
  * Tests the complete event-driven flow across all services
  */
 
@@ -18,23 +24,27 @@ describe('E2E: Shoot Creation and Invitation Flow', () => {
   let userService: any;
   let inviteService: any;
   let notificationService: any;
-  let eventBus: any;
+  let eventBus: EventBusHelper;
   let testClient: any;
   let testPhotographer: any;
 
   beforeAll(async () => {
     // Initialize test environment with all services
-    // This would connect to test containers or test instances
-    ({ 
-      apiGateway, 
-      shootService, 
-      userService, 
-      inviteService, 
+    ({
+      apiGateway,
+      shootService,
+      userService,
+      inviteService,
       notificationService,
       eventBus,
       testClient,
-      testPhotographer 
+      testPhotographer
     } = await setupE2EEnvironment());
+  });
+
+  beforeEach(() => {
+    // Clear events before each test for isolation
+    clearEvents();
   });
 
   afterAll(async () => {
@@ -264,115 +274,3 @@ describe('E2E: Shoot Creation and Invitation Flow', () => {
     });
   });
 });
-
-// Test Environment Setup/Teardown Functions
-async function setupE2EEnvironment() {
-  // This would initialize:
-  // - Test containers (MongoDB, Kafka)  
-  // - All microservices in test mode
-  // - Mock email service
-  // - Test data fixtures
-  
-  const environment = {
-    apiGateway: await startTestApiGateway(),
-    shootService: await startTestShootService(),
-    userService: await startTestUserService(),
-    inviteService: await startTestInviteService(),
-    notificationService: await startTestNotificationService(),
-    eventBus: await startTestEventBus(),
-    testClient: await createTestClient(),
-    testPhotographer: await createTestPhotographer()
-  };
-
-  // Wait for all services to be ready
-  await waitForServicesReady(environment);
-  
-  return environment;
-}
-
-async function teardownE2EEnvironment() {
-  // Clean up test resources
-  // Stop services, containers, clear data
-}
-
-// Mock service initialization functions
-async function startTestApiGateway() {
-  return {
-    url: 'http://localhost:3000',
-    // ... implementation
-  };
-}
-
-async function startTestShootService() {
-  return {
-    // ... service interface
-  };
-}
-
-async function startTestUserService() {
-  return {
-    createUser: async (userData: any) => {
-      // ... implementation
-    },
-    // ... other methods
-  };
-}
-
-async function startTestInviteService() {
-  return {
-    validateToken: async (token: string) => {
-      // ... implementation
-    },
-    // ... other methods
-  };
-}
-
-async function startTestNotificationService() {
-  return {
-    stop: async () => {
-      // ... implementation
-    },
-    start: async () => {
-      // ... implementation  
-    },
-    // ... other methods
-  };
-}
-
-async function startTestEventBus() {
-  return {
-    waitForEvent: async (topic: string, eventType: string | string[], timeout: number = 5000) => {
-      // ... implementation - wait for specific event
-    },
-    getAllEvents: async () => {
-      // ... implementation - return all events for verification
-    },
-    getDirectServiceCallsCount: () => {
-      // ... implementation - verify no direct calls occurred
-    }
-    // ... other methods
-  };
-}
-
-async function createTestClient() {
-  return {
-    emailService: {
-      getSentEmails: async () => {
-        // ... mock email service
-      }
-    }
-  };
-}
-
-async function createTestPhotographer() {
-  return {
-    id: 'photographer_test_123',
-    createShoot: async (shootData: any) => {
-      // ... HTTP client for photographer actions
-    }
-  };
-}
-
-async function waitForServicesReady(environment: any) {
-  // ... health check implementations
-}

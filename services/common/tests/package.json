@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "vitest",
-    "test:e2e": "vitest run e2e/ --timeout=60000",
-    "test:sequence": "vitest run e2e/ --reporter=verbose --timeout=90000",
+    "test:e2e": "vitest run e2e/",
+    "test:sequence": "vitest run e2e/ --reporter=verbose",
     "test:watch": "vitest watch e2e/",
     "setup": "docker-compose -f docker-compose.test.yml up -d",
     "teardown": "docker-compose -f docker-compose.test.yml down -v"
