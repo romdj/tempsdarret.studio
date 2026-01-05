@@ -86,14 +86,13 @@ Couldn't this be a 1 liner? from invitation.repository.ts ```
     }
     return invitation.toObject();
   }```
+Let's implement a kong gateway / api manager.
 
-<!-- TODO -->
 
 What are modern tools (definitely not jenkins, _maybe_ sonarqube) but I'm looking for newer stuff that could be part of the pre-commit push that assess the code quality? Ideally the tool would run locally for faster feedback
 
 Let's implement an API Guideline strategy in order to enforce a proper way of working. What would you suggest?
 
-Let's implement a kong gateway / api manager.
 Now that the kong gateway / api manager is installed Let's make sure that all api traffic goes through it
 
 What tools would you suggest for JSON schema enforcement in the case of using Kong?
@@ -109,7 +108,8 @@ pros/cons to enable pre-commit checks right now? are we in a mature enough state
 
 Can you update the cicd in general gh pipelines so it correctly matches the renewed scripts and tests? 
 
+for the frontend/ project and directory, can you write in a SVELTE_BEST_PRACTICES.md document what are key best practices to be used in the context of a svelte web application?
+<!-- TODO -->
 Let's start creating a pulumi infrastructure for hosting this application on my local server/machine using k3s.
 
-for the frontend/ project and directory, can you write in a SVELTE_BEST_PRACTICES.md document what are key best practices to be used in the context of a svelte web application?
 
