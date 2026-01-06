@@ -21,9 +21,10 @@ export interface Gallery {
 	shootId: string;
 	title: string;
 	description?: string;
-	coverImageUrl?: string;
-	photoCount: number;
-	clientId: string;
+	coverPhoto?: string; // Cover photo URL
+	photoCount?: number;
+	clientId?: string;
+	shootDate?: string;
 	createdAt: string;
 	publishedAt?: string;
 	expiresAt?: string;
@@ -115,11 +116,11 @@ export interface ApiError {
 
 // Pagination
 export interface PaginatedResponse<T> {
-	data: T[];
+	items: T[];
 	total: number;
-	page: number;
-	pageSize: number;
-	totalPages: number;
+	page?: number;
+	pageSize?: number;
+	totalPages?: number;
 }
 
 // Archive types (for large file downloads)

@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	/* Custom base styles */
+	body {
+		@apply bg-base-100 text-base-content;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		@apply font-serif;
+	}
+}
+
+@layer components {
+	/* Photography-specific components */
+	.photo-grid {
+		@apply grid gap-4;
+		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+	}
+
+	.photo-card {
+		@apply relative overflow-hidden rounded-lg shadow-md transition-transform duration-300 hover:scale-105;
+	}
+
+	.page-container {
+		@apply container mx-auto px-4 py-8 max-w-7xl;
+	}
+
+	.loading-spinner {
+		@apply animate-spin rounded-full border-4 border-primary border-t-transparent;
+	}
+}
+
+@layer utilities {
+	/* Custom utilities */
+	.text-balance {
+		text-wrap: balance;
+	}
+}
