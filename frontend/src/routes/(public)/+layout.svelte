@@ -5,7 +5,33 @@
 	// Navigation items for public pages
 	const navItems = [
 		{ href: '/', label: 'Home' },
-		{ href: '/portfolio', label: 'Portfolio' },
+		{
+			label: 'Portfolio',
+			items: [
+				{ href: '/portfolio', label: 'All Work' },
+				{ href: '/portfolio/weddings', label: 'Weddings' },
+				{ href: '/portfolio/portraits', label: 'Portraits' }
+			]
+		},
+		{
+			label: 'Private',
+			items: [
+				{ href: '/private', label: 'Overview' },
+				{ href: '/private/events', label: 'Private Events' },
+				{ href: '/private/video-aftermovie', label: 'Video & Aftermovie' }
+			]
+		},
+		{
+			label: 'Professional Services',
+			items: [
+				{ href: '/professional-services', label: 'All Services' },
+				{ href: '/professional-services/portrait-sessions', label: 'Portrait Sessions' },
+				{ href: '/professional-services/commercial-photography', label: 'Commercial' },
+				{ href: '/professional-services/teambuilding', label: 'Team Building' },
+				{ href: '/professional-services/company-events', label: 'Company Events' },
+				{ href: '/professional-services/fashion-photography', label: 'Fashion' }
+			]
+		},
 		{ href: '/about', label: 'About' },
 		{ href: '/contact', label: 'Contact' }
 	];
@@ -15,24 +41,46 @@
 	<!-- Navigation -->
 	<nav class="bg-base-100 border-b border-base-300">
 		<div class="page-container">
-			<div class="flex justify-between items-center h-16">
+			<div class="flex justify-between items-center h-20">
 				<!-- Logo -->
-				<a href="/" class="text-2xl font-serif font-bold text-primary">
-					Temps D'arrêt
+				<a href="/" class="flex items-center">
+					<img src="/logo.jpg" alt="Temps d'Arrêt Studio" class="h-16" />
 				</a>
 
 				<!-- Navigation Links -->
 				<ul class="flex gap-6">
 					{#each navItems as item}
-						<li>
-							<a
-								href={item.href}
-								class="hover:text-primary transition-colors"
-								class:text-primary={$page.url.pathname === item.href}
-								class:font-semibold={$page.url.pathname === item.href}
-							>
-								{item.label}
-							</a>
+						<li class="relative group">
+							{#if item.items}
+								<!-- Dropdown Menu -->
+								<button class="hover:text-primary transition-colors">
+									{item.label} ▾
+								</button>
+								<ul class="absolute left-0 mt-2 w-56 bg-base-100 shadow-lg rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border border-base-300">
+									{#each item.items as subItem}
+										<li>
+											<a
+												href={subItem.href}
+												class="block px-4 py-2 hover:bg-base-200 hover:text-primary transition-colors rounded"
+												class:text-primary={$page.url.pathname === subItem.href}
+												class:font-semibold={$page.url.pathname === subItem.href}
+											>
+												{subItem.label}
+											</a>
+										</li>
+									{/each}
+								</ul>
+							{:else}
+								<!-- Regular Link -->
+								<a
+									href={item.href}
+									class="hover:text-primary transition-colors"
+									class:text-primary={$page.url.pathname === item.href}
+									class:font-semibold={$page.url.pathname === item.href}
+								>
+									{item.label}
+								</a>
+							{/if}
 						</li>
 					{/each}
 				</ul>

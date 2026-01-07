@@ -6,7 +6,7 @@ export default {
 	theme: {
 		extend: {
 			fontFamily: {
-				sans: ['Inter', 'system-ui', 'sans-serif'],
+				sans: ['Futura', 'Avenir Next', 'Montserrat', 'system-ui', 'sans-serif'],
 				serif: ['Playfair Display', 'Georgia', 'serif']
 			}
 		}
@@ -16,22 +16,22 @@ export default {
 		themes: [
 			{
 				tempsdarret: {
-					primary: '#ed6620',
+					primary: '#EE6640',
 					'primary-content': '#ffffff',
-					secondary: '#762916',
-					'secondary-content': '#ffffff',
-					accent: '#f6b07a',
-					'accent-content': '#40130a',
-					neutral: '#3d4451',
-					'neutral-content': '#ffffff',
-					'base-100': '#ffffff',
-					'base-200': '#f9fafb',
-					'base-300': '#f3f4f6',
-					'base-content': '#1f2937',
-					info: '#3b82f6',
-					success: '#10b981',
-					warning: '#f59e0b',
-					error: '#ef4444'
+					secondary: '#F7B563',
+					'secondary-content': '#1A1715',
+					accent: '#F18B44',
+					'accent-content': '#ffffff',
+					neutral: '#1A1715',
+					'neutral-content': '#F7F5F2',
+					'base-100': '#F7F5F2',
+					'base-200': '#EFEAE5',
+					'base-300': '#E3DDD6',
+					'base-content': '#1A1715',
+					info: '#5b8db8',
+					success: '#6b9b6e',
+					warning: '#F18B44',
+					error: '#D94D2C'
 				}
 			},
 			'light',
