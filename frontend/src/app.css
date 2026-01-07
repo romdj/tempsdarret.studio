@@ -34,7 +34,9 @@
 	}
 
 	.loading-spinner {
-		@apply animate-spin rounded-full border-4 border-primary border-t-transparent;
+		@apply animate-spin rounded-full border-4;
+		border-color: hsl(var(--p) / var(--tw-border-opacity, 1));
+		border-top-color: transparent;
 	}
 }
 
