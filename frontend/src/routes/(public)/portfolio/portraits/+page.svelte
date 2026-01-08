@@ -20,13 +20,30 @@
 
 	<!-- Portfolio Grid -->
 	<div class="photo-grid mb-12">
-		{#each Array(12) as _, i}
-			<div class="photo-card">
-				<div class="aspect-[3/4] bg-base-300 flex items-center justify-center">
-					<p class="text-base-content/50">Portrait {i + 1}</p>
-				</div>
-			</div>
-		{/each}
+		<div class="photo-card">
+			<img src="/images/portfolio/portraits/20250517-DSC_1584.jpg" alt="Portrait photography" class="aspect-[3/4] object-cover w-full rounded-lg hover:opacity-90 transition-opacity" />
+		</div>
+		<div class="photo-card">
+			<img src="/images/portfolio/portraits/20250517-DSC_1575.jpg" alt="Portrait photography" class="aspect-[3/4] object-cover w-full rounded-lg hover:opacity-90 transition-opacity" />
+		</div>
+		<div class="photo-card">
+			<img src="/images/portfolio/portraits/20250621-DSC_2107.jpg" alt="Portrait photography" class="aspect-[3/4] object-cover w-full rounded-lg hover:opacity-90 transition-opacity" />
+		</div>
+		<div class="photo-card">
+			<img src="/images/portfolio/portraits/20250522-DSC_1769.jpg" alt="Portrait photography" class="aspect-[3/4] object-cover w-full rounded-lg hover:opacity-90 transition-opacity" />
+		</div>
+		<div class="photo-card">
+			<img src="/images/portfolio/portraits/20250522-DSC_1762.jpg" alt="Portrait photography" class="aspect-[3/4] object-cover w-full rounded-lg hover:opacity-90 transition-opacity" />
+		</div>
+		<div class="photo-card">
+			<img src="/images/portfolio/portraits/20250330-DSC_1347.jpg" alt="Portrait photography" class="aspect-[3/4] object-cover w-full rounded-lg hover:opacity-90 transition-opacity" />
+		</div>
+		<div class="photo-card">
+			<img src="/images/portfolio/portraits/20250330-DSC_1350.jpg" alt="Portrait photography" class="aspect-[3/4] object-cover w-full rounded-lg hover:opacity-90 transition-opacity" />
+		</div>
+		<div class="photo-card">
+			<img src="/images/portfolio/portraits/20250330-DSC_1353.jpg" alt="Portrait photography" class="aspect-[3/4] object-cover w-full rounded-lg hover:opacity-90 transition-opacity" />
+		</div>
 	</div>
 
 	<!-- Portrait Types -->

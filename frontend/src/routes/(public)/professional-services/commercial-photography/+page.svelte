@@ -12,5 +12,42 @@
 		<div class="card bg-base-200"><div class="card-body"><h3 class="font-semibold">Corporate Events</h3><p class="text-sm text-base-content/70">Professional documentation of business events and conferences.</p></div></div>
 	</div>
 
+	<!-- Client Projects -->
+	<div class="mb-12">
+		<h2 class="text-3xl font-serif font-bold mb-8">Recent Projects</h2>
+
+		<!-- Rosael Project -->
+		<div class="mb-12">
+			<h3 class="text-2xl font-serif font-semibold mb-4">Rosael Brand Photography</h3>
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+				<img src="/images/portfolio/commercial/Rosael/20240101-DSC_0093.jpg" alt="Rosael brand photography" class="w-full aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity" />
+				<img src="/images/portfolio/commercial/Rosael/20240101-DSC_0094.jpg" alt="Rosael brand photography" class="w-full aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity" />
+				<img src="/images/portfolio/commercial/Rosael/20240101-DSC_0131.jpg" alt="Rosael brand photography" class="w-full aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity" />
+				<img src="/images/portfolio/commercial/Rosael/20240101-DSC_0133.jpg" alt="Rosael brand photography" class="w-full aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity" />
+			</div>
+		</div>
+
+		<!-- Kaya Project -->
+		<div class="mb-12">
+			<h3 class="text-2xl font-serif font-semibold mb-4">Kaya Commercial Photography</h3>
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+				<img src="/images/portfolio/commercial/Kaya/20240101-DSC_0097.jpg" alt="Kaya commercial photography" class="w-full aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity" />
+				<img src="/images/portfolio/commercial/Kaya/20240101-DSC_0103.jpg" alt="Kaya commercial photography" class="w-full aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity" />
+				<img src="/images/portfolio/commercial/Kaya/20240101-DSC_0112.jpg" alt="Kaya commercial photography" class="w-full aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity" />
+				<img src="/images/portfolio/commercial/Kaya/20240101-DSC_0119.jpg" alt="Kaya commercial photography" class="w-full aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity" />
+			</div>
+		</div>
+
+		<!-- Motion Rehab Project -->
+		<div class="mb-12">
+			<h3 class="text-2xl font-serif font-semibold mb-4">Motion Rehab Corporate Photography</h3>
+			<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+				<img src="/images/portfolio/commercial/Motion Rehab/20241211-DSC_1170.jpg" alt="Motion Rehab corporate photography" class="w-full aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity" />
+				<img src="/images/portfolio/commercial/Motion Rehab/20241211-DSC_1210.jpg" alt="Motion Rehab corporate photography" class="w-full aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity" />
+				<img src="/images/portfolio/commercial/Motion Rehab/20241211-DSC_1181.jpg" alt="Motion Rehab corporate photography" class="w-full aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity" />
+			</div>
+		</div>
+	</div>
+
 	<div class="text-center"><a href="/contact" class="btn btn-primary">Request a Quote</a></div>
 </section>

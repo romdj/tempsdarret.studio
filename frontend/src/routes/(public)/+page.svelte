@@ -76,15 +76,14 @@
 		<h2 class="text-4xl font-serif font-bold text-center mb-12">Featured Work</h2>
 
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-			<!-- Placeholder for featured images -->
-			<div class="aspect-[4/3] bg-base-300 rounded-lg flex items-center justify-center">
-				<p class="text-base-content/50">Featured Image 1</p>
+			<div class="aspect-[4/3] bg-base-300 rounded-lg overflow-hidden">
+				<img src="/images/portfolio/portraits/20250522-DSC_1769.jpg" alt="Portrait photography" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
 			</div>
-			<div class="aspect-[4/3] bg-base-300 rounded-lg flex items-center justify-center">
-				<p class="text-base-content/50">Featured Image 2</p>
+			<div class="aspect-[4/3] bg-base-300 rounded-lg overflow-hidden">
+				<img src="/images/portfolio/portraits/20250621-DSC_2107.jpg" alt="Portrait photography" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
 			</div>
-			<div class="aspect-[4/3] bg-base-300 rounded-lg flex items-center justify-center">
-				<p class="text-base-content/50">Featured Image 3</p>
+			<div class="aspect-[4/3] bg-base-300 rounded-lg overflow-hidden">
+				<img src="/images/portfolio/portraits/20250330-DSC_1350.jpg" alt="Portrait photography" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
 			</div>
 		</div>
 
