@@ -56,6 +56,10 @@ tmp/
 # Claude Local logs
 .claude/collaboration-logs/
 
+# Pulumi
+pulumi/bin/
+pulumi/node_modules/
+pulumi/*.js
+pulumi/*.js.map
 
 working_roadmap.md
-

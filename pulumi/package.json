@@ -1,0 +1,21 @@
+{
+  "name": "tempsdarret-studio-frontend-infrastructure",
+  "version": "1.0.0",
+  "description": "Pulumi infrastructure for Temps D'arrêt Studio frontend deployment",
+  "main": "index.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "tsc --noEmit",
+    "preview": "pulumi preview",
+    "up": "pulumi up",
+    "destroy": "pulumi destroy"
+  },
+  "dependencies": {
+    "@pulumi/pulumi": "^3.0.0",
+    "@pulumi/aws": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

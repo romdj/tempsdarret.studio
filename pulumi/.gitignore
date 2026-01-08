@@ -1,0 +1,9 @@
+/bin/
+/node_modules/
+*.js
+*.js.map
+# Track production config (contains only non-sensitive values)
+# Ignore other stack configs
+Pulumi.*.yaml
+!Pulumi.yaml
+!Pulumi.production.yaml

@@ -1,0 +1,8 @@
+name: tempsdarret-studio-frontend
+runtime: nodejs
+description: Infrastructure for Temps D'arrêt Studio frontend (S3 + CloudFront + Route53)
+
+config:
+  tempsdarret-studio-frontend:domainName:
+    description: The primary domain name for the website
+    type: string
