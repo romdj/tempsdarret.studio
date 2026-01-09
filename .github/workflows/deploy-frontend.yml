@@ -53,7 +53,7 @@ jobs:
     name: Deploy to AWS
     runs-on: ubuntu-latest
     needs: build
-    if: always() && (needs.build.result == 'success' || inputs.skip_build)
+    if: ${{ !cancelled() && (needs.build.result == 'success' || inputs.skip_build) }}
 
     env:
       AWS_REGION: eu-north-1
@@ -82,12 +82,12 @@ jobs:
           name: frontend-build
           path: frontend/build/
 
-      - name: Install Pulumi dependencies
-        working-directory: pulumi
-        run: npm ci
-
       - name: Install Pulumi CLI
         uses: pulumi/actions@v5
+
+      - name: Install Pulumi dependencies
+        working-directory: pulumi
+        run: npm install --prefer-offline --no-audit
 
       - name: Select Pulumi stack
         working-directory: pulumi
