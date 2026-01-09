@@ -1,5 +1,5 @@
 # Temps D'arrêt - Unified CI/CD Pipeline
-# Single-page view of all builds, tests, and quality checks
+# Comprehensive build, test, and quality checks
 name: CI/CD Pipeline
 
 on:
@@ -15,13 +15,11 @@ concurrency:
 
 env:
   NODE_VERSION: '24'
-  MONGODB_VERSION: '7.0'
-  REDIS_VERSION: '7.2-alpine'
 
 jobs:
-  # ============================================================================
+  # ==========================================================================
   # 📋 QUALITY CHECKS (Fast - runs first)
-  # ============================================================================
+  # ==========================================================================
 
   quality-checks:
     name: 🔍 Quality • Lint & Type Check
@@ -49,26 +47,28 @@ jobs:
         run: npx madge --circular services/ --extensions ts || echo "No circular deps"
         continue-on-error: true
 
-  # ============================================================================
-  # 🏗️ BUILD (Parallel by service)
-  # ============================================================================
+  # ==========================================================================
+  # 🏗️ BUILD & UNIT TESTS (Parallel by component)
+  # ==========================================================================
 
-  build-matrix:
-    name: 🏗️ Build • ${{ matrix.service }}
+  build-and-unit-test:
+    name: 🏗️ Build & Unit • ${{ matrix.component }}
     runs-on: ubuntu-latest
     needs: quality-checks
     strategy:
       fail-fast: false
       matrix:
-        service:
+        component:
+          - models
+          - shared
           - user-service
           - invite-service
           - portfolio-service
           - shoot-service
           - file-service
           - notification-service
-          - shared
           - frontend
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -82,39 +82,50 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build ${{ matrix.service }}
+      - name: Build ${{ matrix.component }}
+        run: npm run build:${{ matrix.component }}
+
+      - name: Run unit tests
         run: |
-          if [ "${{ matrix.service }}" = "shared" ]; then
-            cd packages/shared && npm run build
-          elif [ "${{ matrix.service }}" = "frontend" ]; then
-            cd frontend && npm run build
+          if [ "${{ matrix.component }}" = "models" ] || [ "${{ matrix.component }}" = "shared" ]; then
+            cd packages/${{ matrix.component }} && npm run test:unit || npm test || echo "No unit tests for ${{ matrix.component }}"
+          elif [ "${{ matrix.component }}" = "frontend" ]; then
+            cd frontend && npm run test:unit || npm test || echo "No unit tests for frontend"
           else
-            cd services/${{ matrix.service }} && npm run build
+            cd services/${{ matrix.component }} && npm run test:unit || echo "No unit tests for ${{ matrix.component }}"
           fi
+        continue-on-error: true
+        env:
+          NODE_ENV: test
 
       - name: Cache build artifacts
         uses: actions/cache/save@v4
         with:
           path: |
-            services/${{ matrix.service }}/dist
-            packages/${{ matrix.service }}/dist
+            services/${{ matrix.component }}/dist
+            packages/${{ matrix.component }}/dist
             frontend/build
-          key: build-${{ matrix.service }}-${{ github.sha }}
+          key: build-${{ matrix.component }}-${{ github.sha }}
 
-  # ============================================================================
-  # 🧪 TESTS (Parallel by service and test type)
-  # ============================================================================
+  # ==========================================================================
+  # 🧪 COMPONENT TESTS (With Docker services)
+  # ==========================================================================
 
-  test-services:
-    name: 🧪 Test • ${{ matrix.service }} • ${{ matrix.test-type }}
+  component-tests:
+    name: 🧪 Component • ${{ matrix.service }}
     runs-on: ubuntu-latest
-    needs: quality-checks
+    needs: build-and-unit-test
 
     strategy:
       fail-fast: false
       matrix:
-        service: [user-service, invite-service, portfolio-service, shoot-service, file-service, notification-service]
-        test-type: [unit, component]
+        service:
+          - user-service
+          - invite-service
+          - portfolio-service
+          - shoot-service
+          - file-service
+          - notification-service
 
     services:
       mongodb:
@@ -153,34 +164,153 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run ${{ matrix.test-type }} tests
-        run: |
-          cd services/${{ matrix.service }}
-          npm run test:${{ matrix.test-type }} || echo "No ${{ matrix.test-type }} tests"
+      - name: Run component tests
+        run: cd services/${{ matrix.service }} && npm run test:component || echo "No component tests"
         continue-on-error: true
         env:
           NODE_ENV: test
           MONGODB_URI: mongodb://test:test@localhost:27017/${{ matrix.service }}-test?authSource=admin
           REDIS_URL: redis://localhost:6379/0
-          KAFKA_BROKERS: localhost:9092
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results-${{ matrix.service }}-${{ matrix.test-type }}
+          name: component-test-results-${{ matrix.service }}
           path: services/${{ matrix.service }}/test-results/
           retention-days: 7
           if-no-files-found: ignore
 
-  # ============================================================================
-  # 📊 CODE COVERAGE (Single run for all services)
-  # ============================================================================
+  # ==========================================================================
+  # 🔗 INTEGRATION TESTS (With Docker services)
+  # ==========================================================================
+
+  integration-tests:
+    name: 🔗 Integration • ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs: build-and-unit-test
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - user-service
+          - invite-service
+          - portfolio-service
+          - shoot-service
+          - file-service
+          - notification-service
+
+    services:
+      mongodb:
+        image: mongo:7
+        env:
+          MONGO_INITDB_ROOT_USERNAME: test
+          MONGO_INITDB_ROOT_PASSWORD: test
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})' --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run integration tests
+        run: cd services/${{ matrix.service }} && npm run test:integration || echo "No integration tests"
+        continue-on-error: true
+        env:
+          NODE_ENV: test
+          MONGODB_URI: mongodb://test:test@localhost:27017/${{ matrix.service }}-integration?authSource=admin
+          REDIS_URL: redis://localhost:6379/1
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results-${{ matrix.service }}
+          path: services/${{ matrix.service }}/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # ==========================================================================
+  # 📜 CONTRACT TESTS
+  # ==========================================================================
+
+  contract-tests:
+    name: 📜 Contract • ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs: build-and-unit-test
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - user-service
+          - invite-service
+          - portfolio-service
+          - shoot-service
+          - file-service
+          - notification-service
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run contract tests
+        run: cd services/${{ matrix.service }} && npm run test:contract || echo "No contract tests"
+        continue-on-error: true
+        env:
+          NODE_ENV: test
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: contract-test-results-${{ matrix.service }}
+          path: services/${{ matrix.service }}/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # ==========================================================================
+  # 📊 CODE COVERAGE (Aggregated)
+  # ==========================================================================
 
   coverage:
     name: 📊 Coverage • All Services
     runs-on: ubuntu-latest
-    needs: test-services
+    needs: [component-tests, integration-tests, contract-tests]
 
     services:
       mongodb:
@@ -226,7 +356,7 @@ jobs:
         env:
           NODE_ENV: test
           MONGODB_URI: mongodb://test:test@localhost:27017/coverage-test?authSource=admin
-          REDIS_URL: redis://localhost:6379/1
+          REDIS_URL: redis://localhost:6379/2
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
@@ -248,9 +378,9 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
-  # ============================================================================
+  # ==========================================================================
   # 🔒 SECURITY & DEPENDENCY AUDIT
-  # ============================================================================
+  # ==========================================================================
 
   security-audit:
     name: 🔒 Security • Audit & Vulnerabilities
@@ -277,21 +407,20 @@ jobs:
         run: npm outdated || echo "Some dependencies are outdated"
         continue-on-error: true
 
-  # ============================================================================
-  # 🐳 DOCKER BUILD (Kong Gateway + Services)
-  # ============================================================================
+  # ==========================================================================
+  # 🐳 DOCKER BUILD (Only on main)
+  # ==========================================================================
 
   docker-build:
     name: 🐳 Docker • ${{ matrix.component }}
     runs-on: ubuntu-latest
-    needs: [build-matrix, test-services]
+    needs: [build-and-unit-test, component-tests, integration-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     strategy:
       fail-fast: false
       matrix:
         component:
-          - kong-gateway
           - user-service
           - invite-service
           - portfolio-service
@@ -309,26 +438,26 @@ jobs:
 
       - name: Build Docker image
         run: |
-          if [ "${{ matrix.component }}" = "kong-gateway" ]; then
-            cd infrastructure/kong && docker-compose build
-          elif [ "${{ matrix.component }}" = "frontend" ]; then
+          if [ "${{ matrix.component }}" = "frontend" ]; then
             cd frontend && docker build -t tempsdarret-frontend:latest .
           else
             cd services/${{ matrix.component }} && docker build -t tempsdarret-${{ matrix.component }}:latest .
           fi
         continue-on-error: true
 
-  # ============================================================================
+  # ==========================================================================
   # ✅ FINAL STATUS (Required checks summary)
-  # ============================================================================
+  # ==========================================================================
 
   ci-success:
     name: ✅ CI Pipeline • Status
     runs-on: ubuntu-latest
     needs:
       - quality-checks
-      - build-matrix
-      - test-services
+      - build-and-unit-test
+      - component-tests
+      - integration-tests
+      - contract-tests
       - coverage
       - security-audit
     if: always()
@@ -340,8 +469,10 @@ jobs:
           echo "CI/CD Pipeline Summary"
           echo "========================================="
           echo "Quality Checks: ${{ needs.quality-checks.result }}"
-          echo "Build: ${{ needs.build-matrix.result }}"
-          echo "Tests: ${{ needs.test-services.result }}"
+          echo "Build & Unit Tests: ${{ needs.build-and-unit-test.result }}"
+          echo "Component Tests: ${{ needs.component-tests.result }}"
+          echo "Integration Tests: ${{ needs.integration-tests.result }}"
+          echo "Contract Tests: ${{ needs.contract-tests.result }}"
           echo "Coverage: ${{ needs.coverage.result }}"
           echo "Security: ${{ needs.security-audit.result }}"
           echo "========================================="
@@ -351,20 +482,24 @@ jobs:
             echo "❌ Quality checks failed"
             exit 1
           fi
-          if [ "${{ needs.build-matrix.result }}" != "success" ]; then
-            echo "❌ Build failed"
+          if [ "${{ needs.build-and-unit-test.result }}" != "success" ]; then
+            echo "❌ Build & unit tests failed"
             exit 1
           fi
-          if [ "${{ needs.test-services.result }}" != "success" ]; then
-            echo "❌ Tests failed"
+          if [ "${{ needs.component-tests.result }}" != "success" ]; then
+            echo "❌ Component tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.integration-tests.result }}" != "success" ]; then
+            echo "❌ Integration tests failed"
             exit 1
           fi
 
           echo "✅ All critical checks passed!"
 
-  # ============================================================================
+  # ==========================================================================
   # 🚀 DEPLOYMENT READINESS (Only on main)
-  # ============================================================================
+  # ==========================================================================
 
   deployment-ready:
     name: 🚀 Ready for Deployment
