@@ -42,10 +42,10 @@ export const CreateInvitationRequestSchema = z.object({
   message: z.string().max(1000).optional()
 });
 
-// Maps to TypeSpec SendInvitationRequest  
+// Maps to TypeSpec SendInvitationRequest
 export const SendInvitationRequestSchema = z.object({
   subject: z.string().max(200).optional(),
-  templateVars: z.record(z.any()).optional()
+  templateVars: z.record(z.string(), z.any()).optional()
 });
 
 // Maps to TypeSpec InvitationQuery

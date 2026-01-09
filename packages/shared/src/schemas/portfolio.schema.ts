@@ -18,7 +18,7 @@ export const PortfolioSchema = z.object({
   coverImageUrl: z.string().url().optional(),
   isFeatured: z.boolean().default(false),
   displayOrder: z.number().int().default(0),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.string(), z.any()).optional()
 }).merge(TimestampsSchema);
 
 // Maps to TypeSpec Gallery model
@@ -35,7 +35,7 @@ export const GallerySchema = z.object({
   password: z.string().optional(),
   expiresAt: z.date().optional(),
   allowDownloads: z.boolean().default(true),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.string(), z.any()).optional()
 }).merge(TimestampsSchema);
 
 // Maps to TypeSpec GalleryImage model
@@ -46,7 +46,7 @@ export const GalleryImageSchema = z.object({
   displayOrder: z.number().int().default(0),
   caption: z.string().max(500).optional(),
   isFeatured: z.boolean().default(false),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.string(), z.any()).optional()
 }).merge(TimestampsSchema);
 
 // Maps to TypeSpec CreatePortfolioRequest

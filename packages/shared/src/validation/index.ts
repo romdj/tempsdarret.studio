@@ -41,8 +41,9 @@ export const validateFileUpload = (file: {
     ...FILE_UPLOAD_LIMITS.SUPPORTED_IMAGE_TYPES,
     ...FILE_UPLOAD_LIMITS.SUPPORTED_RAW_TYPES
   ];
-  
-  if (!supportedTypes.includes(file.type)) {
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!supportedTypes.includes(file.type as any)) {
     errors.push(`Unsupported file type: ${file.type}`);
   }
   
