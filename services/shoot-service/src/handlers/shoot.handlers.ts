@@ -122,13 +122,13 @@ export class ShootHandlers {
       const { shoots, total } = await this.shootService.listShoots(request.query);
 
       const { page, limit } = request.query;
-      const pageLimit = limit || 20;
+      const pageLimit = limit ?? 20;
       const totalPages = Math.ceil(total / pageLimit);
 
       reply.send({
         data: shoots,
         meta: {
-          page: page || 1,
+          page: page ?? 1,
           limit: pageLimit,
           total,
           totalPages
