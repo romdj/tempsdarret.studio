@@ -5,7 +5,7 @@ This guide will help you set up and run the complete Temps D'arrêt photography 
 ## 📋 Prerequisites
 
 ### System Requirements
-- **Node.js**: v20.0+ (recommended: v22.x)
+- **Node.js**: v20.0+ (recommended: v24.x)
 - **npm**: v10.0+
 - **Git**: Latest version
 - **Docker**: v24.0+ (optional but recommended)

@@ -280,7 +280,7 @@ npm audit --audit-level=high # Security check
 - **Security**: Enhanced file access validation
 
 #### 🔧 Technical
-- **Infrastructure**: Updated to Node.js 22 LTS
+- **Infrastructure**: Updated to Node.js 24 LTS
 - **Dependencies**: Security updates for all packages
 
 #### 📸 Photography Workflow

@@ -327,7 +327,7 @@ export class FileHandlers {
       const { archiveId } = request.params;
       const archive = await this.archiveService.getArchiveById(archiveId);
 
-      if (!archive || archive.status !== 'completed') {
+      if (archive?.status !== 'completed') {
         reply.code(404).send({
           success: false,
           error: {

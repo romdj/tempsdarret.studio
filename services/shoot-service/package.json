@@ -17,14 +17,11 @@
     "test:service-integration": "vitest run --reporter=verbose tests/integration",
     "test:integration": "vitest run --reporter=verbose tests/integration",
     "test:contract": "vitest run --reporter=verbose tests/contract",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src",
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "fastify": "^5.4.0",
-    "mongoose": "^8.16.4",
-    "zod": "^4.0.10",
-    "@tempsdarret/shared": "*",
+    "@tempsdarret/shared": "workspace:*",
     "tsx": "^4.20.3",
     "@tempsdarret/events": "workspace:*"
   },

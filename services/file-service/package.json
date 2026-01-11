@@ -15,14 +15,12 @@
     "test:integration": "jest tests/integration",
     "test:unit": "jest tests/services tests/handlers",
     "test:all": "jest --runInBand",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src",
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@tempsdarret/events": "workspace:*",
-    "fastify": "^4.24.0",
     "@fastify/multipart": "^8.0.0",
-    "mongoose": "^8.0.0",
+    "@tempsdarret/events": "workspace:*",
     "archiver": "^7.0.1",
     "sharp": "^0.33.0",
     "ts-exif-parser": "^0.2.0"
@@ -36,10 +34,7 @@
     "supertest": "^6.3.0",
     "ts-jest": "^29.1.0",
     "tsx": "^4.0.0",
-    "typescript": "^5.3.0",
-    "eslint": "^8.50.0",
-    "@typescript-eslint/eslint-plugin": "^6.7.0",
-    "@typescript-eslint/parser": "^6.7.0"
+    "typescript": "^5.3.0"
   },
   "engines": {
     "node": ">=24.0.0",

@@ -130,7 +130,7 @@ export class ArchiveService {
     archiveId: string
   ): Promise<NodeJS.ReadableStream> {
     const archive = await this.getArchiveById(archiveId);
-    if (!archive || archive.status !== 'completed') {
+    if (archive?.status !== 'completed') {
       throw new Error('Archive not ready for download');
     }
 

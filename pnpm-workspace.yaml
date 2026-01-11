@@ -1,0 +1,6 @@
+packages:
+  - 'frontend'
+  - 'api-gateway'
+  - 'packages/*'
+  - 'services/*'
+  - 'dev-tools'

@@ -12,7 +12,7 @@
 ### Backend Services  
 - **Framework:** Fastify v5.4.0 (high-performance, TypeScript-first)  
 - **Language:** TypeScript v5.8.3  
-- **Runtime:** Node.js 22+  
+- **Runtime:** Node.js 24+  
 - **Process Manager:** tsx v4.20.3 (development)  
 
 ### API & Schema  
