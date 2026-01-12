@@ -4,15 +4,32 @@
 
 echo "🧪 Running pre-push quality checks..."
 
-# Run all tests (allow to pass if no tests exist)
-echo "Running tests..."
-npm run test || {
+# 1. Lint check
+echo "📋 Step 1/4: Linting..."
+npm run lint || {
+  echo "❌ Lint failed! Fix errors before pushing."
+  exit 1
+}
+
+# 2. Type check
+echo "🔍 Step 2/4: Type checking..."
+npm run check || {
+  echo "❌ Type check failed! Fix errors before pushing."
+  exit 1
+}
+
+# 3. Build
+echo "🔨 Step 3/4: Building..."
+npm run build || {
+  echo "❌ Build failed! Fix errors before pushing."
+  exit 1
+}
+
+# 4. Tests
+echo "🧪 Step 4/4: Running tests..."
+npm test || {
   echo "⚠️  Tests failed or no tests found - continuing anyway"
   echo "Note: Add tests before deploying to production"
 }
-
-# Run builds to ensure everything compiles
-echo "Running builds..."
-npm run build
 
 echo "✅ Pre-push checks passed! Safe to push."
