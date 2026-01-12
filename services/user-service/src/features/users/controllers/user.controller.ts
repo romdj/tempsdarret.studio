@@ -55,7 +55,7 @@ export class UserController {
           return reply.code(400).send({
             error: 'Validation Error',
             message: 'Invalid request data',
-            details: error.errors,
+            details: error.issues,
             statusCode: 400
           });
         }
@@ -101,7 +101,7 @@ export class UserController {
           return reply.code(400).send({
             error: 'Validation Error',
             message: 'Invalid query parameters',
-            details: (error as { errors?: unknown }).errors,
+            details: (error as { issues?: unknown }).issues,
             statusCode: 400
           });
         }
@@ -187,7 +187,7 @@ export class UserController {
           return reply.code(400).send({
             error: 'Validation Error',
             message: 'Invalid request data',
-            details: error.errors,
+            details: error.issues,
             statusCode: 400
           });
         }

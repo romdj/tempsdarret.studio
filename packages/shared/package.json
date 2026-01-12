@@ -58,6 +58,21 @@
       "types": "./dist/schemas/base.schema.d.ts",
       "import": "./dist/schemas/base.schema.js",
       "require": "./dist/schemas/base.schema.js"
+    },
+    "./schemas/user.schema": {
+      "types": "./dist/schemas/user.schema.d.ts",
+      "import": "./dist/schemas/user.schema.js",
+      "require": "./dist/schemas/user.schema.js"
+    },
+    "./schemas/invite.schema": {
+      "types": "./dist/schemas/invite.schema.d.ts",
+      "import": "./dist/schemas/invite.schema.js",
+      "require": "./dist/schemas/invite.schema.js"
+    },
+    "./schemas/portfolio.schema": {
+      "types": "./dist/schemas/portfolio.schema.d.ts",
+      "import": "./dist/schemas/portfolio.schema.js",
+      "require": "./dist/schemas/portfolio.schema.js"
     }
   }
 }
