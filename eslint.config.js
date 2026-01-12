@@ -7,6 +7,7 @@ export default [
   js.configs.recommended,
   {
     files: ['**/*.ts', '**/*.tsx'],
+    ignores: ['**/*.test.ts', '**/*.spec.ts'],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
@@ -46,6 +47,20 @@ export default [
   },
   {
     files: ['**/*.spec.ts', '**/*.test.ts'],
+    languageOptions: {
+      parser: tsparser,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module'
+      },
+      globals: {
+        ...globals.node,
+        ...globals.es2022
+      }
+    },
+    plugins: {
+      '@typescript-eslint': tseslint
+    },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       'no-console': 'off'
