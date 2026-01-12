@@ -1,9 +1,9 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 import { User } from '@tempsdarret/shared/schemas/user.schema';
 
 // Mongoose document interface matching TypeSpec User model
 export interface UserDocument extends Omit<User, 'id' | 'createdAt' | 'updatedAt'>, Document {
-  _id: string;
+  _id: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,11 +48,11 @@ const userSchema = new Schema<UserDocument>({
 }, {
   timestamps: true,
   toJSON: {
-    transform: function(doc, ret): Record<string, unknown> {
+    transform: function(_doc, ret): Record<string, unknown> {
       ret.id = ret._id;
       delete ret._id;
       delete ret.__v;
-      return ret;
+      return ret as Record<string, unknown>;
     }
   }
 });

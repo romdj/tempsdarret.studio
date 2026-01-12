@@ -51,15 +51,15 @@ export class UserRepository {
 
     // Apply filters
     if (options.role) {
-      filter.role = options.role;
+      filter['role'] = options.role;
     }
     if (options.isActive !== undefined) {
-      filter.isActive = options.isActive;
+      filter['isActive'] = options.isActive;
     }
-    
+
     // Handle text search
     if (options.search) {
-      filter.$or = [
+      filter['$or'] = [
         { name: { $regex: options.search, $options: 'i' } },
         { email: { $regex: options.search, $options: 'i' } }
       ];
@@ -81,14 +81,14 @@ export class UserRepository {
 
     // Apply same filters as list
     if (options.role) {
-      filter.role = options.role;
+      filter['role'] = options.role;
     }
     if (options.isActive !== undefined) {
-      filter.isActive = options.isActive;
+      filter['isActive'] = options.isActive;
     }
-    
+
     if (options.search) {
-      filter.$or = [
+      filter['$or'] = [
         { name: { $regex: options.search, $options: 'i' } },
         { email: { $regex: options.search, $options: 'i' } }
       ];

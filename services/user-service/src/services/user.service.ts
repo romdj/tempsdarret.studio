@@ -60,13 +60,13 @@ export class UserService {
     // Build filter object
     const filter: Record<string, unknown> = {};
     if (query.role) {
-      filter.role = query.role;
+      filter['role'] = query.role;
     }
     if (query.isActive !== undefined) {
-      filter.isActive = query.isActive;
+      filter['isActive'] = query.isActive;
     }
     if (query.search) {
-      filter.search = query.search;
+      filter['search'] = query.search;
     }
 
     // Get users and count
