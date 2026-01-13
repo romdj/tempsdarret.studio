@@ -1,16 +1,16 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 import { Invitation, MagicLink } from './invites.dto';
 
 // Invitation mongoose interface
 export interface InvitationDocument extends Omit<Invitation, 'id' | 'createdAt' | 'updatedAt'>, Document {
-  _id: string;
+  _id: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Magic link mongoose interface  
+// Magic link mongoose interface
 export interface MagicLinkDocument extends Omit<MagicLink, 'id' | 'createdAt' | 'updatedAt'>, Document {
-  _id: string;
+  _id: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,9 +43,11 @@ const invitationSchema = new Schema<InvitationDocument>({
   toJSON: {
     transform: function(_doc, ret): Record<string, unknown> {
       ret.id = ret._id;
-      delete ret._id;
-      delete ret.__v;
-      return ret;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (ret as any)._id;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (ret as any).__v;
+      return ret as Record<string, unknown>;
     }
   }
 });
@@ -94,9 +96,11 @@ const magicLinkSchema = new Schema<MagicLinkDocument>({
   toJSON: {
     transform: function(_doc, ret): Record<string, unknown> {
       ret.id = ret._id;
-      delete ret._id;
-      delete ret.__v;
-      return ret;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (ret as any)._id;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (ret as any).__v;
+      return ret as Record<string, unknown>;
     }
   }
 });
