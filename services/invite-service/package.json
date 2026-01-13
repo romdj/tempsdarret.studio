@@ -17,6 +17,7 @@
     "test:coverage": "vitest --coverage",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
+    "check": "tsc --noEmit",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
