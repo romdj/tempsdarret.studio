@@ -50,8 +50,10 @@ const userSchema = new Schema<UserDocument>({
   toJSON: {
     transform: function(_doc, ret): Record<string, unknown> {
       ret.id = ret._id;
-      delete ret._id;
-      delete ret.__v;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (ret as any)._id;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (ret as any).__v;
       return ret as Record<string, unknown>;
     }
   }
