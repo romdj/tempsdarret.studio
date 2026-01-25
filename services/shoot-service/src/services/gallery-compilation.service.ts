@@ -72,15 +72,12 @@ export class GalleryCompilationService {
     return {
       shootId: shoot.id,
       title: shoot.title,
-      description: shoot.description,
-      coverImage: shoot.media?.coverImageId
-        ? undefined // TODO: fetch from file-service
-        : undefined,
+      // TODO: Add description to Shoot schema when needed
       images: sortedImages,
       metadata: {
-        totalImages: shoot.media?.totalImages ?? 0,
-        allowDownloads: shoot.access?.allowDownloads ?? false,
-        lastUpdated: shoot.media?.lastUpdated ?? shoot.updatedAt
+        totalImages: 0, // TODO: Integrate with file-service
+        allowDownloads: false, // TODO: Add access settings to Shoot schema
+        lastUpdated: shoot.updatedAt
       }
     };
   }
@@ -107,15 +104,26 @@ export class GalleryCompilationService {
     fileData: Record<string, unknown>,
     includeDownloadUrl: boolean
   ): GalleryImage {
-    return {
-      id: fileData.id as string,
-      url: (fileData.urls as Record<string, unknown>).high as string,
-      thumbnailUrl: (fileData.urls as Record<string, unknown>).thumb as string,
-      caption: fileData.caption as string | undefined,
-      isFeatured: (fileData.isFeatured as boolean | undefined) ?? false,
-      downloadUrl: includeDownloadUrl
-        ? (fileData.downloadUrl as string | undefined)
-        : undefined
+    const urls = fileData['urls'] as Record<string, unknown> | undefined;
+    const caption = fileData['caption'] as string | undefined;
+    const downloadUrl = includeDownloadUrl
+      ? (fileData['downloadUrl'] as string | undefined)
+      : undefined;
+
+    const image: GalleryImage = {
+      id: fileData['id'] as string,
+      url: urls?.['high'] as string ?? '',
+      thumbnailUrl: urls?.['thumb'] as string ?? '',
+      isFeatured: (fileData['isFeatured'] as boolean | undefined) ?? false
     };
+
+    if (caption !== undefined) {
+      image.caption = caption;
+    }
+    if (downloadUrl !== undefined) {
+      image.downloadUrl = downloadUrl;
+    }
+
+    return image;
   }
 }

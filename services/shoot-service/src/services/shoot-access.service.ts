@@ -31,24 +31,13 @@ export class ShootAccessService {
       };
     }
 
-    // Check if client access is enabled
-    if (shoot.access?.allowClientAccess !== true) {
+    // TODO: Add access control fields to Shoot schema when needed
+    // For now, all shoots are accessible if they exist and are in 'delivered' status
+    if (shoot.status !== 'delivered') {
       return {
         allowed: false,
         shootId: shoot.id,
-        reason: 'Client access not enabled for this shoot'
-      };
-    }
-
-    // Check if access has expired
-    if (
-      shoot.access.expiresAt &&
-      new Date(shoot.access.expiresAt) < new Date()
-    ) {
-      return {
-        allowed: false,
-        shootId: shoot.id,
-        reason: 'Access has expired'
+        reason: 'Shoot is not yet available for client access'
       };
     }
 

@@ -23,8 +23,7 @@ export class ShootHandlers {
           code: 400,
           message: 'Validation error',
           details: error.issues
-            .map((e: { path: string[]; message: string }) =>
-              `${e.path.join('.')}: ${e.message}`)
+            .map((e) => `${e.path.map(String).join('.')}: ${e.message}`)
             .join(', ')
         });
         return;
@@ -98,8 +97,7 @@ export class ShootHandlers {
           code: 400,
           message: 'Validation error',
           details: error.issues
-            .map((e: { path: string[]; message: string }) =>
-              `${e.path.join('.')}: ${e.message}`)
+            .map((e) => `${e.path.map(String).join('.')}: ${e.message}`)
             .join(', ')
         });
         return;
@@ -140,8 +138,7 @@ export class ShootHandlers {
           code: 400,
           message: 'Invalid query parameters',
           details: error.issues
-            .map((e: { path: string[]; message: string }) =>
-              `${e.path.join('.')}: ${e.message}`)
+            .map((e) => `${e.path.map(String).join('.')}: ${e.message}`)
             .join(', ')
         });
         return;

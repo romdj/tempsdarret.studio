@@ -3,8 +3,8 @@ import crypto from 'crypto';
 import { Shoot, ShootStatus } from '@tempsdarret/shared/schemas/shoot.schema';
 
 // Mongoose document interface that extends our Zod schema type
-export interface IShootDocument extends Document, Omit<Shoot, 'id'> {
-  _id: string;
+export interface IShootDocument extends Omit<Shoot, 'id'>, Document {
+  id: string;
 }
 
 const shootSchema = new Schema<IShootDocument>({
@@ -57,8 +57,8 @@ const shootSchema = new Schema<IShootDocument>({
     transform: function(_doc, ret): Record<string, unknown> {
       // id is already set, no need to reassign
       const result = ret as Record<string, unknown>;
-      delete result._id;
-      delete result.__v;
+      delete result['_id'];
+      delete result['__v'];
       return result;
     }
   }
