@@ -4,7 +4,7 @@ import {
   CreateGalleryRequest,
   GalleryQuery,
   AddGalleryImagesRequest
-} from '@tempsdarret/shared/schemas/portfolio.schema.js';
+} from '@tempsdarret/shared/schemas/portfolio.schema';
 import { ZodError } from 'zod';
 
 export class GalleryHandlers {

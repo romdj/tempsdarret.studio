@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { Portfolio, PortfolioVisibility } from '@tempsdarret/shared/schemas/portfolio.schema.js';
+import { Portfolio, PortfolioVisibility } from '@tempsdarret/shared/schemas/portfolio.schema';
 
-export interface IPortfolioDocument extends Omit<Portfolio, 'createdAt' | 'updatedAt'>, Document {
+export interface IPortfolioDocument extends Omit<Portfolio, 'id' | 'createdAt' | 'updatedAt'>, Document {
+  id: string;
   createdAt: Date;
   updatedAt: Date;
 }

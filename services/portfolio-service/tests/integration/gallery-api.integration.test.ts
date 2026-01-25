@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PortfolioServiceApp } from '../../src/main.js';
-import { CreateGalleryRequest, AddGalleryImagesRequest } from '@tempsdarret/shared/schemas/portfolio.schema.js';
+import { CreateGalleryRequest, AddGalleryImagesRequest } from '@tempsdarret/shared/schemas/portfolio.schema';
 
 describe('Gallery API Integration Tests', () => {
   let app: PortfolioServiceApp;
@@ -8,8 +8,8 @@ describe('Gallery API Integration Tests', () => {
   let testPortfolioId: string;
 
   beforeAll(async () => {
-    process.env.MONGODB_URI = 'mongodb://localhost:27017/tempsdarret-portfolios-test';
-    process.env.KAFKA_BROKERS = 'localhost:9092';
+    process.env['MONGODB_URI'] = 'mongodb://localhost:27017/tempsdarret-portfolios-test';
+    process.env['KAFKA_BROKERS'] = 'localhost:9092';
 
     app = new PortfolioServiceApp();
     await app.start();

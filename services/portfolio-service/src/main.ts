@@ -53,8 +53,8 @@ class PortfolioServiceApp {
       registerGalleryRoutes(this.fastify, galleryHandlers);
 
       // Health check
-      this.fastify.get('/health', async (request, reply) => {
-        return reply.send({ status: 'ok', service: 'portfolio-service' });
+      this.fastify.get('/health', async () => {
+        return { status: 'ok', service: 'portfolio-service' };
       });
 
       // Start server

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { PortfolioRepository } from '../../src/persistence/portfolio.repository.js';
 import { PortfolioModel } from '../../src/shared/contracts/portfolios.mongoose.js';
-import { CreatePortfolioRequest } from '@tempsdarret/shared/schemas/portfolio.schema.js';
+import { CreatePortfolioRequest } from '@tempsdarret/shared/schemas/portfolio.schema';
 
 // Mock mongoose
 vi.mock('../../src/shared/contracts/portfolios.mongoose.js', () => ({

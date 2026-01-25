@@ -20,11 +20,12 @@ export class EventPublisher {
   }
 
   async publish(topic: string, event: Record<string, unknown>, key?: string): Promise<void> {
+    const messageKey = key ?? (event['id'] as string | undefined) ?? null;
     await this.producer.send({
       topic,
       messages: [
         {
-          key: key ?? (event.id as string | undefined),
+          key: messageKey,
           value: JSON.stringify(event),
         },
       ],

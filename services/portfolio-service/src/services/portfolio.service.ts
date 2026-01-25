@@ -5,7 +5,7 @@ import {
   UpdatePortfolioRequest,
   PortfolioQuery,
   Portfolio
-} from '@tempsdarret/shared/schemas/portfolio.schema.js';
+} from '@tempsdarret/shared/schemas/portfolio.schema';
 
 export class PortfolioService {
   constructor(

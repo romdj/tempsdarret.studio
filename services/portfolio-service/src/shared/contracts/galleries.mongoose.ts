@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { Gallery, GalleryType } from '@tempsdarret/shared/schemas/portfolio.schema.js';
+import { Gallery, GalleryType } from '@tempsdarret/shared/schemas/portfolio.schema';
 
-export interface IGalleryDocument extends Omit<Gallery, 'createdAt' | 'updatedAt'>, Document {
+export interface IGalleryDocument extends Omit<Gallery, 'id' | 'createdAt' | 'updatedAt'>, Document {
+  id: string;
   createdAt: Date;
   updatedAt: Date;
 }

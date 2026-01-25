@@ -3,7 +3,7 @@ import {
   CreatePortfolioRequest,
   UpdatePortfolioRequest,
   PortfolioQuery
-} from '@tempsdarret/shared/schemas/portfolio.schema.js';
+} from '@tempsdarret/shared/schemas/portfolio.schema';
 import { generatePortfolioId } from '../shared/utils/id.js';
 
 export class PortfolioRepository {

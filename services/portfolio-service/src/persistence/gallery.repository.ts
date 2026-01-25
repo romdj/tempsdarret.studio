@@ -8,7 +8,7 @@ import {
   CreateGalleryRequest,
   GalleryQuery,
   AddGalleryImagesRequest
-} from '@tempsdarret/shared/schemas/portfolio.schema.js';
+} from '@tempsdarret/shared/schemas/portfolio.schema';
 import { generateGalleryId, generateGalleryImageId } from '../shared/utils/id.js';
 
 export class GalleryRepository {

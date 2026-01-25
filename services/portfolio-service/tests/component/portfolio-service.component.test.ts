@@ -10,8 +10,8 @@ describe('Portfolio Service Component Tests', () => {
   let server: any;
 
   beforeAll(async () => {
-    process.env.MONGODB_URI = 'mongodb://localhost:27017/tempsdarret-portfolios-component-test';
-    process.env.KAFKA_BROKERS = 'localhost:9092';
+    process.env['MONGODB_URI'] = 'mongodb://localhost:27017/tempsdarret-portfolios-component-test';
+    process.env['KAFKA_BROKERS'] = 'localhost:9092';
 
     app = new PortfolioServiceApp();
     await app.start();

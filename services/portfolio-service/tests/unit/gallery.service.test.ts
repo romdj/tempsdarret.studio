@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GalleryService } from '../../src/services/gallery.service.js';
 import { GalleryRepository } from '../../src/persistence/gallery.repository.js';
 import { EventPublisher } from '../../src/shared/messaging/event-publisher.js';
-import { CreateGalleryRequest, AddGalleryImagesRequest } from '@tempsdarret/shared/schemas/portfolio.schema.js';
+import { CreateGalleryRequest, AddGalleryImagesRequest } from '@tempsdarret/shared/schemas/portfolio.schema';
 
 describe('GalleryService', () => {
   let galleryService: GalleryService;

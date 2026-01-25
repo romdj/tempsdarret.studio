@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PortfolioService } from '../../src/services/portfolio.service.js';
 import { PortfolioRepository } from '../../src/persistence/portfolio.repository.js';
 import { EventPublisher } from '../../src/shared/messaging/event-publisher.js';
-import { CreatePortfolioRequest, UpdatePortfolioRequest } from '@tempsdarret/shared/schemas/portfolio.schema.js';
+import { CreatePortfolioRequest, UpdatePortfolioRequest } from '@tempsdarret/shared/schemas/portfolio.schema';
 
 describe('PortfolioService', () => {
   let portfolioService: PortfolioService;

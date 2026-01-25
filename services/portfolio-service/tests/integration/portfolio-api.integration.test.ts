@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { PortfolioServiceApp } from '../../src/main.js';
-import { CreatePortfolioRequest, UpdatePortfolioRequest } from '@tempsdarret/shared/schemas/portfolio.schema.js';
+import { CreatePortfolioRequest, UpdatePortfolioRequest } from '@tempsdarret/shared/schemas/portfolio.schema';
 
 describe('Portfolio API Integration Tests', () => {
   let app: PortfolioServiceApp;
@@ -9,8 +9,8 @@ describe('Portfolio API Integration Tests', () => {
 
   beforeAll(async () => {
     // Use test database
-    process.env.MONGODB_URI = 'mongodb://localhost:27017/tempsdarret-portfolios-test';
-    process.env.KAFKA_BROKERS = 'localhost:9092';
+    process.env['MONGODB_URI'] = 'mongodb://localhost:27017/tempsdarret-portfolios-test';
+    process.env['KAFKA_BROKERS'] = 'localhost:9092';
 
     app = new PortfolioServiceApp();
     await app.start();
