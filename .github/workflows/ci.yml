@@ -97,6 +97,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build shared dependencies
+        if: ${{ !contains(fromJson('["models", "shared"]'), matrix.component) }}
+        run: pnpm run build:models && pnpm run build:shared
+
       - name: Build ${{ matrix.component }}
         run: pnpm run build:${{ matrix.component }}
 
