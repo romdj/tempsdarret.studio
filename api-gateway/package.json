@@ -13,7 +13,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "echo 'No source files to lint yet'",
-    "check": "tsc --noEmit"
+    "check": "echo 'No source files to check yet'"
   },
   "devDependencies": {},
   "engines": {
