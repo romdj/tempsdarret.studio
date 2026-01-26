@@ -1,4 +1,4 @@
-import { 
+import {
   CreateInvitationRequest,
   SendInvitationRequest,
   InvitationQuery,
@@ -7,6 +7,7 @@ import {
 import { InvitationRepository } from '../persistence/invitation.repository';
 import { MagicLinkRepository } from '../persistence/magic-link.repository';
 import { EventPublisher } from '../shared/messaging/event-publisher';
+import { randomBytes } from 'crypto';
 
 export interface UserCreatedEvent {
   eventType: 'user.created';
@@ -38,11 +39,14 @@ export class InviteService {
     const invitation = await this.invitationRepository.create(invitationData);
 
     // Generate magic link (ADR-003: 64-char hex, 15-minute expiry)
+    const token = randomBytes(32).toString('hex'); // 64-char hex
     const magicLinkData = {
+      token,
       shootId: event.shootId,
       clientEmail: event.email,
       expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
-      isActive: true
+      isActive: true,
+      accessCount: 0
     };
 
     const magicLink = await this.magicLinkRepository.create(magicLinkData);

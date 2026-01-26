@@ -21,13 +21,13 @@ export class InvitationRepository {
     const filter: Record<string, unknown> = {};
 
     if (query.shootId) {
-      filter.shootId = query.shootId;
+      filter['shootId'] = query.shootId;
     }
     if (query.status) {
-      filter.status = query.status;
+      filter['status'] = query.status;
     }
     if (query.clientEmail) {
-      filter.clientEmail = query.clientEmail;
+      filter['clientEmail'] = query.clientEmail;
     }
 
     const invitations = await InvitationModel
