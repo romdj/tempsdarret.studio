@@ -149,7 +149,7 @@ export class TemplateService implements TemplateRepository {
     });
 
     // Conditional helper
-    Handlebars.registerHelper('ifEquals', function(arg1: unknown, arg2: unknown, options: Handlebars.HelperOptions) {
+    Handlebars.registerHelper('ifEquals', function(this: unknown, arg1: unknown, arg2: unknown, options: Handlebars.HelperOptions) {
       return (arg1 === arg2) ? options.fn(this) : options.inverse(this);
     });
 

@@ -146,14 +146,16 @@ export class EmailRepository extends BaseNotificationRepository {
     };
 
     // Add tags for analytics
-    emailData.tags = [
+    const tags: { name: string; value: string }[] = [
       { name: 'template', value: message.templateType },
       { name: 'priority', value: message.priority },
     ];
 
     if (message.metadata.shootId) {
-      emailData.tags.push({ name: 'shoot', value: message.metadata.shootId });
+      tags.push({ name: 'shoot', value: message.metadata.shootId });
     }
+
+    emailData.tags = tags;
 
     return emailData;
   }
