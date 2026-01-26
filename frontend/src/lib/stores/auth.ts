@@ -21,6 +21,8 @@ function createAuthStore(): AuthStore {
 
 	return {
 		subscribe,
+		set,
+		update,
 
 		/**
 		 * Initialize auth state on app load

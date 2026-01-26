@@ -12,6 +12,12 @@
 	const galleryId = $page.params.id;
 
 	onMount(async () => {
+		if (!galleryId) {
+			error = 'Gallery ID is required';
+			loading = false;
+			return;
+		}
+
 		try {
 			[gallery, photos] = await Promise.all([
 				GalleryService.getGallery(galleryId),

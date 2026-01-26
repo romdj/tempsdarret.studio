@@ -36,10 +36,12 @@ export const ApiClient = {
 		options: RequestInit = {}
 	): Promise<ApiResponse<T>> {
 		const url = `${API_BASE_URL}${endpoint}`;
+		const headersObj = options.headers as Record<string, string> | undefined;
+		const skipAuth = headersObj?.['Authorization'] === 'skip';
 		const config: RequestInit = {
 			...options,
 			headers: {
-				...this.getHeaders(options.headers?.['Authorization'] !== 'skip'),
+				...this.getHeaders(!skipAuth),
 				...options.headers
 			}
 		};

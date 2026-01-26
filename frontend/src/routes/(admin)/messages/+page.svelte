@@ -48,8 +48,8 @@
 	});
 
 	onDestroy(() => {
-		if (eventSource) {
-			eventSource.close();
+		if (eventSource !== null) {
+			(eventSource as EventSource).close();
 		}
 	});
 
