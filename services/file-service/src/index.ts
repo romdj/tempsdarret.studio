@@ -6,7 +6,7 @@
 export * from './services/FileService.js';
 export * from './services/StorageService.js';
 export * from './services/ProcessingService.js';
-export * from './services/ArchiveService.js';
+export { ArchiveService, ArchiveConfig } from './services/ArchiveService.js';
 export * from './services/EventEmitter.js';
 export * from './handlers/FileHandlers.js';
 export * from './shared/contracts/files.api.js';

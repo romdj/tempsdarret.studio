@@ -6,14 +6,17 @@
 import { Schema, Document, Model } from 'mongoose';
 import { FileModel, ArchiveModel } from './files.api.js';
 
-// File document interface
-export interface FileDocument extends Omit<FileModel, 'id'>, Document {
-  _id: string;
+// File document interface - extends Document but overrides createdAt/updatedAt as Date
+export interface FileDocument extends Omit<FileModel, 'id' | 'createdAt' | 'updatedAt'>, Document {
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-// Archive document interface
-export interface ArchiveDocument extends Omit<ArchiveModel, 'id'>, Document {
-  _id: string;
+// Archive document interface - extends Document but overrides date fields as Date
+export interface ArchiveDocument extends Omit<ArchiveModel, 'id' | 'createdAt' | 'updatedAt' | 'expiresAt'>, Document {
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Chunk document interface for on-demand GridFS (ADR-027)
@@ -142,7 +145,7 @@ chunkSchema.pre('save', function(next) {
 // Transform function to convert document to API model
 function transformFileDocument(doc: FileDocument): FileModel {
   return {
-    id: doc._id,
+    id: String(doc._id),
     filename: doc.filename,
     type: doc.type,
     size: doc.size,
@@ -164,7 +167,7 @@ function transformFileDocument(doc: FileDocument): FileModel {
 
 function transformArchiveDocument(doc: ArchiveDocument): ArchiveModel {
   return {
-    id: doc._id,
+    id: String(doc._id),
     shootId: doc.shootId,
     type: doc.type,
     size: doc.size,

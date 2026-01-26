@@ -210,11 +210,15 @@ export class StorageService {
 
     const start = options?.start ?? 0;
     const end = options?.end ?? fileInfo.totalSize - 1;
-    const startChunk = Math.floor(start / this.config.chunkSize);
-    const endChunk = Math.floor(end / this.config.chunkSize);
+    const chunkSize = this.config.chunkSize;
+    const startChunk = Math.floor(start / chunkSize);
+    const endChunk = Math.floor(end / chunkSize);
 
     let currentChunk = startChunk;
     let currentPosition = start;
+
+    // Capture reference to this for use in Readable's read function
+    const getChunk = this.getChunk.bind(this);
 
     return new Readable({
       async read(): Promise<void> {
@@ -224,20 +228,20 @@ export class StorageService {
         }
 
         try {
-          const chunkData = await this.getChunk(fileId, currentChunk);
+          const chunkData = await getChunk(fileId, currentChunk);
           if (!chunkData) {
             this.emit('error', new Error(`Chunk ${currentChunk} not found for file ${fileId}`));
             return;
           }
 
           // Calculate slice boundaries
-          const chunkStart = currentChunk * this.config.chunkSize;
+          const chunkStart = currentChunk * chunkSize;
           const localStart = Math.max(0, currentPosition - chunkStart);
           const localEnd = Math.min(chunkData.length, end - chunkStart + 1);
-          
+
           const slice = chunkData.subarray(localStart, localEnd);
           this.push(slice);
-          
+
           currentPosition += slice.length;
           if (localEnd >= chunkData.length) {
             currentChunk++;

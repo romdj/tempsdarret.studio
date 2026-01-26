@@ -15,7 +15,8 @@ import { EventEmitter } from './EventEmitter.js';
 import {
   ArchiveModel,
   ArchiveType,
-  ProcessingStatus
+  ProcessingStatus,
+  FileModel
 } from '../shared/contracts/files.api.js';
 import { 
   ArchiveDocument, 
@@ -172,11 +173,12 @@ export class ArchiveService {
     let cleanedCount = 0;
     for (const archive of expiredArchives) {
       try {
-        await this.deleteArchive(archive._id);
+        const archiveId = String(archive._id);
+        await this.deleteArchive(archiveId);
         cleanedCount++;
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.error(`Failed to cleanup archive ${archive._id}:`, error);
+        console.error(`Failed to cleanup archive ${String(archive._id)}:`, error);
       }
     }
 
@@ -247,8 +249,8 @@ export class ArchiveService {
         await archive.finalize();
 
         // Wait for archive to be written
-        await new Promise((resolve, reject) => {
-          output.on('close', resolve);
+        await new Promise<void>((resolve, reject) => {
+          output.on('close', () => resolve());
           output.on('error', reject);
           archive.on('error', reject);
         });
@@ -274,9 +276,9 @@ export class ArchiveService {
    * Filter files by archive type
    */
   private filterFilesByType(
-    files: { type: string }[],
+    files: FileModel[],
     type: ArchiveType
-  ): { type: string }[] {
+  ): FileModel[] {
     switch (type) {
       case 'jpeg':
         return files.filter(f => f.type === 'jpeg');

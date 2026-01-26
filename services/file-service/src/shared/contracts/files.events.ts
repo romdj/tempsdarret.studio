@@ -21,18 +21,18 @@ export interface FileUploadedData {
   size: number;
   mimeType: string;
   storagePath: string;
-  fileType: 'jpeg' | 'png' | 'raw' | 'video';
+  fileType: 'jpeg' | 'png' | 'raw' | 'video' | 'sidecar' | 'config';
   uploadedAt: string;
 }
 
 export interface FileProcessedData {
   fileId: string;
-  processingStatus: 'completed' | 'failed';
+  processingStatus: 'pending' | 'processing' | 'completed' | 'failed';
   processingDetails?: {
     thumbnailGenerated?: boolean;
     metadataExtracted?: boolean;
     errorMessage?: string;
-  };
+  } | Record<string, unknown>;
   processedAt: string;
 }
 

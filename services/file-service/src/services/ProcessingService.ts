@@ -146,7 +146,7 @@ export class ProcessingService {
         width: imageMetadata.width,
         height: imageMetadata.height,
         colorSpace: imageMetadata.space,
-        bitDepth: imageMetadata.depth,
+        bitDepth: imageMetadata.depth ? parseInt(String(imageMetadata.depth), 10) : undefined,
       };
 
       // Parse EXIF tags
