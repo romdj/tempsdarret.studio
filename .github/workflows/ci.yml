@@ -46,6 +46,9 @@ jobs:
       - name: Lint all services
         run: pnpm run lint
 
+      - name: Build shared packages
+        run: pnpm run build:models && pnpm run build:shared
+
       - name: Type check all services
         run: pnpm run check
 
