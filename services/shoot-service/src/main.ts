@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import { Kafka } from 'kafkajs';
+import { pathToFileURL } from 'url';
 import { appConfig } from './config/app.config';
 import { dbConnection } from './config/database';
 import { EventPublisher } from './shared/messaging';
@@ -67,7 +68,10 @@ class ShootServiceApp {
 }
 
 // Start service if this file is run directly
-if (require.main === module) {
+const isEntrypoint = process.argv[1] !== undefined
+  && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isEntrypoint) {
   const app = new ShootServiceApp();
   
   // Graceful shutdown
