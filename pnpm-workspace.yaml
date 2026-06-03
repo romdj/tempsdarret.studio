@@ -4,3 +4,25 @@ packages:
   - 'packages/*'
   - 'services/*'
   - 'dev-tools'
+
+# pnpm 11 build-script allowlist — packages permitted to run lifecycle scripts at install time.
+# Allow: native bindings, toolchain compilers, test fixtures.
+# Deny: postinstall sponsor/donation prompts; transitive deps we don't actually rely on.
+allowBuilds:
+  '@asyncapi/cli': true
+  '@hyperjump/json-pointer': true
+  '@hyperjump/json-schema': true
+  '@hyperjump/json-schema-core': true
+  '@hyperjump/pact': true
+  '@swc/core': true
+  core-js: false
+  cpu-features: true
+  es5-ext: false
+  esbuild: true
+  mongodb-memory-server: true
+  msgpackr-extract: true
+  protobufjs: false
+  puppeteer: true
+  sharp: true
+  ssh2: true
+  yarn: false
