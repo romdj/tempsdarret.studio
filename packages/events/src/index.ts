@@ -14,6 +14,8 @@
 export * from './contracts/shoots.events.js';
 export * from './contracts/users.events.js';
 export * from './contracts/invites.events.js';
+export * from './contracts/portfolios.events.js';
+export * from './contracts/galleries.events.js';
 
 // Common types and utilities
 export * from './types/common.js';

@@ -19,8 +19,10 @@ async function generateAsyncAPIFromTypeScript() {
     // Service contract paths
     const contractPaths = {
       'shoot-service': '../../../services/shoot-service/src/shared/contracts/shoots.events.ts',
-      'user-service': '../../../services/user-service/src/shared/contracts/users.events.ts', 
-      'invite-service': '../../../services/invite-service/src/shared/contracts/invites.events.ts'
+      'user-service': '../../../services/user-service/src/shared/contracts/users.events.ts',
+      'invite-service': '../../../services/invite-service/src/shared/contracts/invites.events.ts',
+      'portfolio-service-portfolios': '../../../services/portfolio-service/src/shared/contracts/portfolios.events.ts',
+      'portfolio-service-galleries': '../../../services/portfolio-service/src/shared/contracts/galleries.events.ts'
     };
 
     // Base AsyncAPI structure
@@ -89,6 +91,23 @@ async function generateAsyncAPIFromTypeScript() {
           'magic.link.generated': { '$ref': '#/components/messages/MagicLinkGenerated' },
           'magic.link.used': { '$ref': '#/components/messages/MagicLinkUsed' }
         }
+      },
+      portfolios: {
+        description: 'Portfolio lifecycle events - Auto-generated from portfolio-service TypeScript contracts',
+        messages: {
+          'portfolio.created': { '$ref': '#/components/messages/PortfolioCreated' },
+          'portfolio.updated': { '$ref': '#/components/messages/PortfolioUpdated' },
+          'portfolio.deleted': { '$ref': '#/components/messages/PortfolioDeleted' }
+        }
+      },
+      galleries: {
+        description: 'Gallery lifecycle events - Auto-generated from portfolio-service TypeScript contracts',
+        messages: {
+          'gallery.created': { '$ref': '#/components/messages/GalleryCreated' },
+          'gallery.updated': { '$ref': '#/components/messages/GalleryUpdated' },
+          'gallery.deleted': { '$ref': '#/components/messages/GalleryDeleted' },
+          'gallery.images-added': { '$ref': '#/components/messages/GalleryImagesAdded' }
+        }
       }
     };
 
@@ -121,6 +140,34 @@ async function generateAsyncAPIFromTypeScript() {
         messages: [{ '$ref': '#/channels/users/messages/user.created' }],
         summary: 'Services subscribe to new user creation',
         description: 'Consumed by invite-service to create invitations'
+      },
+      publishPortfolioCreated: {
+        action: 'send',
+        channel: { '$ref': '#/channels/portfolios' },
+        messages: [{ '$ref': '#/channels/portfolios/messages/portfolio.created' }],
+        summary: 'Photographer creates a new portfolio',
+        description: 'Published by portfolio-service when a photographer creates a portfolio'
+      },
+      subscribePortfolioCreated: {
+        action: 'receive',
+        channel: { '$ref': '#/channels/portfolios' },
+        messages: [{ '$ref': '#/channels/portfolios/messages/portfolio.created' }],
+        summary: 'Other services subscribe to portfolio creation',
+        description: 'Consumed by services that index or surface public portfolios'
+      },
+      publishGalleryCreated: {
+        action: 'send',
+        channel: { '$ref': '#/channels/galleries' },
+        messages: [{ '$ref': '#/channels/galleries/messages/gallery.created' }],
+        summary: 'Gallery created inside a portfolio',
+        description: 'Published by portfolio-service when a gallery is created'
+      },
+      subscribeGalleryImagesAdded: {
+        action: 'receive',
+        channel: { '$ref': '#/channels/galleries' },
+        messages: [{ '$ref': '#/channels/galleries/messages/gallery.images-added' }],
+        summary: 'Services react when images are added to a gallery',
+        description: 'Consumed by file-service / notification-service to update counts and notify clients'
       }
     };
 
@@ -201,10 +248,58 @@ async function generateAsyncAPIFromTypeScript() {
         payload: { '$ref': '#/components/schemas/MagicLinkGeneratedEvent' }
       },
       MagicLinkUsed: {
-        name: 'MagicLinkUsed', 
+        name: 'MagicLinkUsed',
         title: 'Magic Link Used Event',
         contentType: 'application/json',
         payload: { '$ref': '#/components/schemas/MagicLinkUsedEvent' }
+      },
+
+      // Portfolio Events
+      PortfolioCreated: {
+        name: 'PortfolioCreated',
+        title: 'Portfolio Created Event',
+        summary: 'Generated from PortfolioCreatedData TypeScript interface',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/PortfolioCreatedData' }
+      },
+      PortfolioUpdated: {
+        name: 'PortfolioUpdated',
+        title: 'Portfolio Updated Event',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/PortfolioUpdatedData' }
+      },
+      PortfolioDeleted: {
+        name: 'PortfolioDeleted',
+        title: 'Portfolio Deleted Event',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/PortfolioDeletedData' }
+      },
+
+      // Gallery Events
+      GalleryCreated: {
+        name: 'GalleryCreated',
+        title: 'Gallery Created Event',
+        summary: 'Generated from GalleryCreatedData TypeScript interface',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/GalleryCreatedData' }
+      },
+      GalleryUpdated: {
+        name: 'GalleryUpdated',
+        title: 'Gallery Updated Event',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/GalleryUpdatedData' }
+      },
+      GalleryDeleted: {
+        name: 'GalleryDeleted',
+        title: 'Gallery Deleted Event',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/GalleryDeletedData' }
+      },
+      GalleryImagesAdded: {
+        name: 'GalleryImagesAdded',
+        title: 'Gallery Images Added Event',
+        contentType: 'application/json',
+        payload: { '$ref': '#/components/schemas/GalleryImagesAddedData' }
       }
     };
 
@@ -372,6 +467,87 @@ async function generateAsyncAPIFromTypeScript() {
           timestamp: { type: 'string', format: 'date-time' }
         },
         required: ['eventType', 'magicLinkId', 'shootId', 'clientEmail', 'timestamp']
+      },
+
+      // Portfolio Events - matching portfolios.events.ts
+      PortfolioCreatedData: {
+        type: 'object',
+        description: 'Generated from PortfolioCreatedData TypeScript interface',
+        properties: {
+          portfolioId: { type: 'string', description: 'Unique portfolio identifier' },
+          photographerId: { type: 'string', description: 'Owning photographer user ID' },
+          urlSlug: { type: 'string', description: 'Public URL slug for the portfolio' },
+          createdAt: { type: 'string', format: 'date-time', description: 'Creation timestamp' }
+        },
+        required: ['portfolioId', 'photographerId', 'urlSlug', 'createdAt']
+      },
+
+      PortfolioUpdatedData: {
+        type: 'object',
+        description: 'Generated from PortfolioUpdatedData TypeScript interface',
+        properties: {
+          portfolioId: { type: 'string', description: 'Unique portfolio identifier' },
+          changes: { type: 'object', description: 'Record of updated fields' },
+          updatedAt: { type: 'string', format: 'date-time', description: 'Update timestamp' }
+        },
+        required: ['portfolioId', 'changes', 'updatedAt']
+      },
+
+      PortfolioDeletedData: {
+        type: 'object',
+        description: 'Generated from PortfolioDeletedData TypeScript interface',
+        properties: {
+          portfolioId: { type: 'string', description: 'Unique portfolio identifier' },
+          deletedAt: { type: 'string', format: 'date-time', description: 'Deletion timestamp' }
+        },
+        required: ['portfolioId', 'deletedAt']
+      },
+
+      // Gallery Events - matching galleries.events.ts
+      GalleryCreatedData: {
+        type: 'object',
+        description: 'Generated from GalleryCreatedData TypeScript interface',
+        properties: {
+          galleryId: { type: 'string', description: 'Unique gallery identifier' },
+          portfolioId: { type: 'string', description: 'Parent portfolio identifier' },
+          shootId: { type: 'string', description: 'Optional source shoot identifier' },
+          type: { type: 'string', description: 'Gallery type (e.g. wedding, portrait)' },
+          createdAt: { type: 'string', format: 'date-time', description: 'Creation timestamp' }
+        },
+        required: ['galleryId', 'portfolioId', 'type', 'createdAt']
+      },
+
+      GalleryUpdatedData: {
+        type: 'object',
+        description: 'Generated from GalleryUpdatedData TypeScript interface',
+        properties: {
+          galleryId: { type: 'string', description: 'Unique gallery identifier' },
+          changes: { type: 'object', description: 'Record of updated fields' },
+          updatedAt: { type: 'string', format: 'date-time', description: 'Update timestamp' }
+        },
+        required: ['galleryId', 'changes', 'updatedAt']
+      },
+
+      GalleryDeletedData: {
+        type: 'object',
+        description: 'Generated from GalleryDeletedData TypeScript interface',
+        properties: {
+          galleryId: { type: 'string', description: 'Unique gallery identifier' },
+          deletedAt: { type: 'string', format: 'date-time', description: 'Deletion timestamp' }
+        },
+        required: ['galleryId', 'deletedAt']
+      },
+
+      GalleryImagesAddedData: {
+        type: 'object',
+        description: 'Generated from GalleryImagesAddedData TypeScript interface',
+        properties: {
+          galleryId: { type: 'string', description: 'Unique gallery identifier' },
+          imageCount: { type: 'number', description: 'Number of images added in this batch' },
+          fileIds: { type: 'array', items: { type: 'string' }, description: 'File IDs added' },
+          addedAt: { type: 'string', format: 'date-time', description: 'Addition timestamp' }
+        },
+        required: ['galleryId', 'imageCount', 'fileIds', 'addedAt']
       }
     };
 

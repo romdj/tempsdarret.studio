@@ -11,3 +11,5 @@ export function generateGalleryId(): string {
 export function generateGalleryImageId(): string {
   return `img-${randomBytes(8).toString('hex')}`;
 }
+
+export const generateEventId = (): string => `evt_${randomBytes(16).toString('hex')}`;

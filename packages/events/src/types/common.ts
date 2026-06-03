@@ -5,9 +5,16 @@
 import { ShootEvent } from '../contracts/shoots.events.js';
 import { UserEvent } from '../contracts/users.events.js';
 import { InviteEvent } from '../contracts/invites.events.js';
+import { PortfolioEvent } from '../contracts/portfolios.events.js';
+import { GalleryEvent } from '../contracts/galleries.events.js';
 
 // Union of all platform events
-export type PlatformEvent = ShootEvent | UserEvent | InviteEvent;
+export type PlatformEvent =
+  | ShootEvent
+  | UserEvent
+  | InviteEvent
+  | PortfolioEvent
+  | GalleryEvent;
 
 // Event metadata for Kafka message headers
 export interface EventMetadata {
@@ -34,6 +41,7 @@ export const SERVICE_NAMES = {
   USER_SERVICE: 'user-service',
   INVITE_SERVICE: 'invite-service',
   NOTIFICATION_SERVICE: 'notification-service',
+  PORTFOLIO_SERVICE: 'portfolio-service',
 } as const;
 
 export type ServiceName = typeof SERVICE_NAMES[keyof typeof SERVICE_NAMES];
