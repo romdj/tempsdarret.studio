@@ -1,5 +1,10 @@
 import { GalleryRepository } from '../persistence/gallery.repository.js';
-import { EventPublisher } from '../shared/messaging/event-publisher.js';
+import {
+  GalleryCreatedPublisher,
+  GalleryUpdatedPublisher,
+  GalleryDeletedPublisher,
+  GalleryImagesAddedPublisher
+} from '../events/publishers/index.js';
 import {
   CreateGalleryRequest,
   GalleryQuery,
@@ -11,22 +16,19 @@ import {
 export class GalleryService {
   constructor(
     private readonly galleryRepository: GalleryRepository,
-    private readonly eventPublisher: EventPublisher
+    private readonly galleryCreatedPublisher: GalleryCreatedPublisher,
+    private readonly galleryUpdatedPublisher: GalleryUpdatedPublisher,
+    private readonly galleryDeletedPublisher: GalleryDeletedPublisher,
+    private readonly galleryImagesAddedPublisher: GalleryImagesAddedPublisher
   ) {}
 
   async createGallery(galleryData: CreateGalleryRequest): Promise<Gallery> {
     const savedGallery = await this.galleryRepository.create(galleryData);
+    const gallery = savedGallery.toJSON() as Gallery;
 
-    await this.eventPublisher.publish('galleries', {
-      eventType: 'gallery.created',
-      galleryId: savedGallery.id,
-      portfolioId: savedGallery.portfolioId,
-      shootId: savedGallery.shootId,
-      type: savedGallery.type,
-      timestamp: new Date().toISOString()
-    }, savedGallery.id);
+    await this.galleryCreatedPublisher.publish(gallery);
 
-    return savedGallery.toJSON() as Gallery;
+    return gallery;
   }
 
   async getGallery(galleryId: string): Promise<Gallery | null> {
@@ -38,12 +40,7 @@ export class GalleryService {
     const updatedGallery = await this.galleryRepository.updateById(galleryId, updateData);
 
     if (updatedGallery) {
-      await this.eventPublisher.publish('galleries', {
-        eventType: 'gallery.updated',
-        galleryId,
-        changes: updateData,
-        timestamp: new Date().toISOString()
-      }, galleryId);
+      await this.galleryUpdatedPublisher.publish(galleryId, updateData);
     }
 
     return updatedGallery ? updatedGallery.toJSON() as Gallery : null;
@@ -62,11 +59,7 @@ export class GalleryService {
     const deleted = await this.galleryRepository.deleteById(galleryId);
 
     if (deleted) {
-      await this.eventPublisher.publish('galleries', {
-        eventType: 'gallery.deleted',
-        galleryId,
-        timestamp: new Date().toISOString()
-      }, galleryId);
+      await this.galleryDeletedPublisher.publish(galleryId);
     }
 
     return deleted;
@@ -75,13 +68,7 @@ export class GalleryService {
   async addImagesToGallery(galleryId: string, request: AddGalleryImagesRequest): Promise<GalleryImage[]> {
     const images = await this.galleryRepository.addImages(galleryId, request);
 
-    await this.eventPublisher.publish('galleries', {
-      eventType: 'gallery.images-added',
-      galleryId,
-      imageCount: images.length,
-      fileIds: request.fileIds,
-      timestamp: new Date().toISOString()
-    }, galleryId);
+    await this.galleryImagesAddedPublisher.publish(galleryId, request.fileIds, images.length);
 
     return images.map(img => img.toJSON() as GalleryImage);
   }

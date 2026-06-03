@@ -2,10 +2,15 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { GalleryService } from '../services/gallery.service.js';
 import {
   CreateGalleryRequest,
+  CreateGalleryRequestSchema,
   GalleryQuery,
-  AddGalleryImagesRequest
+  GalleryQuerySchema,
+  AddGalleryImagesRequest,
+  AddGalleryImagesRequestSchema
 } from '@tempsdarret/shared/schemas/portfolio.schema';
 import { ZodError } from 'zod';
+
+const UpdateGalleryRequestSchema = CreateGalleryRequestSchema.partial();
 
 export class GalleryHandlers {
   constructor(private readonly galleryService: GalleryService) {}
@@ -15,7 +20,8 @@ export class GalleryHandlers {
     reply: FastifyReply
   ): Promise<FastifyReply> {
     try {
-      const gallery = await this.galleryService.createGallery(request.body);
+      const galleryData = CreateGalleryRequestSchema.parse(request.body);
+      const gallery = await this.galleryService.createGallery(galleryData);
 
       return reply.code(201).send({
         data: gallery,
@@ -69,7 +75,11 @@ export class GalleryHandlers {
     reply: FastifyReply
   ): Promise<FastifyReply> {
     try {
-      const gallery = await this.galleryService.updateGallery(request.params.galleryId, request.body);
+      const updateData = UpdateGalleryRequestSchema.parse(request.body);
+      const gallery = await this.galleryService.updateGallery(
+        request.params.galleryId,
+        updateData as Partial<CreateGalleryRequest>
+      );
 
       if (gallery === null) {
         return reply.code(404).send({
@@ -83,6 +93,14 @@ export class GalleryHandlers {
         message: 'Gallery updated successfully'
       });
     } catch (error) {
+      if (error instanceof ZodError) {
+        return reply.code(400).send({
+          code: 400,
+          message: 'Validation error',
+          details: error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
+        });
+      }
+
       // eslint-disable-next-line no-console
       console.error('Failed to update gallery:', error);
       return reply.code(500).send({
@@ -97,9 +115,10 @@ export class GalleryHandlers {
     reply: FastifyReply
   ): Promise<FastifyReply> {
     try {
-      const { galleries, total } = await this.galleryService.listGalleries(request.query);
+      const query = GalleryQuerySchema.parse(request.query);
+      const { galleries, total } = await this.galleryService.listGalleries(query);
 
-      const { page, limit } = request.query;
+      const { page, limit } = query;
       const totalPages = Math.ceil(total / (limit ?? 20));
 
       return reply.send({
@@ -112,6 +131,14 @@ export class GalleryHandlers {
         }
       });
     } catch (error) {
+      if (error instanceof ZodError) {
+        return reply.code(400).send({
+          code: 400,
+          message: 'Validation error',
+          details: error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
+        });
+      }
+
       // eslint-disable-next-line no-console
       console.error('Failed to list galleries:', error);
       return reply.code(500).send({
@@ -154,13 +181,22 @@ export class GalleryHandlers {
     reply: FastifyReply
   ): Promise<FastifyReply> {
     try {
-      const images = await this.galleryService.addImagesToGallery(request.params.galleryId, request.body);
+      const body = AddGalleryImagesRequestSchema.parse(request.body);
+      const images = await this.galleryService.addImagesToGallery(request.params.galleryId, body);
 
       return reply.code(201).send({
         data: images,
         message: 'Images added to gallery successfully'
       });
     } catch (error) {
+      if (error instanceof ZodError) {
+        return reply.code(400).send({
+          code: 400,
+          message: 'Validation error',
+          details: error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
+        });
+      }
+
       // eslint-disable-next-line no-console
       console.error('Failed to add images to gallery:', error);
       return reply.code(500).send({

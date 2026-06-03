@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PortfolioService } from '../../src/services/portfolio.service.js';
-import { PortfolioRepository } from '../../src/persistence/portfolio.repository.js';
-import { EventPublisher } from '../../src/shared/messaging/event-publisher.js';
 import { CreatePortfolioRequest, UpdatePortfolioRequest } from '@tempsdarret/shared/schemas/portfolio.schema';
 
 describe('PortfolioService', () => {
   let portfolioService: PortfolioService;
   let mockRepository: any;
-  let mockEventPublisher: any;
+  let mockPortfolioCreatedPublisher: any;
+  let mockPortfolioUpdatedPublisher: any;
+  let mockPortfolioDeletedPublisher: any;
 
   beforeEach(() => {
     mockRepository = {
@@ -19,15 +19,20 @@ describe('PortfolioService', () => {
       deleteById: vi.fn()
     };
 
-    mockEventPublisher = {
-      publish: vi.fn()
-    };
+    mockPortfolioCreatedPublisher = { publish: vi.fn() };
+    mockPortfolioUpdatedPublisher = { publish: vi.fn() };
+    mockPortfolioDeletedPublisher = { publish: vi.fn() };
 
-    portfolioService = new PortfolioService(mockRepository, mockEventPublisher);
+    portfolioService = new PortfolioService(
+      mockRepository,
+      mockPortfolioCreatedPublisher,
+      mockPortfolioUpdatedPublisher,
+      mockPortfolioDeletedPublisher
+    );
   });
 
   describe('createPortfolio', () => {
-    it('should create a portfolio successfully', async () => {
+    it('should create a portfolio and publish PortfolioCreated', async () => {
       const photographerId = 'photographer-123';
       const portfolioData: CreatePortfolioRequest = {
         title: 'Wedding Photography 2024',
@@ -37,15 +42,12 @@ describe('PortfolioService', () => {
         coverImageUrl: 'https://example.com/cover.jpg'
       };
 
+      const savedJson = { id: 'pf-abc123', photographerId, ...portfolioData };
       const mockSavedPortfolio = {
         id: 'pf-abc123',
         photographerId,
         ...portfolioData,
-        isFeatured: false,
-        displayOrder: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        toJSON: () => ({ id: 'pf-abc123', ...portfolioData })
+        toJSON: () => savedJson
       };
 
       mockRepository.findBySlug.mockResolvedValue(null);
@@ -55,17 +57,8 @@ describe('PortfolioService', () => {
 
       expect(mockRepository.findBySlug).toHaveBeenCalledWith('wedding-2024');
       expect(mockRepository.create).toHaveBeenCalledWith({ ...portfolioData, photographerId });
-      expect(mockEventPublisher.publish).toHaveBeenCalledWith(
-        'portfolios',
-        expect.objectContaining({
-          eventType: 'portfolio.created',
-          portfolioId: 'pf-abc123',
-          photographerId,
-          urlSlug: 'wedding-2024'
-        }),
-        'pf-abc123'
-      );
-      expect(result).toEqual({ id: 'pf-abc123', ...portfolioData });
+      expect(mockPortfolioCreatedPublisher.publish).toHaveBeenCalledWith(savedJson);
+      expect(result).toEqual(savedJson);
     });
 
     it('should throw error if slug already exists', async () => {
@@ -80,11 +73,13 @@ describe('PortfolioService', () => {
       await expect(
         portfolioService.createPortfolio('photographer-123', portfolioData)
       ).rejects.toThrow('Portfolio URL slug already exists');
+
+      expect(mockPortfolioCreatedPublisher.publish).not.toHaveBeenCalled();
     });
   });
 
   describe('updatePortfolio', () => {
-    it('should update portfolio successfully', async () => {
+    it('should update portfolio and publish PortfolioUpdated', async () => {
       const portfolioId = 'pf-abc123';
       const updateData: UpdatePortfolioRequest = {
         title: 'Updated Title',
@@ -103,28 +98,21 @@ describe('PortfolioService', () => {
       const result = await portfolioService.updatePortfolio(portfolioId, updateData);
 
       expect(mockRepository.updateById).toHaveBeenCalledWith(portfolioId, updateData);
-      expect(mockEventPublisher.publish).toHaveBeenCalledWith(
-        'portfolios',
-        expect.objectContaining({
-          eventType: 'portfolio.updated',
-          portfolioId
-        }),
-        portfolioId
-      );
+      expect(mockPortfolioUpdatedPublisher.publish).toHaveBeenCalledWith(portfolioId, updateData);
       expect(result).toEqual({ id: portfolioId, ...updateData });
     });
 
     it('should validate slug uniqueness when updating', async () => {
       const portfolioId = 'pf-abc123';
-      const updateData: UpdatePortfolioRequest = {
-        urlSlug: 'new-slug'
-      };
+      const updateData: UpdatePortfolioRequest = { urlSlug: 'new-slug' };
 
       mockRepository.findBySlug.mockResolvedValue({ id: 'different-id' });
 
       await expect(
         portfolioService.updatePortfolio(portfolioId, updateData)
       ).rejects.toThrow('Portfolio URL slug already exists');
+
+      expect(mockPortfolioUpdatedPublisher.publish).not.toHaveBeenCalled();
     });
 
     it('should allow same portfolio to keep its slug', async () => {
@@ -134,8 +122,7 @@ describe('PortfolioService', () => {
         title: 'Updated Title'
       };
 
-      const existingPortfolio = { id: portfolioId };
-      mockRepository.findBySlug.mockResolvedValue(existingPortfolio);
+      mockRepository.findBySlug.mockResolvedValue({ id: portfolioId });
       mockRepository.updateById.mockResolvedValue({ id: portfolioId, toJSON: () => ({}) });
 
       await expect(
@@ -149,7 +136,6 @@ describe('PortfolioService', () => {
       const portfolioId = 'pf-abc123';
       const mockPortfolio = {
         id: portfolioId,
-        title: 'Test Portfolio',
         toJSON: () => ({ id: portfolioId, title: 'Test Portfolio' })
       };
 
@@ -201,10 +187,7 @@ describe('PortfolioService', () => {
         { id: 'pf-2', toJSON: () => ({ id: 'pf-2' }) }
       ];
 
-      mockRepository.findMany.mockResolvedValue({
-        portfolios: mockPortfolios,
-        total: 2
-      });
+      mockRepository.findMany.mockResolvedValue({ portfolios: mockPortfolios, total: 2 });
 
       const result = await portfolioService.listPortfolios(query);
 
@@ -215,31 +198,24 @@ describe('PortfolioService', () => {
   });
 
   describe('deletePortfolio', () => {
-    it('should delete portfolio and publish event', async () => {
+    it('should delete portfolio and publish PortfolioDeleted', async () => {
       const portfolioId = 'pf-abc123';
       mockRepository.deleteById.mockResolvedValue(true);
 
       const result = await portfolioService.deletePortfolio(portfolioId);
 
       expect(mockRepository.deleteById).toHaveBeenCalledWith(portfolioId);
-      expect(mockEventPublisher.publish).toHaveBeenCalledWith(
-        'portfolios',
-        expect.objectContaining({
-          eventType: 'portfolio.deleted',
-          portfolioId
-        }),
-        portfolioId
-      );
+      expect(mockPortfolioDeletedPublisher.publish).toHaveBeenCalledWith(portfolioId);
       expect(result).toBe(true);
     });
 
-    it('should return false if portfolio not found', async () => {
+    it('should return false if portfolio not found and not publish', async () => {
       mockRepository.deleteById.mockResolvedValue(false);
 
       const result = await portfolioService.deletePortfolio('non-existent');
 
       expect(result).toBe(false);
-      expect(mockEventPublisher.publish).not.toHaveBeenCalled();
+      expect(mockPortfolioDeletedPublisher.publish).not.toHaveBeenCalled();
     });
   });
 });

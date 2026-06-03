@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import { Kafka } from 'kafkajs';
+import { pathToFileURL } from 'url';
 import { appConfig } from './config/app.config.js';
 import { dbConnection } from './config/database.js';
 import { EventPublisher } from './shared/messaging/index.js';
@@ -11,6 +12,15 @@ import { PortfolioRepository } from './persistence/portfolio.repository.js';
 import { GalleryRepository } from './persistence/gallery.repository.js';
 import { registerPortfolioRoutes } from './handlers/portfolio.routes.js';
 import { registerGalleryRoutes } from './handlers/gallery.routes.js';
+import {
+  PortfolioCreatedPublisher,
+  PortfolioUpdatedPublisher,
+  PortfolioDeletedPublisher,
+  GalleryCreatedPublisher,
+  GalleryUpdatedPublisher,
+  GalleryDeletedPublisher,
+  GalleryImagesAddedPublisher
+} from './events/publishers/index.js';
 
 class PortfolioServiceApp {
   private readonly fastify: ReturnType<typeof Fastify>;
@@ -42,8 +52,27 @@ class PortfolioServiceApp {
       const portfolioRepository = new PortfolioRepository();
       const galleryRepository = new GalleryRepository();
 
-      const portfolioService = new PortfolioService(portfolioRepository, this.eventPublisher);
-      const galleryService = new GalleryService(galleryRepository, this.eventPublisher);
+      const portfolioCreatedPublisher = new PortfolioCreatedPublisher(this.eventPublisher);
+      const portfolioUpdatedPublisher = new PortfolioUpdatedPublisher(this.eventPublisher);
+      const portfolioDeletedPublisher = new PortfolioDeletedPublisher(this.eventPublisher);
+      const galleryCreatedPublisher = new GalleryCreatedPublisher(this.eventPublisher);
+      const galleryUpdatedPublisher = new GalleryUpdatedPublisher(this.eventPublisher);
+      const galleryDeletedPublisher = new GalleryDeletedPublisher(this.eventPublisher);
+      const galleryImagesAddedPublisher = new GalleryImagesAddedPublisher(this.eventPublisher);
+
+      const portfolioService = new PortfolioService(
+        portfolioRepository,
+        portfolioCreatedPublisher,
+        portfolioUpdatedPublisher,
+        portfolioDeletedPublisher
+      );
+      const galleryService = new GalleryService(
+        galleryRepository,
+        galleryCreatedPublisher,
+        galleryUpdatedPublisher,
+        galleryDeletedPublisher,
+        galleryImagesAddedPublisher
+      );
 
       const portfolioHandlers = new PortfolioHandlers(portfolioService);
       const galleryHandlers = new GalleryHandlers(galleryService);
@@ -80,7 +109,10 @@ class PortfolioServiceApp {
 }
 
 // Start service if this file is run directly
-if (require.main === module) {
+const isEntrypoint = process.argv[1] !== undefined
+  && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isEntrypoint) {
   const app = new PortfolioServiceApp();
 
   // Graceful shutdown

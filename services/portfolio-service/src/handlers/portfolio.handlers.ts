@@ -2,10 +2,17 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { PortfolioService } from '../services/portfolio.service.js';
 import {
   CreatePortfolioRequest,
+  CreatePortfolioRequestSchema,
   UpdatePortfolioRequest,
-  PortfolioQuery
+  UpdatePortfolioRequestSchema,
+  PortfolioQuery,
+  PortfolioQuerySchema
 } from '@tempsdarret/shared/schemas/portfolio.schema';
-import { ZodError } from 'zod';
+import { z, ZodError } from 'zod';
+
+const CreatePortfolioBodySchema = CreatePortfolioRequestSchema.extend({
+  photographerId: z.string().min(1)
+});
 
 export class PortfolioHandlers {
   constructor(private readonly portfolioService: PortfolioService) {}
@@ -15,7 +22,8 @@ export class PortfolioHandlers {
     reply: FastifyReply
   ): Promise<FastifyReply> {
     try {
-      const { photographerId, ...portfolioData } = request.body;
+      const parsed = CreatePortfolioBodySchema.parse(request.body);
+      const { photographerId, ...portfolioData } = parsed;
       const portfolio = await this.portfolioService.createPortfolio(photographerId, portfolioData);
 
       return reply.code(201).send({
@@ -95,7 +103,8 @@ export class PortfolioHandlers {
     reply: FastifyReply
   ): Promise<FastifyReply> {
     try {
-      const portfolio = await this.portfolioService.updatePortfolio(request.params.portfolioId, request.body);
+      const updateData = UpdatePortfolioRequestSchema.parse(request.body);
+      const portfolio = await this.portfolioService.updatePortfolio(request.params.portfolioId, updateData);
 
       if (portfolio === null) {
         return reply.code(404).send({
@@ -131,9 +140,10 @@ export class PortfolioHandlers {
     reply: FastifyReply
   ): Promise<FastifyReply> {
     try {
-      const { portfolios, total } = await this.portfolioService.listPortfolios(request.query);
+      const query = PortfolioQuerySchema.parse(request.query);
+      const { portfolios, total } = await this.portfolioService.listPortfolios(query);
 
-      const { page, limit } = request.query;
+      const { page, limit } = query;
       const totalPages = Math.ceil(total / (limit ?? 20));
 
       return reply.send({
@@ -146,6 +156,14 @@ export class PortfolioHandlers {
         }
       });
     } catch (error) {
+      if (error instanceof ZodError) {
+        return reply.code(400).send({
+          code: 400,
+          message: 'Validation error',
+          details: error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
+        });
+      }
+
       // eslint-disable-next-line no-console
       console.error('Failed to list portfolios:', error);
       return reply.code(500).send({
