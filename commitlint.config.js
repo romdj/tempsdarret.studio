@@ -32,6 +32,7 @@ module.exports = {
         'event-service',
         'file-service',
         'portfolio-service',
+        'shoot-service',
         'notification-service',
         'api-gateway',
         
