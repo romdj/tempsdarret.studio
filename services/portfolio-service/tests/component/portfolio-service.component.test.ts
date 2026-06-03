@@ -1,269 +1,186 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import supertest from 'supertest';
 import { PortfolioServiceApp } from '../../src/main.js';
+import {
+  setupComponentTests,
+  teardownComponentTests,
+  getComponentTestContext
+} from './component-setup.js';
 
-/**
- * Component tests verify complete portfolio service workflows
- * including service layer, repositories, and event publishing
- */
+// Component tests boot the assembled service against real MongoDB and Kafka
+// containers (per ADR-014). Opt the global mongo-memory-server setup OUT by
+// setting USE_TESTCONTAINERS=1 before any module is imported.
+process.env['USE_TESTCONTAINERS'] = '1';
+
 describe('Portfolio Service Component Tests', () => {
   let app: PortfolioServiceApp;
-  let server: any;
+  let request: supertest.Agent;
 
   beforeAll(async () => {
-    process.env['MONGODB_URI'] = 'mongodb://localhost:27017/tempsdarret-portfolios-component-test';
-    process.env['KAFKA_BROKERS'] = 'localhost:9092';
+    await setupComponentTests();
+    const ctx = getComponentTestContext();
+
+    process.env['MONGO_URI'] = ctx.mongoUri;
+    process.env['MONGODB_URI'] = ctx.mongoUri;
+    process.env['KAFKA_BROKERS'] = ctx.kafkaBrokers.join(',');
+    process.env['PORT'] = '0';
 
     app = new PortfolioServiceApp();
     await app.start();
-    server = app.getServer();
-  });
+
+    const address = app.getServer().server.address();
+    const port = typeof address === 'object' && address ? address.port : 3002;
+    request = supertest(`http://localhost:${port}`);
+  }, 120000);
 
   afterAll(async () => {
-    await app.stop();
+    await app?.stop();
+    await teardownComponentTests();
   });
 
-  describe('Portfolio Lifecycle Workflow', () => {
-    it('should handle complete portfolio creation to deletion workflow', async () => {
+  describe('Portfolio lifecycle workflow', () => {
+    it('handles complete portfolio creation to deletion workflow', async () => {
       const photographerId = 'photographer-lifecycle-test';
 
-      // 1. Create portfolio
-      const createResponse = await server.inject({
-        method: 'POST',
-        url: '/portfolios',
-        payload: {
+      const createRes = await request
+        .post('/portfolios')
+        .send({
           photographerId,
           title: 'Lifecycle Test Portfolio',
           description: 'Testing complete lifecycle',
           visibility: 'private',
           urlSlug: 'lifecycle-test-portfolio'
-        }
-      });
+        })
+        .expect(201);
+      const { id: portfolioId } = createRes.body.data;
 
-      expect(createResponse.statusCode).toBe(201);
-      const { id: portfolioId } = JSON.parse(createResponse.body).data;
+      await request.get(`/portfolios/${portfolioId}`).expect(200);
+      await request.get('/portfolios/slug/lifecycle-test-portfolio').expect(200);
 
-      // 2. Retrieve by ID
-      const getResponse = await server.inject({
-        method: 'GET',
-        url: `/portfolios/${portfolioId}`
-      });
-
-      expect(getResponse.statusCode).toBe(200);
-      expect(JSON.parse(getResponse.body).data.title).toBe('Lifecycle Test Portfolio');
-
-      // 3. Retrieve by slug
-      const slugResponse = await server.inject({
-        method: 'GET',
-        url: '/portfolios/slug/lifecycle-test-portfolio'
-      });
-
-      expect(slugResponse.statusCode).toBe(200);
-
-      // 4. Update portfolio
-      const updateResponse = await server.inject({
-        method: 'PATCH',
-        url: `/portfolios/${portfolioId}`,
-        payload: {
+      const updateRes = await request
+        .patch(`/portfolios/${portfolioId}`)
+        .send({
           title: 'Updated Lifecycle Portfolio',
           isFeatured: true,
           visibility: 'public'
-        }
-      });
+        })
+        .expect(200);
+      expect(updateRes.body.data.title).toBe('Updated Lifecycle Portfolio');
+      expect(updateRes.body.data.isFeatured).toBe(true);
 
-      expect(updateResponse.statusCode).toBe(200);
-      const updated = JSON.parse(updateResponse.body).data;
-      expect(updated.title).toBe('Updated Lifecycle Portfolio');
-      expect(updated.isFeatured).toBe(true);
-      expect(updated.visibility).toBe('public');
+      const listRes = await request
+        .get(`/portfolios?photographerId=${photographerId}&visibility=public`)
+        .expect(200);
+      expect(listRes.body.data.find((p: { id: string }) => p.id === portfolioId)).toBeDefined();
 
-      // 5. List portfolios (should include updated portfolio)
-      const listResponse = await server.inject({
-        method: 'GET',
-        url: `/portfolios?photographerId=${photographerId}&visibility=public`
-      });
-
-      expect(listResponse.statusCode).toBe(200);
-      const list = JSON.parse(listResponse.body);
-      const found = list.data.find((p: any) => p.id === portfolioId);
-      expect(found).toBeDefined();
-      expect(found.isFeatured).toBe(true);
-
-      // 6. Delete portfolio
-      const deleteResponse = await server.inject({
-        method: 'DELETE',
-        url: `/portfolios/${portfolioId}`
-      });
-
-      expect(deleteResponse.statusCode).toBe(200);
-
-      // 7. Verify deletion
-      const verifyResponse = await server.inject({
-        method: 'GET',
-        url: `/portfolios/${portfolioId}`
-      });
-
-      expect(verifyResponse.statusCode).toBe(404);
+      await request.delete(`/portfolios/${portfolioId}`).expect(200);
+      await request.get(`/portfolios/${portfolioId}`).expect(404);
     });
   });
 
-  describe('Gallery with Images Workflow', () => {
-    it('should handle complete gallery creation with images', async () => {
-      // Create portfolio first
-      const portfolioResponse = await server.inject({
-        method: 'POST',
-        url: '/portfolios',
-        payload: {
+  describe('Gallery with images workflow', () => {
+    it('handles complete gallery creation with images', async () => {
+      const portfolioRes = await request
+        .post('/portfolios')
+        .send({
           photographerId: 'test-photographer',
           title: 'Gallery Workflow Portfolio',
           visibility: 'public',
           urlSlug: 'gallery-workflow-portfolio'
-        }
-      });
+        })
+        .expect(201);
+      const { id: portfolioId } = portfolioRes.body.data;
 
-      const { id: portfolioId } = JSON.parse(portfolioResponse.body).data;
-
-      // 1. Create gallery
-      const galleryResponse = await server.inject({
-        method: 'POST',
-        url: '/galleries',
-        payload: {
+      const galleryRes = await request
+        .post('/galleries')
+        .send({
           portfolioId,
           shootId: 'shoot-workflow-123',
           type: 'client_gallery',
           title: 'Workflow Test Gallery',
           allowDownloads: true
-        }
-      });
+        })
+        .expect(201);
+      const { id: galleryId } = galleryRes.body.data;
 
-      expect(galleryResponse.statusCode).toBe(201);
-      const { id: galleryId } = JSON.parse(galleryResponse.body).data;
-
-      // 2. Add images to gallery
-      const addImagesResponse = await server.inject({
-        method: 'POST',
-        url: `/galleries/${galleryId}/images`,
-        payload: {
+      const addImagesRes = await request
+        .post(`/galleries/${galleryId}/images`)
+        .send({
           fileIds: ['file-1', 'file-2', 'file-3', 'file-4', 'file-5'],
           startOrder: 0
-        }
-      });
-
-      expect(addImagesResponse.statusCode).toBe(201);
-      const images = JSON.parse(addImagesResponse.body).data;
+        })
+        .expect(201);
+      const images = addImagesRes.body.data;
       expect(images).toHaveLength(5);
-
-      // 3. Verify images are ordered correctly
       expect(images[0].displayOrder).toBe(0);
-      expect(images[1].displayOrder).toBe(1);
       expect(images[4].displayOrder).toBe(4);
 
-      // 4. Retrieve gallery images
-      const getImagesResponse = await server.inject({
-        method: 'GET',
-        url: `/galleries/${galleryId}/images`
-      });
+      const imagesRes = await request.get(`/galleries/${galleryId}/images`).expect(200);
+      expect(imagesRes.body.data).toHaveLength(5);
 
-      expect(getImagesResponse.statusCode).toBe(200);
-      const retrievedImages = JSON.parse(getImagesResponse.body).data;
-      expect(retrievedImages).toHaveLength(5);
+      const publishRes = await request
+        .patch(`/galleries/${galleryId}`)
+        .send({ isPublished: true })
+        .expect(200);
+      expect(publishRes.body.data.isPublished).toBe(true);
 
-      // 5. Update gallery to published
-      const publishResponse = await server.inject({
-        method: 'PATCH',
-        url: `/galleries/${galleryId}`,
-        payload: {
-          isPublished: true
-        }
-      });
-
-      expect(publishResponse.statusCode).toBe(200);
-      expect(JSON.parse(publishResponse.body).data.isPublished).toBe(true);
-
-      // 6. List published galleries
-      const listResponse = await server.inject({
-        method: 'GET',
-        url: `/galleries?portfolioId=${portfolioId}&isPublished=true`
-      });
-
-      const publishedGalleries = JSON.parse(listResponse.body).data;
-      expect(publishedGalleries.some((g: any) => g.id === galleryId)).toBe(true);
+      const listRes = await request
+        .get(`/galleries?portfolioId=${portfolioId}&isPublished=true`)
+        .expect(200);
+      expect(listRes.body.data.some((g: { id: string }) => g.id === galleryId)).toBe(true);
     });
   });
 
-  describe('Multi-Portfolio Management', () => {
-    it('should handle multiple portfolios with different visibility', async () => {
+  describe('Multi-portfolio management', () => {
+    it('handles multiple portfolios with different visibility', async () => {
       const photographerId = 'multi-portfolio-test';
 
-      // Create public portfolio
-      const publicResponse = await server.inject({
-        method: 'POST',
-        url: '/portfolios',
-        payload: {
+      await request
+        .post('/portfolios')
+        .send({
           photographerId,
           title: 'Public Portfolio',
           visibility: 'public',
           urlSlug: 'public-portfolio-test',
           isFeatured: true
-        }
-      });
+        })
+        .expect(201);
 
-      expect(publicResponse.statusCode).toBe(201);
-
-      // Create private portfolio
-      const privateResponse = await server.inject({
-        method: 'POST',
-        url: '/portfolios',
-        payload: {
+      await request
+        .post('/portfolios')
+        .send({
           photographerId,
           title: 'Private Portfolio',
           visibility: 'private',
           urlSlug: 'private-portfolio-test'
-        }
-      });
+        })
+        .expect(201);
 
-      expect(privateResponse.statusCode).toBe(201);
-
-      // Create unlisted portfolio
-      const unlistedResponse = await server.inject({
-        method: 'POST',
-        url: '/portfolios',
-        payload: {
+      await request
+        .post('/portfolios')
+        .send({
           photographerId,
           title: 'Unlisted Portfolio',
           visibility: 'unlisted',
           urlSlug: 'unlisted-portfolio-test'
-        }
-      });
+        })
+        .expect(201);
 
-      expect(unlistedResponse.statusCode).toBe(201);
+      const publicRes = await request
+        .get(`/portfolios?photographerId=${photographerId}&visibility=public`)
+        .expect(200);
+      expect(publicRes.body.data).toHaveLength(1);
+      expect(publicRes.body.data[0].visibility).toBe('public');
 
-      // Query public only
-      const publicListResponse = await server.inject({
-        method: 'GET',
-        url: `/portfolios?photographerId=${photographerId}&visibility=public`
-      });
+      const allRes = await request
+        .get(`/portfolios?photographerId=${photographerId}`)
+        .expect(200);
+      expect(allRes.body.data.length).toBeGreaterThanOrEqual(3);
 
-      const publicList = JSON.parse(publicListResponse.body).data;
-      expect(publicList).toHaveLength(1);
-      expect(publicList[0].visibility).toBe('public');
-
-      // Query all for photographer
-      const allResponse = await server.inject({
-        method: 'GET',
-        url: `/portfolios?photographerId=${photographerId}`
-      });
-
-      const allList = JSON.parse(allResponse.body).data;
-      expect(allList.length).toBeGreaterThanOrEqual(3);
-
-      // Query featured only
-      const featuredResponse = await server.inject({
-        method: 'GET',
-        url: `/portfolios?isFeatured=true&photographerId=${photographerId}`
-      });
-
-      const featuredList = JSON.parse(featuredResponse.body).data;
-      expect(featuredList.every((p: any) => p.isFeatured)).toBe(true);
+      const featuredRes = await request
+        .get(`/portfolios?isFeatured=true&photographerId=${photographerId}`)
+        .expect(200);
+      expect(featuredRes.body.data.every((p: { isFeatured: boolean }) => p.isFeatured)).toBe(true);
     });
   });
 });

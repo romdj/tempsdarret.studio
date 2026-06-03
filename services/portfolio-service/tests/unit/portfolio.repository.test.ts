@@ -3,17 +3,18 @@ import { PortfolioRepository } from '../../src/persistence/portfolio.repository.
 import { PortfolioModel } from '../../src/shared/contracts/portfolios.mongoose.js';
 import { CreatePortfolioRequest } from '@tempsdarret/shared/schemas/portfolio.schema';
 
-// Mock mongoose
-vi.mock('../../src/shared/contracts/portfolios.mongoose.js', () => ({
-  PortfolioModel: {
-    prototype: {},
-    findOne: vi.fn(),
-    findOneAndUpdate: vi.fn(),
-    find: vi.fn(),
-    countDocuments: vi.fn(),
-    deleteOne: vi.fn()
-  }
-}));
+// Mock mongoose — PortfolioModel must itself be a callable (constructor) mock
+// so tests can use mockImplementation on `new PortfolioModel(...)`, while still
+// exposing the static query methods used by the repository.
+vi.mock('../../src/shared/contracts/portfolios.mongoose.js', () => {
+  const PortfolioModel = vi.fn() as any;
+  PortfolioModel.findOne = vi.fn();
+  PortfolioModel.findOneAndUpdate = vi.fn();
+  PortfolioModel.find = vi.fn();
+  PortfolioModel.countDocuments = vi.fn();
+  PortfolioModel.deleteOne = vi.fn();
+  return { PortfolioModel };
+});
 
 describe('PortfolioRepository', () => {
   let repository: PortfolioRepository;
