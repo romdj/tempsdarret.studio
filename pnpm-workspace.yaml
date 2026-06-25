@@ -25,5 +25,5 @@ allowBuilds:
   puppeteer: true
   sharp: true
   ssh2: true
-  unrs-resolver: set this to true or false
+  unrs-resolver: true
   yarn: false
