@@ -1,0 +1,38 @@
+{
+  "name": "@tempsdarret/cms",
+  "version": "0.1.0",
+  "description": "Payload v3 CMS admin host (Next.js) for Temps D'arrêt — serves /admin and /api for both web content and email templates",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start --port 3001",
+    "lint": "next lint --dir app --dir payload.config.ts",
+    "check": "tsc --noEmit",
+    "generate:types": "PAYLOAD_CONFIG_PATH=./payload.config.ts payload generate:types",
+    "test": "echo 'CMS tests live in services/cms/tests once added in task 10'"
+  },
+  "dependencies": {
+    "@payloadcms/db-mongodb": "^3.0.0",
+    "@payloadcms/next": "^3.0.0",
+    "@payloadcms/richtext-lexical": "^3.0.0",
+    "@payloadcms/ui": "^3.0.0",
+    "@tempsdarret/cms-config": "workspace:*",
+    "next": "^15.4.0",
+    "payload": "^3.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sharp": "^0.33.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint-config-next": "^15.4.0",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
