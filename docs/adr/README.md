@@ -41,6 +41,7 @@ All ADRs follow the template defined in [template.md](./template.md) and are num
 | [ADR-025](./adr-025-microservice-functional-directory-structure.md) | Microservice Functional Directory Structure | Accepted | 2025-08-09 |
 | [ADR-026](./adr-026-download-progress-indicators.md) | Download Progress Indicators | Accepted | 2025-08-17 |
 | [ADR-027](./adr-027-file-storage-strategy.md) | File Storage Strategy | Accepted | 2025-08-17 |
+| [ADR-030](./adr-030-payload-cms-content-and-templates.md) | Payload CMS v3 for Web Content and Email Templates | Proposed | 2026-06-25 |
 
 ## How to Create a New ADR
 
