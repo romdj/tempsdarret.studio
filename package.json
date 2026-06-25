@@ -140,6 +140,7 @@
     "packages/models",
     "packages/types",
     "packages/events",
+    "packages/cms-config",
     "dev-tools"
   ],
   "devDependencies": {
