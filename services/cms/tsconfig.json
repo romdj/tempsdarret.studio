@@ -20,6 +20,12 @@
       "@payload-config": ["./payload.config.ts"]
     }
   },
-  "include": ["next-env.d.ts", "app/**/*.ts", "app/**/*.tsx", "payload.config.ts"],
+  "include": [
+    "next-env.d.ts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "payload.config.ts",
+    "scripts/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }

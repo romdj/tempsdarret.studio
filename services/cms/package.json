@@ -11,6 +11,7 @@
     "lint": "next lint --dir app --dir payload.config.ts",
     "check": "tsc --noEmit",
     "generate:types": "PAYLOAD_CONFIG_PATH=./payload.config.ts payload generate:types",
+    "seed": "tsx scripts/seed.ts",
     "test": "echo 'CMS tests live in services/cms/tests once added in task 10'"
   },
   "dependencies": {
@@ -30,6 +31,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint-config-next": "^15.4.0",
+    "tsx": "^4.7.0",
     "typescript": "^5.8.3"
   },
   "engines": {
