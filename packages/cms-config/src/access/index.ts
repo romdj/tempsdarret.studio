@@ -1,2 +1,2 @@
-export { publishedOrAdmin } from './published-or-admin.js';
-export { adminOnly } from './admin-only.js';
+export { publishedOrAdmin } from './published-or-admin';
+export { adminOnly } from './admin-only';

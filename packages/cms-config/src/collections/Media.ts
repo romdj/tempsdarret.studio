@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload';
-import { adminOnly } from '../access/admin-only.js';
+import { adminOnly } from '../access/admin-only';
 
 export const Media: CollectionConfig = {
   slug: 'media',

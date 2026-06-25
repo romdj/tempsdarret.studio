@@ -4,8 +4,8 @@ import { buildConfig } from 'payload';
 import { mongooseAdapter } from '@payloadcms/db-mongodb';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
 import sharp from 'sharp';
-import { collections } from './collections/index.js';
-import { localization } from './localization.js';
+import { collections } from './collections/index';
+import { localization } from './localization';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);

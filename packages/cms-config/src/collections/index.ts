@@ -1,8 +1,8 @@
-import { AdminUsers } from './AdminUsers.js';
-import { EmailTemplates } from './EmailTemplates.js';
-import { Media } from './Media.js';
-import { Pages } from './Pages.js';
-import { PortfolioCaptions } from './PortfolioCaptions.js';
+import { AdminUsers } from './AdminUsers';
+import { EmailTemplates } from './EmailTemplates';
+import { Media } from './Media';
+import { Pages } from './Pages';
+import { PortfolioCaptions } from './PortfolioCaptions';
 
 export { AdminUsers, EmailTemplates, Media, Pages, PortfolioCaptions };
 

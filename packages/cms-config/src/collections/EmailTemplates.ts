@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload';
-import { adminOnly } from '../access/admin-only.js';
-import { publishedOrAdmin } from '../access/published-or-admin.js';
+import { adminOnly } from '../access/admin-only';
+import { publishedOrAdmin } from '../access/published-or-admin';
 
 export const EmailTemplates: CollectionConfig = {
   slug: 'email-templates',
