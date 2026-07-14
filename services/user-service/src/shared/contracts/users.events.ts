@@ -1,11 +1,22 @@
 // AsyncAPI event definitions for user service
-export interface UserCreatedEvent {
+
+// Shoot context carried forward from shoot.created so downstream services
+// (invite, notification) can compose the invitation without direct calls.
+export interface ShootContext {
+  shootId?: string;
+  shootTitle?: string;
+  eventDate?: string;
+  eventLocation?: string;
+  photographerName?: string;
+  photographerEmail?: string;
+}
+
+export interface UserCreatedEvent extends ShootContext {
   eventType: 'user.created';
   userId: string;
   email: string;
   name: string;
   role: string;
-  shootId?: string; // Context from shoot.created event
   timestamp: string;
 }
 
@@ -22,7 +33,7 @@ export interface UserDeactivatedEvent {
   timestamp: string;
 }
 
-export interface UserVerifiedEvent {
+export interface UserVerifiedEvent extends ShootContext {
   eventType: 'user.verified';
   userId: string;
   email: string;
@@ -37,6 +48,8 @@ export interface ShootCreatedEvent {
   clientEmail: string;
   photographerId: string;
   title?: string;
+  scheduledDate?: string;
+  location?: string;
 }
 
 export type UserEvent = 

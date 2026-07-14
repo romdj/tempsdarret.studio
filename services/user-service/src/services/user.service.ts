@@ -13,6 +13,8 @@ export interface ShootCreatedEvent {
   clientEmail: string;
   photographerId: string;
   title?: string;
+  scheduledDate?: string;
+  location?: string;
 }
 
 export interface UserListResult {
@@ -135,18 +137,34 @@ export class UserService {
     return this.userRepository.findByEmail(email);
   }
 
-  // Event handler for shoot.created events (from sequence diagram)
+  // Event handler for shoot.created events (from sequence diagram).
+  // Enriches the outgoing user event with shoot context and photographer
+  // details (resolved from user-service's own data) so downstream services
+  // — invite and notification — can compose the invitation without any
+  // direct service-to-service calls.
   async handleShootCreatedEvent(event: ShootCreatedEvent): Promise<User> {
+    // Resolve photographer details (user-service owns user data)
+    const photographer = await this.userRepository.findById(event.photographerId);
+
+    const shootContext = {
+      shootId: event.shootId,
+      shootTitle: event.title,
+      eventDate: event.scheduledDate,
+      eventLocation: event.location,
+      photographerName: photographer?.name,
+      photographerEmail: photographer?.email
+    };
+
     // Check if client user already exists
     let user = await this.userRepository.findByEmail(event.clientEmail);
 
     if (user) {
-      // User exists - publish user.verified event
+      // User exists - publish enriched user.verified event
       await this.eventPublisher.publish('users', {
         eventType: 'user.verified',
         userId: user.id,
         email: user.email,
-        shootId: event.shootId,
+        ...shootContext,
         timestamp: new Date().toISOString()
       }, user.id);
 
@@ -161,14 +179,14 @@ export class UserService {
 
       user = await this.userRepository.create(createRequest);
 
-      // Publish user.created event with shootId context
+      // Publish enriched user.created event with shoot context
       await this.eventPublisher.publish('users', {
         eventType: 'user.created',
         userId: user.id,
         email: user.email,
         role: user.role,
         name: user.name,
-        shootId: event.shootId,
+        ...shootContext,
         timestamp: new Date().toISOString()
       }, user.id);
 

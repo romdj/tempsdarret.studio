@@ -32,12 +32,19 @@ export interface MagicLinkUsedEvent {
   timestamp: string;
 }
 
-// Incoming events from other services
+// Incoming events from other services.
+// Carries shoot context enriched by user-service so the invitation can be
+// composed downstream without direct service-to-service calls.
 export interface UserCreatedEvent {
   eventType: 'user.created';
   userId: string;
   email: string;
   shootId?: string;
+  shootTitle?: string;
+  eventDate?: string;
+  eventLocation?: string;
+  photographerName?: string;
+  photographerEmail?: string;
   timestamp: string;
 }
 
