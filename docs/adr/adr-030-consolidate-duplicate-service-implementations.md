@@ -1,4 +1,4 @@
-# ADR-029: Consolidate Duplicate Service Implementations to Canonical `src/services`
+# ADR-030: Consolidate Duplicate Service Implementations to Canonical `src/services`
 
 ## Status
 
