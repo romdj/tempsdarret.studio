@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { MockedObject } from 'vitest';
-import { InvitationService, UserCreatedEvent } from '../../src/services/invitation.service';
+import { InvitationService, UserCreatedEvent, UserVerifiedEvent } from '../../src/services/invitation.service';
 import { InvitationRepository } from '../../src/persistence/invitation.repository';
 import { MagicLinkRepository } from '../../src/persistence/magic-link.repository';
 import { EventPublisher } from '../../src/shared/messaging/event-publisher';
@@ -86,6 +86,34 @@ describe('InvitationService.handleUserCreatedEvent — enriched invitation.creat
         }),
         magicLinkUrl: expect.stringMatching(/\/gallery\/access\/[a-f0-9]{64}$/),
         expirationDate: expect.any(String)
+      })
+    );
+  });
+
+  it('handles the existing-client path (user.verified) with the same enriched invitation.created', async () => {
+    const verifiedEvent: UserVerifiedEvent = {
+      eventType: 'user.verified',
+      userId: 'user_client_1',
+      email: 'client@example.com',
+      shootId: 'shoot_abc123',
+      shootTitle: 'Wedding Photography',
+      eventDate: '2026-09-15T14:00:00.000Z',
+      eventLocation: 'Central Park, NYC',
+      photographerName: 'Jane Photographer',
+      photographerEmail: 'jane.photographer@example.com',
+      timestamp: '2026-07-13T00:00:00.000Z'
+    };
+
+    await service.handleUserVerifiedEvent(verifiedEvent);
+
+    expect(publisher.publish).toHaveBeenCalledWith(
+      'invitations',
+      expect.objectContaining({
+        eventType: 'invitation.created',
+        shootId: 'shoot_abc123',
+        clientEmail: 'client@example.com',
+        shootDetails: expect.objectContaining({ eventName: 'Wedding Photography' }),
+        magicLinkUrl: expect.stringMatching(/\/gallery\/access\/[a-f0-9]{64}$/)
       })
     );
   });

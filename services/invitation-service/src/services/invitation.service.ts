@@ -11,11 +11,9 @@ import { appConfig } from '../config/app.config';
 import { parseDuration } from '@tempsdarret/shared/config';
 import { randomBytes } from 'crypto';
 
-// Enriched by user-service so the invitation can be composed (and its email
-// sent by notification-service) without direct service-to-service calls.
-export interface UserCreatedEvent {
-  eventType: 'user.created';
-  userId: string;
+// Shoot context enriched by user-service so the invitation can be composed
+// (and its email sent by notification-service) without direct service calls.
+interface EnrichedUserEvent {
   email: string;
   shootId?: string;
   shootTitle?: string;
@@ -23,6 +21,18 @@ export interface UserCreatedEvent {
   eventLocation?: string;
   photographerName?: string;
   photographerEmail?: string;
+}
+
+export interface UserCreatedEvent extends EnrichedUserEvent {
+  eventType: 'user.created';
+  userId: string;
+  timestamp: string;
+}
+
+export interface UserVerifiedEvent extends EnrichedUserEvent {
+  eventType: 'user.verified';
+  userId: string;
+  shootId: string;
   timestamp: string;
 }
 
@@ -33,19 +43,27 @@ export class InvitationService {
     private readonly eventPublisher: EventPublisher
   ) {}
 
+  // New client: create the invitation and publish invitation.created.
   async handleUserCreatedEvent(event: UserCreatedEvent): Promise<Invitation> {
+    return this.createInvitationFromUserEvent(event);
+  }
+
+  // Existing client: same outcome — a fresh magic link and invitation.created —
+  // so the notification flow is identical regardless of prior account state.
+  async handleUserVerifiedEvent(event: UserVerifiedEvent): Promise<Invitation> {
+    return this.createInvitationFromUserEvent(event);
+  }
+
+  private async createInvitationFromUserEvent(event: EnrichedUserEvent): Promise<Invitation> {
     if (event.shootId === undefined) {
-      throw new Error('shootId is required for user created event');
+      throw new Error('shootId is required to create an invitation');
     }
 
-    // Create invitation
-    const invitationData = {
+    const invitation = await this.invitationRepository.create({
       shootId: event.shootId,
       clientEmail: event.email,
       status: 'pending' as const
-    };
-
-    const invitation = await this.invitationRepository.create(invitationData);
+    });
 
     // Generate magic link (ADR-003: 64-char hex; 48h invitation TTL from config)
     const token = randomBytes(32).toString('hex'); // 64-char hex
