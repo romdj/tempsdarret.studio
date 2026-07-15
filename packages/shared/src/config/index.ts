@@ -1,3 +1,5 @@
+export * from './services.js';
+
 export interface DatabaseConfig {
   readonly host: string;
   readonly port: number;

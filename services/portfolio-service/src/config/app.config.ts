@@ -1,8 +1,5 @@
-export const appConfig = {
-  serviceName: 'portfolio-service',
-  port: parseInt(process.env['PORT'] ?? '3005', 10),
-  host: process.env['HOST'] ?? '0.0.0.0',
-  mongoUri: process.env['MONGODB_URI'] ?? 'mongodb://localhost:27017/tempsdarret-portfolios',
-  kafkaBrokers: (process.env['KAFKA_BROKERS'] ?? 'localhost:9092').split(','),
-  nodeEnv: process.env['NODE_ENV'] ?? 'development'
-};
+import { getServiceConfig } from '@tempsdarret/shared/config';
+
+// Derived from the canonical service registry (single source of truth);
+// env vars still override at runtime.
+export const appConfig = getServiceConfig('portfolio-service');

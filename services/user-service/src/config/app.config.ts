@@ -1,6 +1,5 @@
-export const appConfig = {
-  port: process.env['PORT'] ? parseInt(process.env['PORT']) : 3002,
-  host: process.env['HOST'] ?? '0.0.0.0',
-  env: process.env['NODE_ENV'] ?? 'development',
-  serviceName: 'user-service'
-};
+import { getServiceConfig } from '@tempsdarret/shared/config';
+
+// Derived from the canonical service registry (single source of truth);
+// env vars still override at runtime.
+export const appConfig = getServiceConfig('user-service');
