@@ -1,22 +1,33 @@
+import { Kafka, Producer } from 'kafkajs';
+
 export interface EventPublisher {
-  publish(topic: string, event: Record<string, unknown>, _key?: string): Promise<void>;
+  publish(topic: string, event: Record<string, unknown>, key?: string): Promise<void>;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
 }
 
-// Kafka implementation would go here in the real implementation
 export class KafkaEventPublisher implements EventPublisher {
-  async publish(topic: string, event: Record<string, unknown>, _key?: string): Promise<void> {
-    // TODO: Implement Kafka publishing
-    // eslint-disable-next-line no-console
-    console.log(`Publishing event to ${topic}:`, event);
+  private readonly producer: Producer;
+
+  constructor(kafka: Kafka) {
+    this.producer = kafka.producer();
   }
 
   async connect(): Promise<void> {
-    // TODO: Implement Kafka connection
+    await this.producer.connect();
   }
 
   async disconnect(): Promise<void> {
-    // TODO: Implement Kafka disconnection
+    await this.producer.disconnect();
+  }
+
+  async publish(topic: string, event: Record<string, unknown>, key?: string): Promise<void> {
+    await this.producer.send({
+      topic,
+      messages: [{ key: key ?? null, value: JSON.stringify(event) }]
+    });
+
+    // eslint-disable-next-line no-console
+    console.log(`Published ${String(event['eventType'])} event to ${topic} topic`);
   }
 }
