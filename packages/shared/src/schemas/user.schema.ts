@@ -38,7 +38,7 @@ export const UserQuerySchema = z.object({
   limit: z.number().int().min(1).max(100).default(20)
 });
 
-// Note: Magic link authentication schemas are handled by invite-service
+// Note: Magic link authentication schemas are handled by invitation-service
 // per sequence diagram and ADR-003
 
 // Type exports that match TypeSpec models

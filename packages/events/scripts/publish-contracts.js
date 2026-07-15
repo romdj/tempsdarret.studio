@@ -24,7 +24,7 @@ async function publishContracts() {
     const services = [
       '../../../services/shoot-service',
       '../../../services/user-service', 
-      '../../../services/invite-service'
+      '../../../services/invitation-service'
     ];
     
     const packageInfo = JSON.parse(

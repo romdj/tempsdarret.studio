@@ -39,14 +39,14 @@ channels:
       user.verified:
         "$ref": "#/components/messages/UserVerified"
   invitations:
-    description: Invitation events - Auto-generated from invite-service TypeScript contracts
+    description: Invitation events - Auto-generated from invitation-service TypeScript contracts
     messages:
       invitation.created:
         "$ref": "#/components/messages/InvitationCreated"
       invitation.sent:
         "$ref": "#/components/messages/InvitationSent"
   magic-links:
-    description: Magic link events - Auto-generated from invite-service TypeScript contracts
+    description: Magic link events - Auto-generated from invitation-service TypeScript contracts
     messages:
       magic.link.generated:
         "$ref": "#/components/messages/MagicLinkGenerated"
@@ -88,7 +88,7 @@ operations:
       -
         "$ref": "#/channels/users/messages/user.created"
     summary: Services subscribe to new user creation
-    description: Consumed by invite-service to create invitations
+    description: Consumed by invitation-service to create invitations
 components:
   messages:
     ShootCreated:

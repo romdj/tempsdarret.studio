@@ -110,7 +110,7 @@ k3s-deployment/
 │       ├── api-gateway/
 │       ├── notification-service/
 │       ├── file-service/
-│       └── invite-service/
+│       └── invitation-service/
 ├── config/                    # Configuration files
 │   ├── values.yaml           # Shared configuration
 │   ├── secrets.example.yaml  # Secret templates

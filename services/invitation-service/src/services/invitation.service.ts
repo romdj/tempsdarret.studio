@@ -17,7 +17,7 @@ export interface UserCreatedEvent {
   timestamp: string;
 }
 
-export class InviteService {
+export class InvitationService {
   constructor(
     private readonly invitationRepository: InvitationRepository,
     private readonly magicLinkRepository: MagicLinkRepository,

@@ -112,15 +112,15 @@ services:
       retries: 3
 
   # Invite Service
-  invite-service:
+  invitation-service:
     build:
-      context: ./services/invite-service
+      context: ./services/invitation-service
       dockerfile: Dockerfile
-    container_name: invite-service
+    container_name: invitation-service
     environment:
       NODE_ENV: production
       PORT: 3003
-      MONGODB_URI: mongodb://admin:admin_password@mongodb:27017/invite-service?authSource=admin
+      MONGODB_URI: mongodb://admin:admin_password@mongodb:27017/invitation-service?authSource=admin
       KAFKA_BROKERS: kafka:9092
       REDIS_URL: redis://redis:6379
     depends_on:
@@ -314,7 +314,7 @@ services:
         condition: service_completed_successfully
       user-service:
         condition: service_healthy
-      invite-service:
+      invitation-service:
         condition: service_healthy
       portfolio-service:
         condition: service_healthy

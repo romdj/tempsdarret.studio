@@ -6,7 +6,7 @@ import "./common.tsp";
 import "./shoot-service.tsp";
 import "./user-service.tsp";
 import "./file-service.tsp";
-import "./invite-service.tsp";
+import "./invitation-service.tsp";
 import "./notification-service.tsp";
 import "./portfolio-service.tsp";
 import "@typespec/openapi";

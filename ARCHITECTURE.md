@@ -45,7 +45,7 @@ packages/
 
 services/
 ├── user-service/           # User management & magic link auth
-├── invite-service/         # Magic link generation & invite workflow
+├── invitation-service/         # Magic link generation & invite workflow
 ├── portfolio-service/      # Public portfolio content management
 ├── shoot-service/          # Photography shoot lifecycle (NOT event-service)
 ├── file-service/           # Large file uploads, multi-resolution processing

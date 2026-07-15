@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { InviteService } from '../../src/features/invitations/services/invite.service';
+import { InvitationService } from '../../src/features/invitations/services/invitation.service';
 import { MagicLinkService } from '../../src/features/magic-links/services/magic-link.service';
 import { 
   CreateInvitationRequest,
@@ -31,7 +31,7 @@ const mockJWTService = {
 };
 
 describe('Invite Service Integration Tests', () => {
-  let inviteService: InviteService;
+  let inviteService: InvitationService;
   let magicLinkService: MagicLinkService;
   let mockInvitationRepository: any;
   let mockMagicLinkRepository: any;
@@ -41,7 +41,7 @@ describe('Invite Service Integration Tests', () => {
     mockInvitationRepository = createInMemoryInvitationRepository();
     mockMagicLinkRepository = createInMemoryMagicLinkRepository();
     
-    inviteService = new InviteService(
+    inviteService = new InvitationService(
       mockInvitationRepository,
       mockMagicLinkRepository,
       mockEventPublisher as any,

@@ -1,6 +1,6 @@
 /**
  * Invite Service Event Contracts
- * Consolidated from invite-service TypeScript contracts
+ * Consolidated from invitation-service TypeScript contracts
  */
 
 export interface InvitationCreatedEvent {

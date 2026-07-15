@@ -104,7 +104,7 @@ All services are accessible through Kong on port **8000**:
 | Service | Route | Upstream |
 |---------|-------|----------|
 | User Service | `/api/v1/users` | `http://user-service:3002` |
-| Invite Service | `/api/v1/invitations`, `/api/v1/magic-links` | `http://invite-service:3003` |
+| Invite Service | `/api/v1/invitations`, `/api/v1/magic-links` | `http://invitation-service:3003` |
 | Portfolio Service | `/api/v1/portfolios`, `/api/v1/galleries` | `http://portfolio-service:3004` |
 | Shoot Service | `/api/v1/shoots` | `http://shoot-service:3005` |
 | File Service | `/api/v1/files` | `http://file-service:3006` |

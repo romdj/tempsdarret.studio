@@ -88,7 +88,7 @@ Single-page view of all builds, tests, and quality checks.
 
 **Jobs** (parallel):
 1. user-service
-2. invite-service
+2. invitation-service
 3. portfolio-service
 4. shoot-service
 5. file-service

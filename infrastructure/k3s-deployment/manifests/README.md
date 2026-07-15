@@ -16,7 +16,7 @@ manifests/
     ├── api-gateway/    # API Gateway and routing
     ├── notification-service/  # Email/SMS notifications + Payload CMS
     ├── file-service/   # File upload and processing (future)
-    └── invite-service/ # Magic link invitations (future)
+    └── invitation-service/ # Magic link invitations (future)
 ```
 
 ## Deployment Order

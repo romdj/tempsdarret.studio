@@ -47,7 +47,7 @@ export class MagicLinkHandlers {
   async healthCheck(_request: FastifyRequest, reply: FastifyReply): Promise<void> {
     await reply.status(200).send({
       status: 'healthy',
-      service: 'invite-service',
+      service: 'invitation-service',
       timestamp: new Date().toISOString()
     });
   }

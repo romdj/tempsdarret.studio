@@ -19,7 +19,7 @@ const config = {
   },
   services: {
     userService: process.env.USER_SERVICE_URL || 'http://localhost:3002',
-    inviteService: process.env.INVITE_SERVICE_URL || 'http://localhost:3003',
+    inviteService: process.env.INVITATION_SERVICE_URL || 'http://localhost:3003',
     portfolioService: process.env.PORTFOLIO_SERVICE_URL || 'http://localhost:3004',
     shootService: process.env.SHOOT_SERVICE_URL || 'http://localhost:3005',
     fileService: process.env.FILE_SERVICE_URL || 'http://localhost:3006',
@@ -243,7 +243,7 @@ export async function cleanDatabase() {
   const databases = [
     'user-service',
     'shoot-service',
-    'invite-service',
+    'invitation-service',
     'notification-service',
     'portfolio-service',
     'file-service'

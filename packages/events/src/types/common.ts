@@ -32,7 +32,7 @@ export interface EventMessage<T = any> {
 export const SERVICE_NAMES = {
   SHOOT_SERVICE: 'shoot-service',
   USER_SERVICE: 'user-service',
-  INVITE_SERVICE: 'invite-service',
+  INVITATION_SERVICE: 'invitation-service',
   NOTIFICATION_SERVICE: 'notification-service',
 } as const;
 

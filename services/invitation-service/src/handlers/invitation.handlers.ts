@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { InviteService } from '../services/invite.service';
+import { InvitationService } from '../services/invitation.service';
 import { 
   CreateInvitationRequestSchema,
   SendInvitationRequestSchema,
@@ -14,7 +14,7 @@ interface InviteParams {
 }
 
 export class InvitationHandlers {
-  constructor(private readonly inviteService: InviteService) {}
+  constructor(private readonly inviteService: InvitationService) {}
 
   async createInvitation(
     request: FastifyRequest<{ Body: CreateInvitationRequest }>,

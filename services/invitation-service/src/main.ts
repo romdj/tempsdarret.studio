@@ -2,7 +2,7 @@ import fastify from 'fastify';
 import { appConfig } from './config/app.config';
 import { InvitationHandlers } from './handlers/invitation.handlers';
 import { MagicLinkHandlers } from './handlers/magic-link.handlers';
-import { InviteService } from './services/invite.service';
+import { InvitationService } from './services/invitation.service';
 import { MagicLinkService } from './services/magic-link.service';
 import { InvitationRepository } from './persistence/invitation.repository';
 import { MagicLinkRepository } from './persistence/magic-link.repository';
@@ -18,7 +18,7 @@ async function buildApp(): Promise<ReturnType<typeof fastify>> {
   const invitationRepository = new InvitationRepository();
   const magicLinkRepository = new MagicLinkRepository();
 
-  const inviteService = new InviteService(invitationRepository, magicLinkRepository, eventPublisher);
+  const inviteService = new InvitationService(invitationRepository, magicLinkRepository, eventPublisher);
   const magicLinkService = new MagicLinkService(magicLinkRepository, eventPublisher);
 
   const invitationHandlers = new InvitationHandlers(inviteService);

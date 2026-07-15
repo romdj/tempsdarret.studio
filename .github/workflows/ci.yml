@@ -71,7 +71,7 @@ jobs:
           - models
           - shared
           - user-service
-          - invite-service
+          - invitation-service
           - portfolio-service
           - shoot-service
           - file-service
@@ -140,7 +140,7 @@ jobs:
       matrix:
         service:
           - user-service
-          - invite-service
+          - invitation-service
           - portfolio-service
           - shoot-service
           - file-service
@@ -220,7 +220,7 @@ jobs:
       matrix:
         service:
           - user-service
-          - invite-service
+          - invitation-service
           - portfolio-service
           - shoot-service
           - file-service
@@ -300,7 +300,7 @@ jobs:
       matrix:
         service:
           - user-service
-          - invite-service
+          - invitation-service
           - portfolio-service
           - shoot-service
           - file-service
@@ -389,7 +389,7 @@ jobs:
 
       - name: Run coverage for all services
         run: |
-          for service in user-service invite-service portfolio-service shoot-service file-service notification-service; do
+          for service in user-service invitation-service portfolio-service shoot-service file-service notification-service; do
             echo "Running coverage for $service..."
             cd services/$service
             pnpm run test:coverage || echo "No coverage for $service"
@@ -471,7 +471,7 @@ jobs:
       matrix:
         component:
           - user-service
-          - invite-service
+          - invitation-service
           - portfolio-service
           - shoot-service
           - file-service

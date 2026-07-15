@@ -41,9 +41,9 @@ export class ShootAccessService {
       };
     }
 
-    // If token provided, validate it (would integrate with invite-service)
+    // If token provided, validate it (would integrate with invitation-service)
     if (clientToken) {
-      // TODO: Validate token with invite-service
+      // TODO: Validate token with invitation-service
       // For now, we'll assume valid if provided
     }
 

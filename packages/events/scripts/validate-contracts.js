@@ -26,7 +26,7 @@ async function validateContractsSync() {
     const contractPaths = {
       'shoot-service': '../../../services/shoot-service/src/shared/contracts/shoots.events.ts',
       'user-service': '../../../services/user-service/src/shared/contracts/users.events.ts',
-      'invite-service': '../../../services/invite-service/src/shared/contracts/invites.events.ts'
+      'invitation-service': '../../../services/invitation-service/src/shared/contracts/invites.events.ts'
     };
     
     const errors = [];

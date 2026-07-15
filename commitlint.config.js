@@ -28,7 +28,7 @@ module.exports = {
         // Core services
         'auth',
         'user-service',
-        'invite-service',
+        'invitation-service',
         'event-service',
         'file-service',
         'portfolio-service',

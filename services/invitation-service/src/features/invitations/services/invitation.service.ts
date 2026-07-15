@@ -7,7 +7,7 @@ import {
 } from '@tempsdarret/shared/schemas/invite.schema';
 import { EmailSchema } from '@tempsdarret/shared/schemas/base.schema';
 
-export class InviteService {
+export class InvitationService {
   constructor(
     private readonly invitationRepository: any,
     private readonly magicLinkRepository: any,

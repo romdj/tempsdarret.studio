@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { InviteService } from '../../src/features/invitations/services/invite.service';
+import { InvitationService } from '../../src/features/invitations/services/invitation.service';
 import { MagicLinkService } from '../../src/features/magic-links/services/magic-link.service';
 import { 
   CreateInvitationRequest,
@@ -21,7 +21,7 @@ import {
 } from '../setup';
 
 describe('Invite Service Component Tests (TDD - ADR-003)', () => {
-  let inviteService: InviteService;
+  let inviteService: InvitationService;
   let magicLinkService: MagicLinkService;
   let mockEventPublisher: any;
   let mockInvitationRepository: any;
@@ -38,7 +38,7 @@ describe('Invite Service Component Tests (TDD - ADR-003)', () => {
     mockUserService = createMockUserService();
     mockJWTService = createMockJWTService();
     
-    inviteService = new InviteService(
+    inviteService = new InvitationService(
       mockInvitationRepository,
       mockMagicLinkRepository,
       mockEventPublisher,

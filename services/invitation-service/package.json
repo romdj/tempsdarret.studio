@@ -1,5 +1,5 @@
 {
-  "name": "@tempsdarret/invite-service",
+  "name": "@tempsdarret/invitation-service",
   "version": "1.0.0",
   "description": "Invite service for Temps D'arrêt Studio - handles invitations and magic link authentication (ADR-003)",
   "private": true,
@@ -38,7 +38,7 @@
     "npm": ">=10.0.0"
   },
   "keywords": [
-    "invite-service",
+    "invitation-service",
     "magic-links",
     "authentication",
     "adr-003"

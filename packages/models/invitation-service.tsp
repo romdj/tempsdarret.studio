@@ -6,7 +6,7 @@ import "./common.tsp";
 @service(#{ title: "Invite Service API" })
 @OpenAPI.info(#{ version: "1.0.0" })
 
-namespace InviteService;
+namespace InvitationService;
 
 using TypeSpec.OpenAPI;
 using TypeSpec.Http;

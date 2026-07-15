@@ -1,8 +1,8 @@
 import { UserCreatedEvent } from '../../shared/contracts/invites.events';
-import { InviteService } from '../../services/invite.service';
+import { InvitationService } from '../../services/invitation.service';
 
 export class UserCreatedConsumer {
-  constructor(private readonly inviteService: InviteService) {}
+  constructor(private readonly inviteService: InvitationService) {}
 
   async handle(event: UserCreatedEvent): Promise<void> {
     // eslint-disable-next-line no-console

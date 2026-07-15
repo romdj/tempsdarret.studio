@@ -28,7 +28,7 @@ describe('E2E: Client Gallery Access Flow', () => {
 
   beforeAll(() => {
     shootServiceUrl = process.env.SHOOT_SERVICE_URL || 'http://localhost:3006';
-    inviteServiceUrl = process.env.INVITE_SERVICE_URL || 'http://localhost:3004';
+    inviteServiceUrl = process.env.INVITATION_SERVICE_URL || 'http://localhost:3004';
     fileServiceUrl = process.env.FILE_SERVICE_URL || 'http://localhost:3003';
     clientEmail = 'client.test@example.com';
   });

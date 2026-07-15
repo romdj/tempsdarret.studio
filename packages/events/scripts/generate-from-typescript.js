@@ -20,7 +20,7 @@ async function generateAsyncAPIFromTypeScript() {
     const contractPaths = {
       'shoot-service': '../../../services/shoot-service/src/shared/contracts/shoots.events.ts',
       'user-service': '../../../services/user-service/src/shared/contracts/users.events.ts', 
-      'invite-service': '../../../services/invite-service/src/shared/contracts/invites.events.ts'
+      'invitation-service': '../../../services/invitation-service/src/shared/contracts/invites.events.ts'
     };
 
     // Base AsyncAPI structure
@@ -77,14 +77,14 @@ async function generateAsyncAPIFromTypeScript() {
         }
       },
       invitations: {
-        description: 'Invitation events - Auto-generated from invite-service TypeScript contracts',
+        description: 'Invitation events - Auto-generated from invitation-service TypeScript contracts',
         messages: {
           'invitation.created': { '$ref': '#/components/messages/InvitationCreated' },
           'invitation.sent': { '$ref': '#/components/messages/InvitationSent' }
         }
       },
       'magic-links': {
-        description: 'Magic link events - Auto-generated from invite-service TypeScript contracts',
+        description: 'Magic link events - Auto-generated from invitation-service TypeScript contracts',
         messages: {
           'magic.link.generated': { '$ref': '#/components/messages/MagicLinkGenerated' },
           'magic.link.used': { '$ref': '#/components/messages/MagicLinkUsed' }
@@ -120,7 +120,7 @@ async function generateAsyncAPIFromTypeScript() {
         channel: { '$ref': '#/channels/users' },
         messages: [{ '$ref': '#/channels/users/messages/user.created' }],
         summary: 'Services subscribe to new user creation',
-        description: 'Consumed by invite-service to create invitations'
+        description: 'Consumed by invitation-service to create invitations'
       }
     };
 

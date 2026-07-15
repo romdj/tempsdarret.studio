@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { InviteService } from '../../src/features/invitations/services/invite.service';
+import { InvitationService } from '../../src/features/invitations/services/invitation.service';
 import { 
   CreateInvitationRequest,
   SendInvitationRequest,
@@ -13,8 +13,8 @@ import {
   createMockEmailService 
 } from '../setup';
 
-describe('InviteService Unit Tests', () => {
-  let inviteService: InviteService;
+describe('InvitationService Unit Tests', () => {
+  let inviteService: InvitationService;
   let mockInvitationRepository: any;
   let mockMagicLinkRepository: any;
   let mockEventPublisher: any;
@@ -26,7 +26,7 @@ describe('InviteService Unit Tests', () => {
     mockEventPublisher = createMockEventPublisher();
     mockEmailService = createMockEmailService();
 
-    inviteService = new InviteService(
+    inviteService = new InvitationService(
       mockInvitationRepository,
       mockMagicLinkRepository,
       mockEventPublisher,

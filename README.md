@@ -184,7 +184,7 @@ tempsdarret-studio/
 ├── 🌐 api-gateway/                 # Request routing and authentication proxy
 ├── 🔧 services/                    # Event-driven microservices
 │   ├── user-service/               # User lifecycle & magic link auth
-│   ├── invite-service/             # Invitation workflow management
+│   ├── invitation-service/             # Invitation workflow management
 │   ├── shoot-service/              # Photography session business logic
 │   ├── file-service/               # Large file processing & archives
 │   ├── portfolio-service/          # Public content & SEO management

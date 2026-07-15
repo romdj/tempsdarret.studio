@@ -36,7 +36,7 @@ export function validateEventStructure(event: any): event is PlatformEvent {
 export function getEventSource(eventType: string): string {
   if (eventType.startsWith('shoot.')) return 'shoot-service';
   if (eventType.startsWith('user.')) return 'user-service';
-  if (eventType.startsWith('invitation.') || eventType.startsWith('magic.link.')) return 'invite-service';
+  if (eventType.startsWith('invitation.') || eventType.startsWith('magic.link.')) return 'invitation-service';
   return 'unknown';
 }
 

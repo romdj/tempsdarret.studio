@@ -20,7 +20,7 @@ tempsdarret.studio/
 ├── frontend/              # SvelteKit portfolio & client portal
 ├── services/             # Node.js microservices
 │   ├── user-service/     # Authentication & user management
-│   ├── invite-service/   # Magic link invitations
+│   ├── invitation-service/   # Magic link invitations
 │   ├── event-service/    # Project & gallery management
 │   ├── file-service/     # Photo storage & processing
 │   ├── portfolio-service/# Public portfolio curation

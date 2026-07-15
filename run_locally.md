@@ -185,7 +185,7 @@ cp .env.example .env
 nano .env  # or code .env
 
 # Repeat for other services
-cd ../invite-service && cp .env.example .env
+cd ../invitation-service && cp .env.example .env
 cd ../file-service && cp .env.example .env
 ```
 
@@ -209,7 +209,7 @@ cd services/file-service
 npm run dev           # API at :3003
 
 # Terminal 3: Invite Service
-cd services/invite-service
+cd services/invitation-service
 npm run dev           # API at :3004
 
 # Terminal 4: API Gateway

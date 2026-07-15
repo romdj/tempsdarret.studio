@@ -24,13 +24,13 @@ services:
         preserve_host: false
 
   # Invite Service
-  - name: invite-service
-    url: http://invite-service:3003
+  - name: invitation-service
+    url: http://invitation-service:3003
     tags:
       - microservice
       - backend
     routes:
-      - name: invite-service-route
+      - name: invitation-service-route
         paths:
           - /api/v1/invitations
           - /api/v1/magic-links
