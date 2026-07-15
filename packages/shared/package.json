@@ -39,6 +39,11 @@
       "import": "./dist/config/index.js",
       "require": "./dist/config/index.js"
     },
+    "./messaging": {
+      "types": "./dist/messaging/index.d.ts",
+      "import": "./dist/messaging/index.js",
+      "require": "./dist/messaging/index.js"
+    },
     "./types": {
       "types": "./dist/types/index.d.ts",
       "import": "./dist/types/index.js",

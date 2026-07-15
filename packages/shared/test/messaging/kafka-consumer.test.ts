@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { dispatchMessage } from './kafka-consumer';
+import { dispatchMessage } from '../../src/messaging/kafka-consumer.js';
 
 describe('dispatchMessage', () => {
   it('unwraps an enveloped event ({eventType,data}) into a flat event for the handler', async () => {

@@ -6,7 +6,7 @@ import { UserHandlers } from './handlers/user.handlers';
 import { UserService, ShootCreatedEvent } from './services/user.service';
 import { UserRepository } from './persistence/user.repository';
 import { KafkaEventPublisher } from './shared/messaging/event-publisher';
-import { KafkaConsumer } from './shared/messaging/kafka-consumer';
+import { KafkaConsumer } from '@tempsdarret/shared/messaging';
 import { ShootCreatedConsumer } from './events/consumers/shoot-created.consumer';
 import { registerUserRoutes } from './handlers/user.routes';
 
