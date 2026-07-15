@@ -7,13 +7,22 @@ import {
 import { InvitationRepository } from '../persistence/invitation.repository';
 import { MagicLinkRepository } from '../persistence/magic-link.repository';
 import { EventPublisher } from '../shared/messaging/event-publisher';
+import { appConfig } from '../config/app.config';
+import { parseDuration } from '@tempsdarret/shared/config';
 import { randomBytes } from 'crypto';
 
+// Enriched by user-service so the invitation can be composed (and its email
+// sent by notification-service) without direct service-to-service calls.
 export interface UserCreatedEvent {
   eventType: 'user.created';
   userId: string;
   email: string;
   shootId?: string;
+  shootTitle?: string;
+  eventDate?: string;
+  eventLocation?: string;
+  photographerName?: string;
+  photographerEmail?: string;
   timestamp: string;
 }
 
@@ -38,26 +47,36 @@ export class InvitationService {
 
     const invitation = await this.invitationRepository.create(invitationData);
 
-    // Generate magic link (ADR-003: 64-char hex, 15-minute expiry)
+    // Generate magic link (ADR-003: 64-char hex; 48h invitation TTL from config)
     const token = randomBytes(32).toString('hex'); // 64-char hex
-    const magicLinkData = {
+    const expiresAt = new Date(Date.now() + parseDuration(appConfig.invitationTtl));
+    const magicLink = await this.magicLinkRepository.create({
       token,
       shootId: event.shootId,
       clientEmail: event.email,
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+      expiresAt,
       isActive: true,
       accessCount: 0
-    };
+    });
 
-    const magicLink = await this.magicLinkRepository.create(magicLinkData);
+    const magicLinkUrl = `${appConfig.appBaseUrl}/gallery/access/${magicLink.token}`;
 
-    // Publish invitation.created event
+    // Publish enriched invitation.created — carries everything the
+    // notification service needs to compose the email on its own.
     await this.eventPublisher.publish('invitations', {
       eventType: 'invitation.created',
       invitationId: invitation.id,
       shootId: invitation.shootId,
       clientEmail: invitation.clientEmail,
-      magicLinkToken: magicLink.token,
+      shootDetails: {
+        eventName: event.shootTitle,
+        eventDate: event.eventDate,
+        eventLocation: event.eventLocation,
+        photographerName: event.photographerName,
+        photographerEmail: event.photographerEmail
+      },
+      magicLinkUrl,
+      expirationDate: expiresAt.toISOString(),
       timestamp: new Date().toISOString()
     });
 

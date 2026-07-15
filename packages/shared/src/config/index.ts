@@ -1,4 +1,5 @@
 export * from './services.js';
+export * from './duration.js';
 
 export interface DatabaseConfig {
   readonly host: string;
