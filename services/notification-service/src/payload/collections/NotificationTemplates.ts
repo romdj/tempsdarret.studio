@@ -222,9 +222,6 @@ export const NotificationTemplates: CollectionConfig = {
       type: 'json',
       admin: {
         description: 'Sample data for testing this template (JSON format)',
-        components: {
-          Field: '@payloadcms/richtext-slate#JSONField',
-        },
       },
     },
     {
@@ -235,25 +232,9 @@ export const NotificationTemplates: CollectionConfig = {
       },
     },
   ],
-  indexes: [
-    {
-      fields: {
-        type: 1,
-        channel: 1,
-        language: 1,
-        isActive: 1,
-      },
-      options: {
-        unique: false,
-      },
-    },
-    {
-      fields: {
-        isActive: 1,
-        priority: -1,
-      },
-    },
-  ],
+  // TODO(payload-v2): top-level compound indexes were removed in Payload v2.
+  // Re-add type+channel+language+isActive and isActive+priority indexes via
+  // field-level `index: true` on the respective fields.
   hooks: {
     beforeValidate: [
       ({ data }) => {
@@ -275,7 +256,7 @@ export const NotificationTemplates: CollectionConfig = {
   },
   versions: {
     drafts: true,
-    max: 10,
+    maxPerDoc: 10,
   },
   timestamps: true,
 };

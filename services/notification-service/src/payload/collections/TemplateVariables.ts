@@ -184,20 +184,9 @@ export const TemplateVariables: CollectionConfig = {
       },
     },
   ],
-  indexes: [
-    {
-      fields: {
-        category: 1,
-        name: 1,
-      },
-    },
-    {
-      fields: {
-        required: 1,
-        isDeprecated: 1,
-      },
-    },
-  ],
+  // TODO(payload-v2): top-level compound indexes were removed in Payload v2.
+  // Re-add category+name and required+isDeprecated indexes via field-level
+  // `index: true` on the respective fields.
   hooks: {
     beforeChange: [
       ({ data }) => {

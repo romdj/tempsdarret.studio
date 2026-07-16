@@ -3,7 +3,7 @@
  * Handles email notifications using Resend service
  */
 
-import { Resend } from 'resend';
+import { Resend, type CreateEmailOptions } from 'resend';
 import {
   NotificationMessage,
   SendResult,
@@ -85,8 +85,6 @@ export class EmailRepository extends BaseNotificationRepository {
           return 'delivered';
         case 'bounced':
           return 'bounced';
-        case 'sent':
-          return 'sent';
         default:
           return 'sent'; // Default to sent if we got a response
       }
@@ -106,72 +104,51 @@ export class EmailRepository extends BaseNotificationRepository {
     // await this.updateMessageStatus(messageId, status, details);
   }
 
-  private prepareEmailData(message: NotificationMessage): Record<string, unknown> {
-    const fromEmail = message.content.subject?.includes('from')
-      ? this.extractFromEmail(message.variables)
-      : this.config.defaultFromEmail;
-
-    const fromName = (message.variables.photographerName as string | undefined) ?? this.config.defaultFromName;
-
+  private prepareEmailData(message: NotificationMessage): CreateEmailOptions {
     const recipientEmail = message.recipient.email;
     if (!recipientEmail) {
       throw new Error('Recipient email is required');
     }
 
-    const emailData: Record<string, unknown> = {
-      from: `${fromName} <${fromEmail}>`,
-      to: [recipientEmail],
-      subject: message.content.subject ?? this.getDefaultSubject(message.templateType),
-      html: message.content.html,
-      text: message.content.message,
-    };
-
-    // Add reply-to if photographer email is provided
+    // Send from the app's verified sender; the photographer (if known) is the
+    // reply-to so clients can respond to them directly.
+    const fromName = (message.variables.photographerName as string | undefined) ?? this.config.defaultFromName;
     const photographerEmail = message.variables.photographerEmail as string | undefined;
-    if (photographerEmail) {
-      emailData.reply_to = photographerEmail;
-    }
 
-    // Add attachments if present
-    if (message.content.attachments && message.content.attachments.length > 0) {
-      emailData.attachments = message.content.attachments.map(this.convertAttachment);
-    }
-
-    // Add headers for tracking
-    emailData.headers = {
-      'X-Notification-ID': message.id,
-      'X-Template-Type': message.templateType,
-      'X-Shoot-ID': message.metadata.shootId ?? '',
-      'X-Correlation-ID': message.metadata.correlationId ?? '',
-    };
-
-    // Add tags for analytics
     const tags: { name: string; value: string }[] = [
       { name: 'template', value: message.templateType },
       { name: 'priority', value: message.priority },
     ];
-
     if (message.metadata.shootId) {
       tags.push({ name: 'shoot', value: message.metadata.shootId });
     }
 
-    emailData.tags = tags;
-
-    return emailData;
-  }
-
-  private convertAttachment(attachment: Attachment): Record<string, unknown> {
     return {
-      filename: attachment.filename,
-      content: attachment.content,
-      type: attachment.contentType,
-      disposition: attachment.disposition ?? 'attachment',
+      from: `${fromName} <${this.config.defaultFromEmail}>`,
+      to: [recipientEmail],
+      subject: message.content.subject ?? this.getDefaultSubject(message.templateType),
+      html: message.content.html,
+      text: message.content.message,
+      headers: {
+        'X-Notification-ID': message.id,
+        'X-Template-Type': message.templateType,
+        'X-Shoot-ID': message.metadata.shootId ?? '',
+        'X-Correlation-ID': message.metadata.correlationId ?? '',
+      },
+      tags,
+      ...(photographerEmail ? { reply_to: photographerEmail } : {}),
+      ...(message.content.attachments?.length
+        ? { attachments: message.content.attachments.map(this.convertAttachment) }
+        : {}),
     };
   }
 
-  private extractFromEmail(variables: Record<string, unknown>): string {
-    // Use photographer email if available, otherwise default
-    return (variables.photographerEmail as string | undefined) ?? this.config.defaultFromEmail;
+  private convertAttachment(attachment: Attachment): { filename: string; content: string | Buffer; content_type: string } {
+    return {
+      filename: attachment.filename,
+      content: attachment.content,
+      content_type: attachment.contentType,
+    };
   }
 
   private getDefaultSubject(templateType: string): string {

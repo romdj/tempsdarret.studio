@@ -1,62 +1,12 @@
 import payload from 'payload';
 import { NotificationTemplate, TemplateType, NotificationChannel } from '../shared/contracts/notifications.types.js';
-
-export interface PayloadTemplate {
-  id: string;
-  name: string;
-  type: TemplateType;
-  channel: NotificationChannel;
-  language: string;
-  isActive: boolean;
-  priority: number;
-  templates: {
-    subject?: string;
-    text: string;
-    html?: string;
-  };
-  variables: {
-    name: string;
-    description: string;
-    type: string;
-    required: boolean;
-    defaultValue?: string;
-  }[];
-  settings: {
-    fromName?: string;
-    fromEmail?: string;
-    replyTo?: string;
-    trackOpens?: boolean;
-    trackClicks?: boolean;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PayloadChannelConfig {
-  id: string;
-  name: string;
-  channel: NotificationChannel;
-  isEnabled: boolean;
-  priority: number;
-  configuration: Record<string, unknown>;
-  rateLimits: {
-    enabled: boolean;
-    maxPerMinute: number;
-    maxPerHour: number;
-    maxPerDay: number;
-  };
-  retryPolicy: {
-    maxAttempts: number;
-    initialDelay: number;
-    backoffMultiplier: number;
-    maxDelay: number;
-  };
-  webhooks: {
-    enabled: boolean;
-    endpoint?: string;
-    secret?: string;
-  };
-}
+import {
+  payloadTemplateSchema,
+  payloadChannelConfigSchema,
+  payloadTemplateVariableSchema,
+  type PayloadTemplate,
+  type PayloadChannelConfig
+} from './payload-schemas.js';
 
 /**
  * Payload CMS client for managing notification templates and configurations
@@ -115,7 +65,7 @@ export class PayloadClient {
         return null;
       }
 
-      const doc = result.docs[0] as PayloadTemplate;
+      const doc = payloadTemplateSchema.parse(result.docs[0]);
       return this.convertToNotificationTemplate(doc);
     } catch (error) {
       console.error(`Failed to get template ${type}/${channel}:`, error);
@@ -142,7 +92,7 @@ export class PayloadClient {
         limit: 100,
       });
 
-      return result.docs.map(doc => this.convertToNotificationTemplate(doc as PayloadTemplate));
+      return result.docs.map(doc => this.convertToNotificationTemplate(payloadTemplateSchema.parse(doc)));
     } catch (error) {
       console.error(`Failed to get templates for channel ${channel}:`, error);
       return [];
@@ -171,7 +121,7 @@ export class PayloadClient {
         return null;
       }
 
-      return result.docs[0] as PayloadChannelConfig;
+      return payloadChannelConfigSchema.parse(result.docs[0]);
     } catch (error) {
       console.error(`Failed to get channel config for ${channel}:`, error);
       return null;
@@ -202,15 +152,7 @@ export class PayloadClient {
         limit: 1000,
       });
 
-      return result.docs.map(doc => ({
-        name: doc.name,
-        displayName: doc.displayName,
-        description: doc.description,
-        type: doc.type,
-        category: doc.category,
-        required: doc.required,
-        defaultValue: doc.defaultValue,
-      }));
+      return result.docs.map(doc => payloadTemplateVariableSchema.parse(doc));
     } catch (error) {
       console.error('Failed to get template variables:', error);
       return [];
@@ -258,7 +200,7 @@ export class PayloadClient {
         });
       }
 
-      return this.convertToNotificationTemplate(result as PayloadTemplate);
+      return this.convertToNotificationTemplate(payloadTemplateSchema.parse(result));
     } catch (error) {
       console.error('Failed to upsert template:', error);
       return null;
@@ -286,7 +228,7 @@ export class PayloadClient {
         required: v.required,
         defaultValue: v.defaultValue,
       })),
-      settings: doc.settings || {},
+      settings: doc.settings ? { email: doc.settings } : {},
       isActive: doc.isActive,
       language: doc.language,
       createdAt: new Date(doc.createdAt),

@@ -332,22 +332,9 @@ export const NotificationChannels: CollectionConfig = {
       },
     },
   ],
-  indexes: [
-    {
-      fields: {
-        channel: 1,
-      },
-      options: {
-        unique: true,
-      },
-    },
-    {
-      fields: {
-        isEnabled: 1,
-        priority: -1,
-      },
-    },
-  ],
+  // TODO(payload-v2): top-level compound indexes were removed in Payload v2.
+  // Re-add the unique `channel` index via `unique: true` on the channel field,
+  // and the isEnabled+priority index via field-level `index: true`.
   hooks: {
     beforeValidate: [
       ({ data }) => {

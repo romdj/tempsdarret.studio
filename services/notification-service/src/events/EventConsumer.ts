@@ -74,10 +74,11 @@ export class EventConsumer {
       }
 
       const eventData = JSON.parse(message.value.toString()) as ConsumedEvent;
-      
-      console.log(`📧 Processing event: ${eventData.eventType} from topic ${topic}`);
+      const { eventType } = eventData;
 
-      switch (eventData.eventType) {
+      console.log(`📧 Processing event: ${eventType} from topic ${topic}`);
+
+      switch (eventType) {
         case CONSUMED_EVENT_TYPES.INVITATION_CREATED:
           await this.handleInvitationCreated(eventData as InvitationCreatedEvent);
           break;
@@ -95,7 +96,7 @@ export class EventConsumer {
           break;
           
         default:
-          console.log(`📧 Unhandled event type: ${eventData.eventType}`);
+          console.log(`📧 Unhandled event type: ${eventType}`);
       }
 
     } catch (error) {
