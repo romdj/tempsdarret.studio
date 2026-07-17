@@ -284,7 +284,7 @@ importers:
         version: 20.19.28
       testcontainers:
         specifier: ^10.9.0
-        version: 10.28.0
+        version: 10.28.0(supports-color@8.1.1)
       tsc-alias:
         specifier: ^1.8.10
         version: 1.8.16
@@ -296,7 +296,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^2.0.3
-        version: 2.1.9(@types/node@20.19.28)(jsdom@27.4.0)(sass@1.69.4)(terser@5.44.1)
+        version: 2.1.9(@types/node@20.19.28)(jsdom@27.4.0)(sass@1.69.4)(supports-color@8.1.1)(terser@5.44.1)
 
   services/notification-service:
     dependencies:
@@ -312,6 +312,9 @@ importers:
       '@tempsdarret/events':
         specifier: workspace:*
         version: link:../../packages/events
+      '@tempsdarret/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       bullmq:
         specifier: ^5.0.0
         version: 5.66.4(supports-color@8.1.1)
@@ -440,7 +443,7 @@ importers:
         version: 7.2.2(supports-color@8.1.1)
       testcontainers:
         specifier: ^10.13.0
-        version: 10.28.0
+        version: 10.28.0(supports-color@8.1.1)
       typescript:
         specifier: ^5.8.3
         version: 5.9.3
@@ -18605,7 +18608,7 @@ snapshots:
 
   '@stoplight/json-ref-readers@1.2.2(encoding@0.1.13)':
     dependencies:
-      node-fetch: 2.6.7(encoding@0.1.13)
+      node-fetch: 2.7.0(encoding@0.1.13)
       tslib: 1.14.1
     transitivePeerDependencies:
       - encoding
@@ -19023,7 +19026,7 @@ snapshots:
 
   '@testcontainers/kafka@10.28.0':
     dependencies:
-      testcontainers: 10.28.0
+      testcontainers: 10.28.0(supports-color@8.1.1)
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
@@ -19032,7 +19035,7 @@ snapshots:
 
   '@testcontainers/mongodb@10.28.0':
     dependencies:
-      testcontainers: 10.28.0
+      testcontainers: 10.28.0(supports-color@8.1.1)
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
@@ -21485,7 +21488,7 @@ snapshots:
     dependencies:
       yaml: 2.8.2
 
-  docker-modem@5.0.6:
+  docker-modem@5.0.6(supports-color@8.1.1):
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
       readable-stream: 3.6.2
@@ -21494,12 +21497,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  dockerode@4.0.9:
+  dockerode@4.0.9(supports-color@8.1.1):
     dependencies:
       '@balena/dockerignore': 1.0.2
       '@grpc/grpc-js': 1.14.3
       '@grpc/proto-loader': 0.7.15
-      docker-modem: 5.0.6
+      docker-modem: 5.0.6(supports-color@8.1.1)
       protobufjs: 7.5.4
       tar-fs: 2.1.4
       uuid: 10.0.0
@@ -28223,7 +28226,7 @@ snapshots:
       glob: 10.5.0
       minimatch: 9.0.5
 
-  testcontainers@10.28.0:
+  testcontainers@10.28.0(supports-color@8.1.1):
     dependencies:
       '@balena/dockerignore': 1.0.2
       '@types/dockerode': 3.3.47
@@ -28232,7 +28235,7 @@ snapshots:
       byline: 5.0.0
       debug: 4.4.3(supports-color@8.1.1)
       docker-compose: 0.24.8
-      dockerode: 4.0.9
+      dockerode: 4.0.9(supports-color@8.1.1)
       get-port: 7.1.0
       proper-lockfile: 4.1.2
       properties-reader: 2.3.0
@@ -28819,7 +28822,7 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vite-node@2.1.9(@types/node@20.19.28)(sass@1.69.4)(terser@5.44.1):
+  vite-node@2.1.9(@types/node@20.19.28)(sass@1.69.4)(supports-color@8.1.1)(terser@5.44.1):
     dependencies:
       cac: 6.7.14
       debug: 4.4.3(supports-color@8.1.1)
@@ -28926,7 +28929,7 @@ snapshots:
     optionalDependencies:
       vite: 7.3.1(@types/node@22.19.5)(jiti@1.21.7)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
 
-  vitest@2.1.9(@types/node@20.19.28)(jsdom@27.4.0)(sass@1.69.4)(terser@5.44.1):
+  vitest@2.1.9(@types/node@20.19.28)(jsdom@27.4.0)(sass@1.69.4)(supports-color@8.1.1)(terser@5.44.1):
     dependencies:
       '@vitest/expect': 2.1.9
       '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@20.19.28)(sass@1.69.4)(terser@5.44.1))
@@ -28946,7 +28949,7 @@ snapshots:
       tinypool: 1.1.1
       tinyrainbow: 1.2.0
       vite: 5.4.21(@types/node@20.19.28)(sass@1.69.4)(terser@5.44.1)
-      vite-node: 2.1.9(@types/node@20.19.28)(sass@1.69.4)(terser@5.44.1)
+      vite-node: 2.1.9(@types/node@20.19.28)(sass@1.69.4)(supports-color@8.1.1)(terser@5.44.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.19.28

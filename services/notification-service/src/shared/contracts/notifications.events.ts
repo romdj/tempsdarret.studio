@@ -98,17 +98,29 @@ export interface EmailDeliveredEvent {
   timestamp: string;
 }
 
+// Invitation delivery event (Functional Scenario 1): published after the
+// invitation email is sent, so the invitation flow can be tracked end-to-end.
+export interface InvitationSentEvent {
+  eventType: 'invitation.sent';
+  invitationId: string;
+  email: string;
+  shootId: string;
+  sentAt: string;
+  status: 'sent' | 'failed';
+}
+
 // Union types
-export type ConsumedEvent = 
+export type ConsumedEvent =
   | InvitationCreatedEvent
   | ShootCompletedEvent
   | ShootUpdatedEvent
   | MagicLinkExpiringEvent;
 
-export type PublishedEvent = 
+export type PublishedEvent =
   | EmailSentEvent
   | EmailFailedEvent
-  | EmailDeliveredEvent;
+  | EmailDeliveredEvent
+  | InvitationSentEvent;
 
 // Event type constants
 export const CONSUMED_EVENT_TYPES = {
@@ -122,4 +134,5 @@ export const PUBLISHED_EVENT_TYPES = {
   EMAIL_SENT: 'email.sent',
   EMAIL_FAILED: 'email.failed',
   EMAIL_DELIVERED: 'email.delivered',
+  INVITATION_SENT: 'invitation.sent',
 } as const;

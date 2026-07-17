@@ -24,6 +24,7 @@
     "@payloadcms/db-mongodb": "^1.5.0",
     "@payloadcms/richtext-slate": "^1.5.0",
     "@tempsdarret/events": "workspace:*",
+    "@tempsdarret/shared": "workspace:*",
     "bullmq": "^5.0.0",
     "handlebars": "^4.7.0",
     "ioredis": "^5.3.0",
