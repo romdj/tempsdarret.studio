@@ -1,5 +1,4 @@
-import { ShootCreatedEvent } from '../../shared/contracts/users.events';
-import { UserService } from '../../services/user.service';
+import { UserService, ShootCreatedEvent } from '../../services/user.service';
 
 export class ShootCreatedConsumer {
   constructor(private readonly userService: UserService) {}

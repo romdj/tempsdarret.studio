@@ -6,16 +6,20 @@ import {
 } from '../shared/contracts/users.dto';
 import { UserRepository } from '../persistence/user.repository';
 import { EventPublisher } from '../shared/messaging/event-publisher';
+import { z } from 'zod';
 
-export interface ShootCreatedEvent {
-  eventType: 'shoot.created';
-  shootId: string;
-  clientEmail: string;
-  photographerId: string;
-  title?: string;
-  scheduledDate?: string;
-  location?: string;
-}
+// Consumed off Kafka as untyped JSON — validated at the boundary
+// (schema.parse) rather than cast; the type is inferred from the schema.
+export const shootCreatedEventSchema = z.object({
+  eventType: z.literal('shoot.created'),
+  shootId: z.string(),
+  clientEmail: z.string(),
+  photographerId: z.string(),
+  title: z.string().optional(),
+  scheduledDate: z.string().optional(),
+  location: z.string().optional()
+});
+export type ShootCreatedEvent = z.infer<typeof shootCreatedEventSchema>;
 
 export interface UserListResult {
   users: User[];

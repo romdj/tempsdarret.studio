@@ -3,10 +3,10 @@ import mongoose from 'mongoose';
 import { Kafka } from 'kafkajs';
 import { appConfig } from './config/app.config';
 import { UserHandlers } from './handlers/user.handlers';
-import { UserService, ShootCreatedEvent } from './services/user.service';
+import { UserService, shootCreatedEventSchema } from './services/user.service';
 import { UserRepository } from './persistence/user.repository';
 import { KafkaEventPublisher } from './shared/messaging/event-publisher';
-import { KafkaConsumer } from '@tempsdarret/shared/messaging';
+import { KafkaConsumer, type EventHandler } from '@tempsdarret/shared/messaging';
 import { ShootCreatedConsumer } from './events/consumers/shoot-created.consumer';
 import { registerUserRoutes } from './handlers/user.routes';
 
@@ -28,11 +28,13 @@ async function start(): Promise<void> {
     // HTTP routes
     registerUserRoutes(app, userHandlers);
 
-    // Consume shoot.created → create/verify client user (sequence diagram step 2)
+    // Consume shoot.created → create/verify client user (sequence diagram step 2).
+    // The event is validated at the boundary (schema.parse) before handling.
     const shootCreatedConsumer = new ShootCreatedConsumer(userService);
-    const consumer = new KafkaConsumer(kafka, appConfig.serviceName, {
-      'shoot.created': (event) => shootCreatedConsumer.handle(event as unknown as ShootCreatedEvent)
-    });
+    const handlers: Record<string, EventHandler> = {
+      'shoot.created': (event) => shootCreatedConsumer.handle(shootCreatedEventSchema.parse(event))
+    };
+    const consumer = new KafkaConsumer(kafka, appConfig.serviceName, handlers);
     await consumer.start(['shoots']);
 
     await app.listen({ port: appConfig.port, host: appConfig.host });

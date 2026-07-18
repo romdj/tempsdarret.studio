@@ -9,17 +9,17 @@
 
 import mongoose from 'mongoose';
 import { Kafka } from 'kafkajs';
-import { KafkaConsumer, KafkaEventPublisher } from '@tempsdarret/shared/messaging';
+import { KafkaConsumer, KafkaEventPublisher, type EventHandler } from '@tempsdarret/shared/messaging';
 import { appConfig } from './config/app.config.js';
 import { TemplateService } from './services/TemplateService.js';
 import { EmailRepository } from './services/repositories/EmailRepository.js';
 import { EmailService } from './services/EmailService.js';
 import { NotificationEventHandler } from './events/NotificationEventHandler.js';
-import type {
-  InvitationCreatedEvent,
-  ShootCompletedEvent,
-  ShootUpdatedEvent,
-  MagicLinkExpiringEvent
+import {
+  invitationCreatedEventSchema,
+  shootCompletedEventSchema,
+  shootUpdatedEventSchema,
+  magicLinkExpiringEventSchema
 } from './shared/contracts/notifications.events.js';
 
 async function start(): Promise<void> {
@@ -37,13 +37,15 @@ async function start(): Promise<void> {
     const emailService = new EmailService(templateService, emailRepository);
     const handler = new NotificationEventHandler(emailService, eventPublisher);
 
-    // Consume invitation/shoot events → send email + publish delivery events
-    const consumer = new KafkaConsumer(kafka, appConfig.serviceName, {
-      'invitation.created': (event) => handler.handleInvitationCreated(event as unknown as InvitationCreatedEvent),
-      'shoot.completed': (event) => handler.handleShootCompleted(event as unknown as ShootCompletedEvent),
-      'shoot.updated': (event) => handler.handleShootUpdated(event as unknown as ShootUpdatedEvent),
-      'magic.link.expiring': (event) => handler.handleMagicLinkExpiring(event as unknown as MagicLinkExpiringEvent)
-    });
+    // Consume invitation/shoot events → send email + publish delivery events.
+    // Each event is validated at the boundary (schema.parse) before handling.
+    const handlers: Record<string, EventHandler> = {
+      'invitation.created': (event) => handler.handleInvitationCreated(invitationCreatedEventSchema.parse(event)),
+      'shoot.completed': (event) => handler.handleShootCompleted(shootCompletedEventSchema.parse(event)),
+      'shoot.updated': (event) => handler.handleShootUpdated(shootUpdatedEventSchema.parse(event)),
+      'magic.link.expiring': (event) => handler.handleMagicLinkExpiring(magicLinkExpiringEventSchema.parse(event))
+    };
+    const consumer = new KafkaConsumer(kafka, appConfig.serviceName, handlers);
     await consumer.start(['invitations', 'shoots', 'magic-links']);
 
     // eslint-disable-next-line no-console

@@ -18,7 +18,10 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    // Off so bare optional `?:` fields stay clean when assigning zod-inferred
+    // event types (zod's .optional() yields `T | undefined`). Single source of
+    // truth for all workspaces — do not override per-service.
+    "exactOptionalPropertyTypes": false,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "allowUnusedLabels": false,

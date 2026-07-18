@@ -1,11 +1,15 @@
 import fastify from 'fastify';
 import mongoose from 'mongoose';
 import { Kafka } from 'kafkajs';
-import { KafkaConsumer } from '@tempsdarret/shared/messaging';
+import { KafkaConsumer, type EventHandler } from '@tempsdarret/shared/messaging';
 import { appConfig } from './config/app.config';
 import { InvitationHandlers } from './handlers/invitation.handlers';
 import { MagicLinkHandlers } from './handlers/magic-link.handlers';
-import { InvitationService, UserCreatedEvent, UserVerifiedEvent } from './services/invitation.service';
+import {
+  InvitationService,
+  userCreatedEventSchema,
+  userVerifiedEventSchema
+} from './services/invitation.service';
 import { MagicLinkService } from './services/magic-link.service';
 import { InvitationRepository } from './persistence/invitation.repository';
 import { MagicLinkRepository } from './persistence/magic-link.repository';
@@ -34,14 +38,16 @@ async function start(): Promise<void> {
     registerMagicLinkRoutes(app, new MagicLinkHandlers(magicLinkService));
 
     // Consume user.created / user.verified → generate magic link + invitation.created
-    const consumer = new KafkaConsumer(kafka, appConfig.serviceName, {
+    // Each event is validated at the boundary (schema.parse) before handling.
+    const handlers: Record<string, EventHandler> = {
       'user.created': async (event) => {
-        await invitationService.handleUserCreatedEvent(event as unknown as UserCreatedEvent);
+        await invitationService.handleUserCreatedEvent(userCreatedEventSchema.parse(event));
       },
       'user.verified': async (event) => {
-        await invitationService.handleUserVerifiedEvent(event as unknown as UserVerifiedEvent);
+        await invitationService.handleUserVerifiedEvent(userVerifiedEventSchema.parse(event));
       }
-    });
+    };
+    const consumer = new KafkaConsumer(kafka, appConfig.serviceName, handlers);
     await consumer.start(['users']);
 
     await app.listen({ port: appConfig.port, host: appConfig.host });

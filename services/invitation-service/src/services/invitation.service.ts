@@ -9,32 +9,49 @@ import { MagicLinkRepository } from '../persistence/magic-link.repository';
 import { EventPublisher } from '../shared/messaging/event-publisher';
 import { appConfig } from '../config/app.config';
 import { parseDuration } from '@tempsdarret/shared/config';
+import { z } from 'zod';
 import { randomBytes } from 'crypto';
 
 // Shoot context enriched by user-service so the invitation can be composed
 // (and its email sent by notification-service) without direct service calls.
 interface EnrichedUserEvent {
   email: string;
-  shootId?: string;
-  shootTitle?: string;
-  eventDate?: string;
-  eventLocation?: string;
-  photographerName?: string;
-  photographerEmail?: string;
+  shootId?: string | undefined;
+  shootTitle?: string | undefined;
+  eventDate?: string | undefined;
+  eventLocation?: string | undefined;
+  photographerName?: string | undefined;
+  photographerEmail?: string | undefined;
 }
 
-export interface UserCreatedEvent extends EnrichedUserEvent {
-  eventType: 'user.created';
-  userId: string;
-  timestamp: string;
-}
+// Consumed events arrive as untyped JSON off Kafka — validated at the boundary
+// (schema.parse) rather than cast; types are inferred from the schemas.
+const enrichedUserEventShape = {
+  email: z.string(),
+  shootId: z.string().optional(),
+  shootTitle: z.string().optional(),
+  eventDate: z.string().optional(),
+  eventLocation: z.string().optional(),
+  photographerName: z.string().optional(),
+  photographerEmail: z.string().optional()
+};
 
-export interface UserVerifiedEvent extends EnrichedUserEvent {
-  eventType: 'user.verified';
-  userId: string;
-  shootId: string;
-  timestamp: string;
-}
+export const userCreatedEventSchema = z.object({
+  ...enrichedUserEventShape,
+  eventType: z.literal('user.created'),
+  userId: z.string(),
+  timestamp: z.string()
+});
+export type UserCreatedEvent = z.infer<typeof userCreatedEventSchema>;
+
+export const userVerifiedEventSchema = z.object({
+  ...enrichedUserEventShape,
+  eventType: z.literal('user.verified'),
+  userId: z.string(),
+  shootId: z.string(),
+  timestamp: z.string()
+});
+export type UserVerifiedEvent = z.infer<typeof userVerifiedEventSchema>;
 
 export class InvitationService {
   constructor(

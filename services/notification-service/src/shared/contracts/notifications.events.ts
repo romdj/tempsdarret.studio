@@ -1,67 +1,77 @@
 /**
  * Notification Service Event Contracts
- * Events consumed and published by the event-driven notification service
+ * Events consumed and published by the event-driven notification service.
+ *
+ * Consumed events arrive as untyped JSON off Kafka, so they are defined as zod
+ * schemas and validated at the boundary (schema.parse) rather than cast. The
+ * exported types are inferred from the schemas — one source of truth.
  */
 
+import { z } from 'zod';
+
 // Events the notification service CONSUMES (triggers for sending emails)
-export interface InvitationCreatedEvent {
-  eventType: 'invitation.created';
-  invitationId: string;
-  shootId: string;
-  clientEmail: string;
-  clientName?: string;
-  shootDetails: {
-    eventName: string;
-    eventDate?: string;
-    eventLocation?: string;
-    photographerName: string;
-    photographerEmail: string;
-  };
-  magicLinkUrl: string;
-  expirationDate: string;
-  timestamp: string;
-}
+export const invitationCreatedEventSchema = z.object({
+  eventType: z.literal('invitation.created'),
+  invitationId: z.string(),
+  shootId: z.string(),
+  clientEmail: z.string(),
+  clientName: z.string().optional(),
+  shootDetails: z.object({
+    eventName: z.string(),
+    eventDate: z.string().optional(),
+    eventLocation: z.string().optional(),
+    photographerName: z.string(),
+    photographerEmail: z.string()
+  }),
+  magicLinkUrl: z.string(),
+  expirationDate: z.string(),
+  timestamp: z.string()
+});
+export type InvitationCreatedEvent = z.infer<typeof invitationCreatedEventSchema>;
 
-export interface ShootCompletedEvent {
-  eventType: 'shoot.completed';
-  shootId: string;
-  clientEmail: string;
-  clientName?: string;
-  shootDetails: {
-    eventName: string;
-    eventType: string;
-    totalPhotoCount: number;
-    eventDate?: string;
-    photographerName: string;
-  };
-  galleryUrl: string;
-  timestamp: string;
-}
+export const shootCompletedEventSchema = z.object({
+  eventType: z.literal('shoot.completed'),
+  shootId: z.string(),
+  clientEmail: z.string(),
+  clientName: z.string().optional(),
+  shootDetails: z.object({
+    eventName: z.string(),
+    eventType: z.string(),
+    totalPhotoCount: z.number(),
+    eventDate: z.string().optional(),
+    photographerName: z.string()
+  }),
+  galleryUrl: z.string(),
+  timestamp: z.string()
+});
+export type ShootCompletedEvent = z.infer<typeof shootCompletedEventSchema>;
 
-export interface ShootUpdatedEvent {
-  eventType: 'shoot.updated';
-  shootId: string;
-  clientEmail: string;
-  clientName?: string;
-  updateDetails: {
-    eventName: string;
-    updateMessage: string;
-    photographerName: string;
-  };
-  projectUrl: string;
-  timestamp: string;
-}
+export const shootUpdatedEventSchema = z.object({
+  eventType: z.literal('shoot.updated'),
+  shootId: z.string(),
+  clientEmail: z.string(),
+  clientName: z.string().optional(),
+  updateDetails: z.object({
+    eventName: z.string(),
+    updateMessage: z.string(),
+    photographerName: z.string()
+  }),
+  projectUrl: z.string(),
+  timestamp: z.string()
+});
+export type ShootUpdatedEvent = z.infer<typeof shootUpdatedEventSchema>;
 
-export interface MagicLinkExpiringEvent {
-  eventType: 'magic.link.expiring';
-  invitationId: string;
-  shootId: string;
-  clientEmail: string;
-  clientName?: string;
-  expirationDate: string;
-  magicLinkUrl: string;
-  timestamp: string;
-}
+export const magicLinkExpiringEventSchema = z.object({
+  eventType: z.literal('magic.link.expiring'),
+  invitationId: z.string(),
+  shootId: z.string(),
+  clientEmail: z.string(),
+  clientName: z.string().optional(),
+  expirationDate: z.string(),
+  magicLinkUrl: z.string(),
+  timestamp: z.string()
+});
+export type MagicLinkExpiringEvent = z.infer<typeof magicLinkExpiringEventSchema>;
 
 // Events the notification service PUBLISHES (email delivery status)
 export interface EmailSentEvent {
