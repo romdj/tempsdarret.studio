@@ -1,13 +1,10 @@
 name: Deploy Frontend to AWS
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'frontend/**'
-      - 'pulumi/**'
-      - '.github/workflows/deploy-frontend.yml'
+  # Manual-only until the AWS deploy target (OIDC role, S3/CloudFront) is set up.
+  # The push trigger is intentionally disabled so this doesn't fail on every
+  # frontend/pulumi change while the frontend is still pre-implementation.
+  # TODO: restore the push trigger once AWS deployment is configured.
   workflow_dispatch:
     inputs:
       skip_build:
