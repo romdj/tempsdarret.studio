@@ -69,20 +69,26 @@ export async function setup() {
     await testEnv.kafkaConsumer.connect();
     console.log('✅ Kafka connected');
 
-    // Subscribe to all relevant topics for event collection
+    // Subscribe to all relevant topics for event collection.
+    // The invitation service owns the 'invitations' topic (see architecture ADRs).
     await testEnv.kafkaConsumer.subscribe({
-      topics: ['shoots', 'users', 'invites', 'notifications'],
+      topics: ['shoots', 'users', 'invitations', 'notifications'],
       fromBeginning: false
     });
 
-    // Start consuming events for test verification
+    // Start consuming events for test verification. Some producers (shoot-service)
+    // wrap the payload in an { eventType, data: {...} } envelope while others emit
+    // flat events; flatten `data` so assertions see a uniform, flat shape — the
+    // same normalization the runtime KafkaConsumer applies.
     void testEnv.kafkaConsumer.run({
       eachMessage: async ({ topic, message }) => {
-        const event = JSON.parse(message.value?.toString() || '{}');
+        const raw = JSON.parse(message.value?.toString() || '{}');
+        const { data, ...envelope } = raw;
         testEnv.eventCollector.push({
           topic,
-          timestamp: Date.now(),
-          ...event
+          collectedAt: Date.now(),
+          ...envelope,
+          ...(data ?? {})
         });
       }
     });
