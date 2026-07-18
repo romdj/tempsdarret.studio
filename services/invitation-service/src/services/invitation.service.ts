@@ -16,12 +16,12 @@ import { randomBytes } from 'crypto';
 // (and its email sent by notification-service) without direct service calls.
 interface EnrichedUserEvent {
   email: string;
-  shootId?: string | undefined;
-  shootTitle?: string | undefined;
-  eventDate?: string | undefined;
-  eventLocation?: string | undefined;
-  photographerName?: string | undefined;
-  photographerEmail?: string | undefined;
+  shootId?: string;
+  shootTitle?: string;
+  eventDate?: string;
+  eventLocation?: string;
+  photographerName?: string;
+  photographerEmail?: string;
 }
 
 // Consumed events arrive as untyped JSON off Kafka — validated at the boundary
