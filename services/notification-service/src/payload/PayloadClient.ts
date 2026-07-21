@@ -1,4 +1,3 @@
-import payload from 'payload';
 import { NotificationTemplate, TemplateType, NotificationChannel } from '../shared/contracts/notifications.types.js';
 import {
   payloadTemplateSchema,
@@ -9,25 +8,34 @@ import {
 } from './payload-schemas.js';
 
 /**
- * Payload CMS client for managing notification templates and configurations
+ * Payload CMS client for managing notification templates and configurations.
+ *
+ * `payload` is imported lazily (dynamic import in initialize) so that merely
+ * constructing this client does not pull in the heavy Payload/sharp dependency
+ * tree. Callers fall back to built-in templates when the CMS is unavailable,
+ * so the notification runtime works without Payload configured.
  */
 export class PayloadClient {
   private initialized = false;
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private payload: any = null;
 
   /**
-   * Initialize Payload CMS connection
+   * Initialize Payload CMS connection (lazy dynamic import)
    */
   async initialize(): Promise<void> {
     if (this.initialized) {return;}
 
     try {
+      const payloadModule = await import('payload');
+      this.payload = payloadModule.default ?? payloadModule;
+
       // Initialize Payload without Express (for API access only)
-      await payload.init({
+      await this.payload.init({
         secret: process.env.PAYLOAD_SECRET ?? 'your-secret-here',
         local: true, // Use local API instead of HTTP requests
       });
-      
+
       this.initialized = true;
       console.log('✅ Payload CMS client initialized');
     } catch (error) {
@@ -47,7 +55,7 @@ export class PayloadClient {
     await this.initialize();
 
     try {
-      const result = await payload.find({
+      const result = await this.payload.find({
         collection: 'notification-templates',
         where: {
           and: [
@@ -80,7 +88,7 @@ export class PayloadClient {
     await this.initialize();
 
     try {
-      const result = await payload.find({
+      const result = await this.payload.find({
         collection: 'notification-templates',
         where: {
           and: [
@@ -92,7 +100,7 @@ export class PayloadClient {
         limit: 100,
       });
 
-      return result.docs.map(doc => this.convertToNotificationTemplate(payloadTemplateSchema.parse(doc)));
+      return result.docs.map((doc: unknown) => this.convertToNotificationTemplate(payloadTemplateSchema.parse(doc)));
     } catch (error) {
       console.error(`Failed to get templates for channel ${channel}:`, error);
       return [];
@@ -106,7 +114,7 @@ export class PayloadClient {
     await this.initialize();
 
     try {
-      const result = await payload.find({
+      const result = await this.payload.find({
         collection: 'notification-channels',
         where: {
           and: [
@@ -143,7 +151,7 @@ export class PayloadClient {
     await this.initialize();
 
     try {
-      const result = await payload.find({
+      const result = await this.payload.find({
         collection: 'template-variables',
         where: {
           isDeprecated: { not_equals: true },
@@ -152,7 +160,7 @@ export class PayloadClient {
         limit: 1000,
       });
 
-      return result.docs.map(doc => payloadTemplateVariableSchema.parse(doc));
+      return result.docs.map((doc: unknown) => payloadTemplateVariableSchema.parse(doc));
     } catch (error) {
       console.error('Failed to get template variables:', error);
       return [];
@@ -167,7 +175,7 @@ export class PayloadClient {
 
     try {
       // Check if template already exists
-      const existing = await payload.find({
+      const existing = await this.payload.find({
         collection: 'notification-templates',
         where: {
           and: [
@@ -182,14 +190,14 @@ export class PayloadClient {
       let result;
       if (existing.docs.length > 0) {
         // Update existing template
-        result = await payload.update({
+        result = await this.payload.update({
           collection: 'notification-templates',
           id: existing.docs[0].id,
           data: templateData,
         });
       } else {
         // Create new template
-        result = await payload.create({
+        result = await this.payload.create({
           collection: 'notification-templates',
           data: {
             ...templateData,
@@ -244,7 +252,7 @@ export class PayloadClient {
       await this.initialize();
       
       // Try to query templates collection
-      await payload.find({
+      await this.payload.find({
         collection: 'notification-templates',
         limit: 1,
       });

@@ -20,8 +20,10 @@ export const invitationCreatedEventSchema = z.object({
     eventName: z.string(),
     eventDate: z.string().optional(),
     eventLocation: z.string().optional(),
-    photographerName: z.string(),
-    photographerEmail: z.string()
+    // Best-effort enrichment upstream — may be absent if the photographer
+    // could not be resolved; the email composes with sensible defaults.
+    photographerName: z.string().optional(),
+    photographerEmail: z.string().optional()
   }),
   magicLinkUrl: z.string(),
   expirationDate: z.string(),

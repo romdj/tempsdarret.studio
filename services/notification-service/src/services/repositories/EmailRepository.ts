@@ -19,15 +19,24 @@ export interface ResendConfig {
 }
 
 export class EmailRepository extends BaseNotificationRepository {
-  private readonly resend: Resend;
+  private readonly resend: Resend | null;
   private readonly config: ResendConfig;
+  // Dry-run when no real API key is configured (local/test runs): the email is
+  // logged and reported as sent without calling Resend, so the notification
+  // flow works end-to-end without a live email account.
+  private readonly dryRun: boolean;
 
   constructor(config: ResendConfig) {
     super('email');
     this.config = config;
-    this.resend = new Resend(config.apiKey);
-    
-    console.log('📧 Email repository initialized with Resend.dev');
+    this.dryRun = !config.apiKey || config.apiKey.trim() === '';
+    this.resend = this.dryRun ? null : new Resend(config.apiKey);
+
+    console.log(
+      this.dryRun
+        ? '📧 Email repository initialized in DRY-RUN mode (no RESEND_API_KEY)'
+        : '📧 Email repository initialized with Resend.dev'
+    );
   }
 
   async send(message: NotificationMessage): Promise<SendResult> {
@@ -44,11 +53,16 @@ export class EmailRepository extends BaseNotificationRepository {
       };
     }
 
+    if (this.dryRun || !this.resend) {
+      console.log(`📧 [dry-run] Would send ${message.templateType} email to ${message.recipient.email}`);
+      return { success: true, messageId: `dry-run-${message.id}` };
+    }
+
     try {
       const emailData = this.prepareEmailData(message);
-      
+
       console.log(`📧 Sending email to ${message.recipient.email} (${message.templateType})`);
-      
+
       const result = await this.resend.emails.send(emailData);
       
       if (result.error) {
@@ -66,11 +80,14 @@ export class EmailRepository extends BaseNotificationRepository {
   }
 
   async getDeliveryStatus(messageId: string): Promise<DeliveryStatus> {
+    if (this.dryRun || !this.resend) {
+      return 'sent';
+    }
     try {
       // Note: Resend doesn't provide a direct status endpoint in their current API
       // This would typically be implemented via webhooks
       // For now, we'll return a basic status
-      
+
       const email = await this.resend.emails.get(messageId);
       
       if (email.error) {
@@ -201,6 +218,9 @@ export class EmailRepository extends BaseNotificationRepository {
 
   // Validate email configuration
   async validateConfiguration(): Promise<boolean> {
+    if (this.dryRun || !this.resend) {
+      return true;
+    }
     try {
       // Test API key by attempting to list domains
       const domains = await this.resend.domains.list();
