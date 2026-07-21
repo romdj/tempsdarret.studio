@@ -10,7 +10,7 @@ export const ShootSchema = z.object({
   title: z.string().min(1).max(100),
   clientEmail: EmailSchema,
   photographerId: z.string(),
-  scheduledDate: z.date().optional(),
+  scheduledDate: z.coerce.date().optional(),
   location: z.string().max(500).optional(),
   status: ShootStatusSchema
 }).merge(TimestampsSchema);
@@ -20,14 +20,14 @@ export const CreateShootRequestSchema = z.object({
   title: z.string().min(1).max(100),
   clientEmail: EmailSchema,
   photographerId: z.string(),
-  scheduledDate: z.date().optional(),
+  scheduledDate: z.coerce.date().optional(),
   location: z.string().max(500).optional()
 });
 
 // Maps to TypeSpec UpdateShootRequest
 export const UpdateShootRequestSchema = z.object({
   title: z.string().min(1).max(100).optional(),
-  scheduledDate: z.date().optional(),
+  scheduledDate: z.coerce.date().optional(),
   location: z.string().max(500).optional(),
   status: ShootStatusSchema.optional()
 });
@@ -37,8 +37,8 @@ export const ShootQuerySchema = z.object({
   photographerId: z.string().optional(),
   clientEmail: EmailSchema.optional(),
   status: ShootStatusSchema.optional(),
-  fromDate: z.date().optional(),
-  toDate: z.date().optional(),
+  fromDate: z.coerce.date().optional(),
+  toDate: z.coerce.date().optional(),
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(100).default(20)
 });
