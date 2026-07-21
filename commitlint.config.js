@@ -30,6 +30,7 @@ module.exports = {
         'user-service',
         'invitation-service',
         'event-service',
+        'shoot-service',
         'file-service',
         'portfolio-service',
         'notification-service',
