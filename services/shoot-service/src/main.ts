@@ -66,20 +66,17 @@ class ShootServiceApp {
   }
 }
 
-// Start service if this file is run directly
-if (require.main === module) {
-  const app = new ShootServiceApp();
-  
-  // Graceful shutdown
-  process.on('SIGINT', async () => {
-    // eslint-disable-next-line no-console
-    console.log('Shutting down Shoot Service...');
-    await app.stop();
-    process.exit(0);
-  });
+// Start service (this module is the service entrypoint)
+const app = new ShootServiceApp();
 
+// Graceful shutdown
+process.on('SIGINT', () => {
   // eslint-disable-next-line no-console
-  app.start().catch(console.error);
-}
+  console.log('Shutting down Shoot Service...');
+  void app.stop().then(() => process.exit(0));
+});
+
+// eslint-disable-next-line no-console
+app.start().catch(console.error);
 
 export { ShootServiceApp };
