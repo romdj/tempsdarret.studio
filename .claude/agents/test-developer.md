@@ -40,13 +40,13 @@ production (readable names, small functions, no duplication, no dead code):
   builders / object-mothers / factory helpers (e.g. `aShoot().withClient(...)`),
   and shared harness utilities — reuse over duplication. Put cross-service E2E
   helpers in `services/common/tests`.
-- **Deterministic, self-cleaning lifecycle** (the Phase 7/8 lesson): setup and
-  teardown must run on BOTH success and failure (`afterEach`/`afterAll` always
-  execute) and must reset all state a test touched — DB collections, Kafka
-  consumer-group offsets, topics — so runs are independent regardless of prior
-  state or crashes. No orphaned data, no leaked side effects (email must be a
-  dry-run/mock in tests). Don't rely on Kafka topic auto-creation or wall-clock
-  timing; wait on conditions, not `sleep`.
+- **Deterministic, self-cleaning lifecycle**: setup and teardown must run on
+  BOTH success and failure (`afterEach`/`afterAll` always execute) and must reset
+  all state a test touched — DB collections, Kafka consumer-group offsets, topics
+  — so runs are independent regardless of prior state or crashes. No orphaned
+  data, no leaked side effects (email must be a dry-run/mock in tests). Don't
+  rely on Kafka topic auto-creation or wall-clock timing; wait on conditions, not
+  `sleep`.
 
 ## Conventions to match
 - Runner: **Vitest** (`describe/it/expect/vi`). The monorepo standardized off

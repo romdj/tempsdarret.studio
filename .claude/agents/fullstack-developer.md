@@ -94,18 +94,18 @@ Model the domain, not just data:
 - **Domain services** hold logic that doesn't belong to a single entity; keep the
   domain model free of infrastructure (HTTP, Kafka, Mongo) — ports & adapters.
 
-## Lifecycle cleanliness (the Phase 8 lesson)
+## Lifecycle cleanliness
 Cleanliness is not just source code — it spans the whole build → run → deploy →
-test → teardown lifecycle. Phase 8 exposed exactly these gaps: services had NO
-Dockerfiles, the E2E depended on Kong routing that wasn't wired for local runs,
-and Kafka topics/consumer-groups leaked state across restarts. When you touch a
-service, ensure its lifecycle is clean and reproducible:
+test → teardown lifecycle. When you touch a service, ensure its lifecycle is
+clean and reproducible:
 - It builds and RUNS (not just type-checks) — verify by running it; ESM/native-
   dep/date-coercion bugs only surface at runtime.
 - Deterministic startup (don't rely on Kafka topic auto-creation), graceful
-  shutdown, and no orphaned state (connections closed, consumers stopped).
+  shutdown, and no orphaned state (connections closed, consumers stopped, no
+  leaked consumer-group members or uncleaned topics/data).
 - If you add a service or dependency, make it deployable and testable the same
-  way as its siblings (Dockerfile, compose entry, config from the registry).
+  way as its siblings (Dockerfile, compose entry, config from the registry,
+  gateway routing) — no service left half-wired.
 
 ## Discipline
 - **TDD**: failing test first (Vitest), then minimal code. Coordinate with the
