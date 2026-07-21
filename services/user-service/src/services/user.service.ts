@@ -141,14 +141,25 @@ export class UserService {
     return this.userRepository.findByEmail(email);
   }
 
+  private async findPhotographerSafely(photographerId: string): Promise<User | null> {
+    try {
+      return await this.userRepository.findById(photographerId);
+    } catch {
+      // e.g. photographerId is not a valid ObjectId — treat as not found
+      return null;
+    }
+  }
+
   // Event handler for shoot.created events (from sequence diagram).
   // Enriches the outgoing user event with shoot context and photographer
   // details (resolved from user-service's own data) so downstream services
   // — invite and notification — can compose the invitation without any
   // direct service-to-service calls.
   async handleShootCreatedEvent(event: ShootCreatedEvent): Promise<User> {
-    // Resolve photographer details (user-service owns user data)
-    const photographer = await this.userRepository.findById(event.photographerId);
+    // Resolve photographer details (user-service owns user data). Best-effort:
+    // a missing or malformed photographerId must not fail the whole event, so
+    // enrichment fields are simply left undefined when the lookup can't resolve.
+    const photographer = await this.findPhotographerSafely(event.photographerId);
 
     const shootContext = {
       shootId: event.shootId,
