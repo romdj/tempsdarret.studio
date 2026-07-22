@@ -166,7 +166,7 @@ describe('Invite Service API Contract Tests (TypeSpec Compliance)', () => {
           shootId: 'shoot_456',
           clientEmail: 'client@example.com',
           status: 'sent',
-          magicLinkToken: 'a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890123456',
+          magicLinkToken: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2',
           sentAt: new Date('2024-01-15T10:00:00Z'),
           viewedAt: new Date('2024-01-15T14:30:00Z'),
           message: 'Welcome to your gallery!',
@@ -184,7 +184,7 @@ describe('Invite Service API Contract Tests (TypeSpec Compliance)', () => {
           shootId: 'shoot_minimal',
           clientEmail: 'minimal@example.com',
           status: 'pending',
-          magicLinkToken: 'b2c3d4e5f6789012345678901234567890123456789012345678901234567890123456a',
+          magicLinkToken: 'b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3',
           createdAt: new Date(),
           updatedAt: new Date()
         };
@@ -214,7 +214,7 @@ describe('Invite Service API Contract Tests (TypeSpec Compliance)', () => {
     describe('GET /magic-links/{token} - MagicLinkValidationRequest', () => {
       it('should validate correct MagicLinkValidationRequest with 64-char hex token', () => {
         const validRequest = {
-          token: 'a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890123456',
+          token: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2',
           shootId: 'shoot_123'
         };
 
@@ -261,7 +261,7 @@ describe('Invite Service API Contract Tests (TypeSpec Compliance)', () => {
 
       it('should allow MagicLinkValidationRequest without shootId', () => {
         const validRequest = {
-          token: 'a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890123456'
+          token: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2'
         };
 
         const result = MagicLinkValidationRequestSchema.safeParse(validRequest);
@@ -428,7 +428,7 @@ describe('Invite Service API Contract Tests (TypeSpec Compliance)', () => {
           shootId: 'test_shoot',
           clientEmail: 'test@example.com',
           status,
-          magicLinkToken: 'a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890123456',
+          magicLinkToken: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2',
           createdAt: new Date(),
           updatedAt: new Date()
         };
