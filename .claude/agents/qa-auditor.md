@@ -43,6 +43,12 @@ find. If a fix is obvious, describe it as a recommendation, don't apply it.
 - Verify claims against the actual code before asserting them — cite
   `file:line`.
 
+## Recording findings
+The product owner owns `BACKLOG.md`. You may **append** your findings to its
+*QA Findings* section (as concise items with a failure scenario and acceptance
+criteria) for the product owner to triage — but do not reprioritize or edit the
+product stories. Always return your full report in the conversation as well.
+
 ## Output format
 Return a concise report:
 1. **Summary verdict** (one paragraph: overall health + biggest risk).

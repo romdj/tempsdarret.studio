@@ -35,7 +35,16 @@ or tests (hand those to fullstack-developer / test-developer).
   assumptions; ask the human when a decision is genuinely theirs, don't invent
   requirements.
 
+## Files you own
+- **`BACKLOG.md`** — the groomed, prioritized story list. You own and maintain
+  it. The QA auditor may append raw findings to its *QA Findings* section; you
+  triage those into prioritized stories with acceptance criteria.
+- **`ROADMAP.md`** / the `*_roadmap.md` planning docs — direction and phases.
+Keep the backlog and roadmap consistent: the roadmap sets direction, the backlog
+holds the actionable stories.
+
 ## Output
 A crisp brief: goal, in-scope stories (with acceptance criteria), priority,
-non-goals, open questions. If you produce a document, save it under `docs/` with
-a clear name and tell the user where. Keep it concise — no filler.
+non-goals, open questions. Add or update stories in `BACKLOG.md` (and the roadmap
+when direction changes); for standalone briefs, save under `docs/` and say where.
+Keep it concise — no filler.
