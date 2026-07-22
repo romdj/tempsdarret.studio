@@ -9,6 +9,7 @@ Priority: `P1` (do now) · `P2` (soon) · `P3` (later)
 |----|-----|--------|---------|
 | CI-1 | P1 | OPEN | Test steps swallow all failures — the CI gate is cosmetic |
 | CI-2 | P1 | OPEN | Rotted test suite hidden by CI-1 (stale imports, dep skew, real bugs) |
+| CI-3 | P1 | OPEN | Inconsistent/misconfigured test scripts — tests don't even run |
 
 ### CI-1 · P1 · Test steps swallow all failures
 Every test tier in `.github/workflows/ci.yml` runs with **both** `|| echo "No
@@ -46,3 +47,23 @@ With the gate off, the suite has decayed. Observed failures:
   removed/fixed; the Jest holdouts finish migrating to Vitest; dep versions
   align; the real `shoot-access`/`shoot-reference` bugs are fixed (TDD).
 - Once a service is green, its CI swallowing (CI-1) is removed so it gates.
+
+### CI-3 · P1 · Inconsistent/misconfigured test scripts — tests don't even run
+Even without CI-1, the unit tier runs little or nothing because test scripts are
+inconsistent and point at the wrong places:
+- `shoot-service` `test:unit` = `vitest run src`, but all 6 test files live in
+  `tests/` → "No test files found", exit 1. Its real tests never run in the unit
+  job (only the coverage script globs everything).
+- `user-service` `test:unit` = `vitest run src` runs only the 1 colocated `src`
+  test, ignoring `tests/`.
+- `portfolio-service` and `file-service` use **Jest** (not installed) and
+  `portfolio` has no `test:unit` at all.
+- `notification-service` has no `test:unit`.
+- `invitation-service` `test` = `vitest` (watch mode — wrong for CI).
+There is no standard runner, test location, or script shape across services.
+**Acceptance criteria**
+- One test runner (Vitest) across all services; Jest fully removed.
+- Consistent `test` / `test:unit` / `test:coverage` scripts that discover every
+  test (colocated `src` + `tests/`), never run in watch mode in CI, and use
+  aligned vitest/coverage versions.
+- The CI matrix invokes a single consistent script per tier.
