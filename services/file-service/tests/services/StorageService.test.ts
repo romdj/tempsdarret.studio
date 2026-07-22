@@ -3,26 +3,28 @@
  * Testing ADR-027 hybrid storage implementation
  */
 
+import { vi } from 'vitest';
+import type { Mocked, MockedFunction } from 'vitest';
 import fs from 'fs/promises';
 import { createReadStream, createWriteStream } from 'fs';
 import { StorageService, StorageConfig } from '../../src/services/StorageService.js';
 import { Model } from 'mongoose';
 
 // Mock fs operations
-jest.mock('fs/promises');
-jest.mock('fs');
+vi.mock('fs/promises');
+vi.mock('fs');
 
-const mockFs = fs as jest.Mocked<typeof fs>;
-const mockCreateReadStream = createReadStream as jest.MockedFunction<typeof createReadStream>;
-const mockCreateWriteStream = createWriteStream as jest.MockedFunction<typeof createWriteStream>;
+const mockFs = fs as Mocked<typeof fs>;
+const mockCreateReadStream = createReadStream as MockedFunction<typeof createReadStream>;
+const mockCreateWriteStream = createWriteStream as MockedFunction<typeof createWriteStream>;
 
 // Mock chunk model
 const mockChunkModel = {
-  countDocuments: jest.fn(),
-  find: jest.fn(),
-  findOne: jest.fn(),
-  insertMany: jest.fn(),
-  deleteMany: jest.fn(),
+  countDocuments: vi.fn(),
+  find: vi.fn(),
+  findOne: vi.fn(),
+  insertMany: vi.fn(),
+  deleteMany: vi.fn(),
 } as any;
 
 describe('StorageService', () => {
@@ -30,7 +32,7 @@ describe('StorageService', () => {
   let config: StorageConfig;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     config = {
       basePath: '/data/files',
@@ -163,11 +165,11 @@ describe('StorageService', () => {
       const expectedChunks = Math.ceil(largeFileSize / config.chunkSize);
 
       const mockFileHandle = {
-        read: jest.fn().mockImplementation(async (buffer, offset, length, position) => {
+        read: vi.fn().mockImplementation(async (buffer, offset, length, position) => {
           // Mock reading chunk data
           return { bytesRead: length };
         }),
-        close: jest.fn(),
+        close: vi.fn(),
       };
 
       mockFs.stat.mockResolvedValue({ size: largeFileSize } as any);

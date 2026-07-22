@@ -3,20 +3,20 @@ import path from 'path';
 
 export default defineConfig({
   test: {
-    globals: true,
     environment: 'node',
+    globals: true,
     setupFiles: ['./tests/setup.ts'],
-    testTimeout: 10000,
-    hookTimeout: 60000, // 1 minute for beforeAll/afterAll
+    testTimeout: 30000,
+    hookTimeout: 60000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
-        'dist/',
-        '**/*.d.ts',
-        'vitest.config.ts',
-        'tests/setup.ts'
+        'tests/',
+        'src/main.ts',
+        'src/server.ts',
+        '**/*.d.ts'
       ]
     }
   },

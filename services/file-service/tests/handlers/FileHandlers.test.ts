@@ -3,6 +3,8 @@
  * Testing ADR-026 download progress compliance and HTTP handlers
  */
 
+import { vi } from 'vitest';
+import type { Mocked } from 'vitest';
 import { FileHandlers } from '../../src/handlers/FileHandlers.js';
 import { FileService } from '../../src/services/FileService.js';
 import { ArchiveService } from '../../src/services/ArchiveService.js';
@@ -10,19 +12,19 @@ import { FileModel } from '../../src/shared/contracts/files.api.js';
 
 // Mock services
 const mockFileService = {
-  uploadFile: jest.fn(),
-  listFiles: jest.fn(),
-  getFileById: jest.fn(),
-  deleteFile: jest.fn(),
-  getFileStats: jest.fn(),
-  createDownloadStream: jest.fn(),
-} as jest.Mocked<FileService>;
+  uploadFile: vi.fn(),
+  listFiles: vi.fn(),
+  getFileById: vi.fn(),
+  deleteFile: vi.fn(),
+  getFileStats: vi.fn(),
+  createDownloadStream: vi.fn(),
+} as Mocked<FileService>;
 
 const mockArchiveService = {
-  createArchive: jest.fn(),
-  getArchiveById: jest.fn(),
-  createArchiveDownloadStream: jest.fn(),
-} as jest.Mocked<ArchiveService>;
+  createArchive: vi.fn(),
+  getArchiveById: vi.fn(),
+  createArchiveDownloadStream: vi.fn(),
+} as Mocked<ArchiveService>;
 
 // Mock Fastify request/reply
 const createMockRequest = (params?: any, query?: any, body?: any, headers?: any) => ({
@@ -34,9 +36,9 @@ const createMockRequest = (params?: any, query?: any, body?: any, headers?: any)
 
 const createMockReply = () => {
   const reply = {
-    code: jest.fn().mockReturnThis(),
-    header: jest.fn().mockReturnThis(),
-    send: jest.fn().mockReturnThis(),
+    code: vi.fn().mockReturnThis(),
+    header: vi.fn().mockReturnThis(),
+    send: vi.fn().mockReturnThis(),
   };
   return reply;
 };
@@ -45,7 +47,7 @@ describe('FileHandlers', () => {
   let fileHandlers: FileHandlers;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     fileHandlers = new FileHandlers(mockFileService, mockArchiveService);
   });
 

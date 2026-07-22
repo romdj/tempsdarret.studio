@@ -3,6 +3,8 @@
  * Comprehensive testing for file operations including sidecar files
  */
 
+import { vi } from 'vitest';
+import type { Mocked } from 'vitest';
 import { FileService } from '../../src/services/FileService.js';
 import { StorageService } from '../../src/services/StorageService.js';
 import { ProcessingService } from '../../src/services/ProcessingService.js';
@@ -12,42 +14,42 @@ import { Model } from 'mongoose';
 
 // Mock dependencies
 const mockFileModel = {
-  findById: jest.fn(),
-  find: jest.fn(),
-  countDocuments: jest.fn(),
-  updateOne: jest.fn(),
-  deleteOne: jest.fn(),
+  findById: vi.fn(),
+  find: vi.fn(),
+  countDocuments: vi.fn(),
+  updateOne: vi.fn(),
+  deleteOne: vi.fn(),
   prototype: {
-    save: jest.fn(),
+    save: vi.fn(),
   }
 } as any;
 
 const mockStorageService = {
-  storeFile: jest.fn(),
-  getFileStats: jest.fn(),
-  deleteFile: jest.fn(),
-  deleteChunks: jest.fn(),
-  shouldUseChunking: jest.fn(),
-  createChunksForFile: jest.fn(),
-  createReadStream: jest.fn(),
-  createChunkedReadStream: jest.fn(),
-} as jest.Mocked<StorageService>;
+  storeFile: vi.fn(),
+  getFileStats: vi.fn(),
+  deleteFile: vi.fn(),
+  deleteChunks: vi.fn(),
+  shouldUseChunking: vi.fn(),
+  createChunksForFile: vi.fn(),
+  createReadStream: vi.fn(),
+  createChunkedReadStream: vi.fn(),
+} as Mocked<StorageService>;
 
 const mockProcessingService = {
-  processFile: jest.fn(),
-} as jest.Mocked<ProcessingService>;
+  processFile: vi.fn(),
+} as Mocked<ProcessingService>;
 
 const mockEventEmitter = {
-  emitFileUploaded: jest.fn(),
-  emitFileProcessed: jest.fn(),
-  emitFileDeleted: jest.fn(),
-} as jest.Mocked<EventEmitter>;
+  emitFileUploaded: vi.fn(),
+  emitFileProcessed: vi.fn(),
+  emitFileDeleted: vi.fn(),
+} as Mocked<EventEmitter>;
 
 describe('FileService', () => {
   let fileService: FileService;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     
     fileService = new FileService(
       mockFileModel as Model<any>,
@@ -83,7 +85,7 @@ describe('FileService', () => {
         photographerOnly: false,
         createdAt: new Date(),
         updatedAt: new Date(),
-        save: jest.fn().mockResolvedValue({
+        save: vi.fn().mockResolvedValue({
           _id: 'file123',
           toObject: () => ({}),
         }),
@@ -115,7 +117,7 @@ describe('FileService', () => {
         _id: 'file123',
         ...rawFileData,
         type: 'raw',
-        save: jest.fn().mockResolvedValue({ _id: 'file123' }),
+        save: vi.fn().mockResolvedValue({ _id: 'file123' }),
       };
 
       mockFileModel.mockImplementation(() => mockSavedDoc);
@@ -138,7 +140,7 @@ describe('FileService', () => {
         type: 'sidecar',
         photographerOnly: true,
         sidecarType: 'xmp',
-        save: jest.fn().mockResolvedValue({ _id: 'file123' }),
+        save: vi.fn().mockResolvedValue({ _id: 'file123' }),
       };
 
       mockFileModel.mockImplementation(() => mockSavedDoc);
@@ -163,7 +165,7 @@ describe('FileService', () => {
         type: 'config',
         photographerOnly: true,
         sidecarType: 'psd',
-        save: jest.fn().mockResolvedValue({ _id: 'file123' }),
+        save: vi.fn().mockResolvedValue({ _id: 'file123' }),
       };
 
       mockFileModel.mockImplementation(() => mockSavedDoc);
@@ -197,7 +199,7 @@ describe('FileService', () => {
         const mockSavedDoc = {
           _id: 'file123',
           type: 'raw',
-          save: jest.fn().mockResolvedValue({ _id: 'file123' }),
+          save: vi.fn().mockResolvedValue({ _id: 'file123' }),
         };
 
         mockFileModel.mockImplementation(() => mockSavedDoc);
@@ -230,7 +232,7 @@ describe('FileService', () => {
           type: format.type,
           photographerOnly: true,
           sidecarType: format.ext,
-          save: jest.fn().mockResolvedValue({ _id: 'file123' }),
+          save: vi.fn().mockResolvedValue({ _id: 'file123' }),
         };
 
         mockFileModel.mockImplementation(() => mockSavedDoc);
@@ -251,10 +253,10 @@ describe('FileService', () => {
       };
 
       mockFileModel.find.mockReturnValue({
-        sort: jest.fn().mockReturnValue({
-          skip: jest.fn().mockReturnValue({
-            limit: jest.fn().mockReturnValue({
-              exec: jest.fn().mockResolvedValue([]),
+        sort: vi.fn().mockReturnValue({
+          skip: vi.fn().mockReturnValue({
+            limit: vi.fn().mockReturnValue({
+              exec: vi.fn().mockResolvedValue([]),
             }),
           }),
         }),
@@ -276,10 +278,10 @@ describe('FileService', () => {
       };
 
       mockFileModel.find.mockReturnValue({
-        sort: jest.fn().mockReturnValue({
-          skip: jest.fn().mockReturnValue({
-            limit: jest.fn().mockReturnValue({
-              exec: jest.fn().mockResolvedValue([]),
+        sort: vi.fn().mockReturnValue({
+          skip: vi.fn().mockReturnValue({
+            limit: vi.fn().mockReturnValue({
+              exec: vi.fn().mockResolvedValue([]),
             }),
           }),
         }),
@@ -312,7 +314,7 @@ describe('FileService', () => {
       };
 
       // Mock getFileById to return the file
-      jest.spyOn(fileService, 'getFileById').mockResolvedValue(mockFile);
+      vi.spyOn(fileService, 'getFileById').mockResolvedValue(mockFile);
       
       // Mock large file handling
       mockStorageService.shouldUseChunking.mockReturnValue(true);
@@ -340,7 +342,7 @@ describe('FileService', () => {
         updatedAt: '2024-01-01T00:00:00Z',
       };
 
-      jest.spyOn(fileService, 'getFileById').mockResolvedValue(mockFile);
+      vi.spyOn(fileService, 'getFileById').mockResolvedValue(mockFile);
       
       mockStorageService.shouldUseChunking.mockReturnValue(false);
       mockStorageService.createReadStream.mockReturnValue({} as any);

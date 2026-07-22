@@ -9,12 +9,11 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc && tsc-alias",
     "start": "node dist/index.js",
-    "test": "vitest",
-    "test:unit": "vitest run tests/unit",
-    "test:component": "vitest run tests/component --timeout=60000",
-    "test:integration": "vitest run tests/integration --timeout=60000",
-    "test:contract": "vitest run tests/contract --timeout=60000",
-    "test:coverage": "vitest --coverage",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/services",
+    "test:contract": "vitest run tests/contract",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "check": "tsc --noEmit",
@@ -31,7 +30,8 @@
     "tsc-alias": "^1.8.10",
     "tsx": "^4.16.2",
     "typescript": "^5.5.3",
-    "vitest": "^2.0.3"
+    "vitest": "^3.2.4",
+    "@vitest/coverage-v8": "^3.2.4"
   },
   "engines": {
     "node": ">=24.0.0",
