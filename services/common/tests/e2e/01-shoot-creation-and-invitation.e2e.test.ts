@@ -1,10 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import {
   setupE2EEnvironment,
   teardownE2EEnvironment,
   type EventBusHelper
 } from '../setup/test-helpers.js';
-import { clearEvents } from '../setup/e2e-setup.js';
 
 /**
  * E2E Test: 01-shoot-creation-and-invitation.mmd
@@ -36,10 +35,8 @@ describe('E2E: Shoot Creation and Invitation Flow', () => {
     } = await setupE2EEnvironment());
   });
 
-  beforeEach(() => {
-    // Clear events before each test for isolation
-    clearEvents();
-  });
+  // Per-test isolation (DB wipe + event-collector clear) is handled globally in
+  // e2e-setup.ts `beforeEach`, so no local reset is needed here.
 
   afterAll(async () => {
     await teardownE2EEnvironment();

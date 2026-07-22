@@ -27,6 +27,13 @@ const config = {
   }
 };
 
+// Kafka topics used across the event chain. Pre-created in setup so neither the
+// services nor the test consumer trigger auto-creation rebalances.
+const E2E_TOPICS = ['shoots', 'users', 'invitations', 'notifications', 'magic-links'];
+
+// Non-application databases that must never be wiped during cleanup.
+const SYSTEM_DATABASES = new Set(['admin', 'local', 'config']);
+
 // Global test environment state
 export const testEnv = {
   mongoClient: null as MongoClient | null,
@@ -66,6 +73,14 @@ export async function setup() {
 
     await testEnv.kafkaAdmin.connect();
     await testEnv.kafkaProducer.connect();
+
+    // Pre-create the topics (idempotent) so subscribing/producing never triggers
+    // auto-creation, which caused consumer-group rebalance storms in real runs.
+    await testEnv.kafkaAdmin.createTopics({
+      waitForLeaders: true,
+      topics: E2E_TOPICS.map(topic => ({ topic, numPartitions: 1, replicationFactor: 1 }))
+    });
+
     await testEnv.kafkaConsumer.connect();
     console.log('✅ Kafka connected');
 
@@ -164,11 +179,14 @@ export async function teardown() {
  * Wait for all services to be healthy
  */
 async function waitForServices(maxAttempts = 30, delayMs = 1000) {
+  // Notification-service is a consumer-only worker with no HTTP server, so it has
+  // no /health endpoint. Its liveness is verified implicitly: the scenario-1 test
+  // waits for the `invitation.sent` event it publishes, which fails loudly if it
+  // is down. Only the HTTP-serving services are health-checked here.
   const servicesToCheck = [
     { name: 'Shoot Service', url: `${config.services.shootService}/health` },
     { name: 'User Service', url: `${config.services.userService}/health` },
-    { name: 'Invite Service', url: `${config.services.inviteService}/health` },
-    { name: 'Notification Service', url: `${config.services.notificationService}/health` }
+    { name: 'Invite Service', url: `${config.services.inviteService}/health` }
   ];
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -241,31 +259,27 @@ export function getAllEvents() {
 }
 
 /**
- * Helper: Clean test database collections
+ * Helper: wipe every application database.
+ *
+ * Discovers databases at runtime rather than hardcoding names, so it is robust
+ * to service DB-naming differences across environments (compose vs the service
+ * registry). Safe because the E2E infra is a disposable, dedicated Mongo.
  */
 export async function cleanDatabase() {
   if (!testEnv.mongoClient) return;
 
-  const databases = [
-    'user-service',
-    'shoot-service',
-    'invitation-service',
-    'notification-service',
-    'portfolio-service',
-    'file-service'
-  ];
-
-  for (const dbName of databases) {
-    try {
-      const db = testEnv.mongoClient.db(dbName);
+  try {
+    const { databases } = await testEnv.mongoClient.db().admin().listDatabases();
+    for (const { name } of databases) {
+      if (SYSTEM_DATABASES.has(name)) continue;
+      const db = testEnv.mongoClient.db(name);
       const collections = await db.listCollections().toArray();
-
-      for (const collection of collections) {
-        await db.collection(collection.name).deleteMany({});
-      }
-    } catch (error) {
-      console.warn(`Warning: Failed to clean database ${dbName}:`, error);
+      await Promise.all(
+        collections.map(collection => db.collection(collection.name).deleteMany({}))
+      );
     }
+  } catch (error) {
+    console.warn('Warning: Failed to clean databases:', error);
   }
 }
 
@@ -274,6 +288,16 @@ export async function cleanDatabase() {
 if (typeof beforeAll !== 'undefined') {
   beforeAll(async () => {
     await setup();
+  });
+}
+
+// Reset all state BEFORE each test (not after) so every test starts from a clean
+// slate regardless of whether the previous test passed, failed, or crashed — a
+// beforeEach always runs, an afterEach may be skipped on a hard failure.
+if (typeof beforeEach !== 'undefined') {
+  beforeEach(async () => {
+    await cleanDatabase();
+    clearEvents();
   });
 }
 
