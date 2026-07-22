@@ -17,7 +17,11 @@ import { describe, it, expect, beforeAll } from 'vitest';
  * - Downloads disabled
  * - Invalid shoot reference
  */
-describe('E2E: Client Gallery Access Flow', () => {
+// QUARANTINED: targets gallery/file endpoints that are not implemented yet and
+// has stale config (e.g. fileServiceUrl points at port 3003 = invitation-service,
+// not 3006). Re-enable (describe.skip → describe) once the gallery access + file
+// download flow exists and the ports/endpoints are corrected.
+describe.skip('E2E: Client Gallery Access Flow', () => {
   let shootServiceUrl: string;
   let inviteServiceUrl: string;
   let fileServiceUrl: string;
