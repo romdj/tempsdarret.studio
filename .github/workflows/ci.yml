@@ -221,14 +221,6 @@ jobs:
           KAFKA_BROKERS: localhost:9092
           REDIS_URL: redis://localhost:6379/0
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v5
-        if: always()
-        with:
-          name: component-test-results-${{ matrix.service }}
-          path: services/${{ matrix.service }}/test-results/
-          retention-days: 7
-          if-no-files-found: ignore
 
   # ==========================================================================
   # 🔗 INTEGRATION TESTS (With Docker services)
@@ -329,14 +321,6 @@ jobs:
           KAFKA_BROKERS: localhost:9092
           REDIS_URL: redis://localhost:6379/1
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v5
-        if: always()
-        with:
-          name: integration-test-results-${{ matrix.service }}
-          path: services/${{ matrix.service }}/test-results/
-          retention-days: 7
-          if-no-files-found: ignore
 
   # ==========================================================================
   # 📜 CONTRACT TESTS
@@ -382,14 +366,6 @@ jobs:
         env:
           NODE_ENV: test
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v5
-        if: always()
-        with:
-          name: contract-test-results-${{ matrix.service }}
-          path: services/${{ matrix.service }}/test-results/
-          retention-days: 7
-          if-no-files-found: ignore
 
   # ==========================================================================
   # 📊 CODE COVERAGE (Aggregated)
