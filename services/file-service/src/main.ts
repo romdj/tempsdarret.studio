@@ -3,6 +3,7 @@
  * Implements ADR-026/027 file storage and download requirements
  */
 
+import { fileURLToPath } from 'node:url';
 import { FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
 import { config } from './config/index.js';
@@ -40,13 +41,23 @@ async function connectDatabase(): Promise<{
   archiveModel: mongoose.Model<ArchiveDocument>;
   chunkModel: mongoose.Model<ChunkDocument>;
 }> {
-  await mongoose.connect(config.mongoUrl);
-  // eslint-disable-next-line no-console
-  console.log('Connected to MongoDB');
+  // Reuse an existing mongoose connection when one is already open (e.g. tests
+  // that manage their own in-memory Mongo); at service startup readyState is 0.
+  if (mongoose.connection.readyState === 0) {
+    await mongoose.connect(config.mongoUrl);
+    // eslint-disable-next-line no-console
+    console.log('Connected to MongoDB');
+  }
 
-  const fileModel = mongoose.model<FileDocument>('File', fileSchema);
-  const archiveModel = mongoose.model<ArchiveDocument>('Archive', archiveSchema);
-  const chunkModel = mongoose.model<ChunkDocument>('Chunk', chunkSchema);
+  const fileModel =
+    (mongoose.models.File as mongoose.Model<FileDocument>) ??
+    mongoose.model<FileDocument>('File', fileSchema);
+  const archiveModel =
+    (mongoose.models.Archive as mongoose.Model<ArchiveDocument>) ??
+    mongoose.model<ArchiveDocument>('Archive', archiveSchema);
+  const chunkModel =
+    (mongoose.models.Chunk as mongoose.Model<ChunkDocument>) ??
+    mongoose.model<ChunkDocument>('Chunk', chunkSchema);
 
   return { fileModel, archiveModel, chunkModel };
 }
@@ -151,27 +162,35 @@ async function setupCleanupTasks(services: {
   }, 6 * 60 * 60 * 1000); // 6 hours
 }
 
+/**
+ * Builds the fully-routed file-service app (Mongo connected, services wired,
+ * routes mounted) without starting the HTTP listener or the periodic cleanup
+ * intervals. Importable by component tests so the real routes can be exercised
+ * via `inject()` against an in-memory Mongo + temp storage dirs. The Kafka
+ * producer is the in-process `MockEventProducer`, so no broker is needed.
+ */
+export async function buildApp(): Promise<{
+  app: FastifyInstance;
+  services: Awaited<ReturnType<typeof setupServices>>;
+}> {
+  const models = await connectDatabase();
+  const services = await setupServices(models);
+  const handlers = new FileHandlers(services.fileService, services.archiveService);
+  const app = await createServer();
+  await setupRoutes(app, handlers);
+  return { app, services };
+}
+
 async function main(): Promise<void> {
   try {
     // eslint-disable-next-line no-console
     console.log('Starting File Service...');
 
-    // Connect to database
-    const models = await connectDatabase();
-    
-    // Setup services
-    const services = await setupServices(models);
-    
-    // Create handlers
-    const handlers = new FileHandlers(services.fileService, services.archiveService);
-    
-    // Create and configure server
-    const fastify = await createServer();
-    await setupRoutes(fastify, handlers);
-    
+    const { app: fastify, services } = await buildApp();
+
     // Setup cleanup tasks
     setupCleanupTasks(services);
-    
+
     // Start server
     await fastify.listen({
       port: config.port,
@@ -213,8 +232,12 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-main().catch((error: Error) => {
-  // eslint-disable-next-line no-console
-  console.error(error);
-  process.exit(1);
-});
+// Only boot the service when run as the entrypoint (`node dist/main.js`), not
+// when imported by tests for `buildApp`.
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main().catch((error: Error) => {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    process.exit(1);
+  });
+}
