@@ -39,15 +39,12 @@ describe('Shoot API Contract Tests', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.headers['content-type']).toContain('application/json');
-      
+
       const body = JSON.parse(response.body);
       expect(body).toMatchObject({
-        status: expect.any(String),
-        timestamp: expect.any(String),
+        status: 'ok',
         service: expect.any(String)
       });
-      
-      expect(['healthy', 'degraded', 'unhealthy']).toContain(body.status);
     });
   });
 
@@ -77,18 +74,18 @@ describe('Shoot API Contract Tests', () => {
       expect(response.statusCode).toBe(201);
       expect(response.headers['content-type']).toContain('application/json');
 
-      const responseBody = JSON.parse(response.body);
-      
+      const shoot = JSON.parse(response.body).data;
+
       // Validate response matches Shoot schema
       const responseValidation = ShootSchema.safeParse({
-        ...responseBody,
-        scheduledDate: responseBody.scheduledDate ? new Date(responseBody.scheduledDate) : undefined,
-        createdAt: new Date(responseBody.createdAt),
-        updatedAt: new Date(responseBody.updatedAt)
+        ...shoot,
+        scheduledDate: shoot.scheduledDate ? new Date(shoot.scheduledDate) : undefined,
+        createdAt: new Date(shoot.createdAt),
+        updatedAt: new Date(shoot.updatedAt)
       });
-      
+
       expect(responseValidation.success).toBe(true);
-      expect(responseBody).toMatchObject({
+      expect(shoot).toMatchObject({
         id: expect.any(String),
         title: 'Contract Test Wedding',
         clientEmail: 'contract@example.com',
@@ -120,12 +117,11 @@ describe('Shoot API Contract Tests', () => {
 
         expect(response.statusCode).toBe(400);
         expect(response.headers['content-type']).toContain('application/json');
-        
+
         const errorBody = JSON.parse(response.body);
         expect(errorBody).toMatchObject({
-          error: expect.any(String),
-          message: expect.any(String),
-          statusCode: 400
+          code: 400,
+          message: expect.any(String)
         });
       }
     });
@@ -146,7 +142,7 @@ describe('Shoot API Contract Tests', () => {
         }
       });
       
-      createdShootId = JSON.parse(createResponse.body).id;
+      createdShootId = JSON.parse(createResponse.body).data.id;
     });
 
     it('should return paginated list with valid query parameters', async () => {
@@ -170,15 +166,17 @@ describe('Shoot API Contract Tests', () => {
 
         const responseBody = JSON.parse(response.body);
         expect(responseBody).toMatchObject({
-          shoots: expect.any(Array),
-          total: expect.any(Number),
-          page: expect.any(Number),
-          limit: expect.any(Number),
-          totalPages: expect.any(Number)
+          data: expect.any(Array),
+          meta: {
+            page: expect.any(Number),
+            limit: expect.any(Number),
+            total: expect.any(Number),
+            totalPages: expect.any(Number)
+          }
         });
 
         // Validate each shoot in the response
-        for (const shoot of responseBody.shoots) {
+        for (const shoot of responseBody.data) {
           const shootValidation = ShootSchema.safeParse({
             ...shoot,
             scheduledDate: shoot.scheduledDate ? new Date(shoot.scheduledDate) : undefined,
@@ -226,7 +224,7 @@ describe('Shoot API Contract Tests', () => {
         }
       });
       
-      createdShootId = JSON.parse(createResponse.body).id;
+      createdShootId = JSON.parse(createResponse.body).data.id;
     });
 
     it('should return valid Shoot for existing ID', async () => {
@@ -238,18 +236,18 @@ describe('Shoot API Contract Tests', () => {
       expect(response.statusCode).toBe(200);
       expect(response.headers['content-type']).toContain('application/json');
 
-      const responseBody = JSON.parse(response.body);
-      
+      const shoot = JSON.parse(response.body).data;
+
       // Validate response matches Shoot schema
       const shootValidation = ShootSchema.safeParse({
-        ...responseBody,
-        scheduledDate: responseBody.scheduledDate ? new Date(responseBody.scheduledDate) : undefined,
-        createdAt: new Date(responseBody.createdAt),
-        updatedAt: new Date(responseBody.updatedAt)
+        ...shoot,
+        scheduledDate: shoot.scheduledDate ? new Date(shoot.scheduledDate) : undefined,
+        createdAt: new Date(shoot.createdAt),
+        updatedAt: new Date(shoot.updatedAt)
       });
-      
+
       expect(shootValidation.success).toBe(true);
-      expect(responseBody.id).toBe(createdShootId);
+      expect(shoot.id).toBe(createdShootId);
     });
 
     it('should return 404 for non-existent ID', async () => {
@@ -260,11 +258,11 @@ describe('Shoot API Contract Tests', () => {
 
       expect(response.statusCode).toBe(404);
       expect(response.headers['content-type']).toContain('application/json');
-      
+
       const errorBody = JSON.parse(response.body);
       expect(errorBody).toMatchObject({
-        error: expect.any(String),
-        statusCode: 404
+        code: 404,
+        message: expect.any(String)
       });
     });
   });
@@ -283,7 +281,7 @@ describe('Shoot API Contract Tests', () => {
         }
       });
       
-      createdShootId = JSON.parse(createResponse.body).id;
+      createdShootId = JSON.parse(createResponse.body).data.id;
     });
 
     it('should accept valid UpdateShootRequest and return updated Shoot', async () => {
@@ -306,18 +304,18 @@ describe('Shoot API Contract Tests', () => {
       expect(response.statusCode).toBe(200);
       expect(response.headers['content-type']).toContain('application/json');
 
-      const responseBody = JSON.parse(response.body);
-      
+      const shoot = JSON.parse(response.body).data;
+
       // Validate response matches Shoot schema
       const shootValidation = ShootSchema.safeParse({
-        ...responseBody,
-        scheduledDate: responseBody.scheduledDate ? new Date(responseBody.scheduledDate) : undefined,
-        createdAt: new Date(responseBody.createdAt),
-        updatedAt: new Date(responseBody.updatedAt)
+        ...shoot,
+        scheduledDate: shoot.scheduledDate ? new Date(shoot.scheduledDate) : undefined,
+        createdAt: new Date(shoot.createdAt),
+        updatedAt: new Date(shoot.updatedAt)
       });
-      
+
       expect(shootValidation.success).toBe(true);
-      expect(responseBody).toMatchObject({
+      expect(shoot).toMatchObject({
         id: createdShootId,
         title: 'Updated Title',
         status: 'in_progress',
@@ -370,24 +368,26 @@ describe('Shoot API Contract Tests', () => {
         }
       });
       
-      createdShootId = JSON.parse(createResponse.body).id;
+      createdShootId = JSON.parse(createResponse.body).data.id;
     });
 
-    it('should return 204 for successful deletion', async () => {
+    it('should return the deleted marker for successful deletion', async () => {
       const response = await app.inject({
         method: 'DELETE',
         url: `/shoots/${createdShootId}`
       });
 
-      expect(response.statusCode).toBe(204);
-      expect(response.body).toBe('');
+      expect(response.statusCode).toBe(200);
+      expect(JSON.parse(response.body)).toMatchObject({
+        data: { deleted: true }
+      });
 
       // Verify the shoot is actually deleted
       const getResponse = await app.inject({
         method: 'GET',
         url: `/shoots/${createdShootId}`
       });
-      
+
       expect(getResponse.statusCode).toBe(404);
     });
 
@@ -437,11 +437,10 @@ describe('Shoot API Contract Tests', () => {
         
         expect(response.statusCode).toBe(endpoint.expectedStatus);
         expect(response.headers['content-type']).toContain('application/json');
-        
+
         const errorBody = JSON.parse(response.body);
         expect(errorBody).toMatchObject({
-          error: expect.any(String),
-          statusCode: endpoint.expectedStatus,
+          code: endpoint.expectedStatus,
           message: expect.any(String)
         });
       }

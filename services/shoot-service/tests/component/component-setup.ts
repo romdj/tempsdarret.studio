@@ -22,7 +22,13 @@ export async function setupComponentTests(): Promise<ComponentTestContext> {
     .withStartupTimeout(60000)
     .start();
 
-  const mongoUri = mongoContainer.getConnectionString();
+  // MongoDBContainer boots a single-node replica set whose primary advertises
+  // its in-container hostname; connect directly so the client skips replica-set
+  // discovery (which would resolve an unreachable Docker hostname).
+  const baseUri = mongoContainer.getConnectionString();
+  const mongoUri = baseUri.includes('directConnection')
+    ? baseUri
+    : `${baseUri}${baseUri.includes('?') ? '&' : '?'}directConnection=true`;
   console.log(`✅ MongoDB running at: ${mongoUri}`);
 
   // Start Kafka container

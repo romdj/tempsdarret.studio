@@ -167,7 +167,10 @@ describe('ShootService', () => {
       expect(mockShootRepository.findMany).toHaveBeenCalledWith(query);
       expect(result).toEqual({
         shoots: [{ id: 'shoot_1', title: 'Shoot 1' }],
-        total: 1
+        total: 1,
+        page: 1,
+        limit: 10,
+        totalPages: 1
       });
     });
   });

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ShootService } from '../../src/features/shoots/services/shoot.service';
-import { ShootController } from '../../src/features/shoots/controllers/shoot.controller';
+import { ShootService } from '../../src/services/shoot.service';
+import { ShootRepository } from '../../src/persistence/shoot.repository';
+import { ShootCreatedPublisher } from '../../src/events/publishers/shoot-created.publisher';
 import { CreateShootRequest } from '@tempsdarret/shared/schemas/shoot.schema';
 
 // Mock event publisher for integration tests
@@ -12,12 +13,13 @@ const mockEventPublisher = {
 
 describe('Shoot Service Integration Tests', () => {
   let shootService: ShootService;
-  let shootController: ShootController;
 
   beforeEach(() => {
-    shootService = new ShootService(mockEventPublisher as any);
-    shootController = new ShootController(shootService);
     vi.clearAllMocks();
+    shootService = new ShootService(
+      new ShootRepository(),
+      new ShootCreatedPublisher(mockEventPublisher)
+    );
   });
 
   describe('End-to-End Shoot Creation Flow', () => {
@@ -40,13 +42,15 @@ describe('Shoot Service Integration Tests', () => {
         status: 'planned'
       });
 
-      // Step 2: Verify event was published
+      // Step 2: Verify event was published (payload nested under `data`)
       expect(mockEventPublisher.publish).toHaveBeenCalledWith(
         'shoots',
         expect.objectContaining({
           eventType: 'shoot.created',
-          shootId: createdShoot.id,
-          clientEmail: 'integration@example.com'
+          data: expect.objectContaining({
+            shootId: createdShoot.id,
+            clientEmail: 'integration@example.com'
+          })
         }),
         createdShoot.id
       );

@@ -128,10 +128,12 @@ describe('Shoot Service Component Tests', () => {
       expect(shootEvent.value).toMatchObject({
         eventId: expect.any(String),
         eventType: 'shoot.created',
-        shootId: createdShoot.id,
-        clientEmail: shootData.clientEmail,
-        photographerId: shootData.photographerId,
-        title: shootData.title
+        data: expect.objectContaining({
+          shootId: createdShoot.id,
+          clientEmail: shootData.clientEmail,
+          photographerId: shootData.photographerId,
+          title: shootData.title
+        })
       });
     });
 
@@ -235,8 +237,16 @@ describe('Shoot Service Component Tests', () => {
         }
       ];
 
+      // Shoots are always created as 'planned'; a non-default status is reached
+      // through an update, so apply it explicitly after creation.
       for (const shoot of testShoots) {
-        await request.post('/shoots').send(shoot).expect(201);
+        const created = await request.post('/shoots').send(shoot).expect(201);
+        if (shoot.status && shoot.status !== 'planned') {
+          await request
+            .patch(`/shoots/${created.body.data.id}`)
+            .send({ status: shoot.status })
+            .expect(200);
+        }
       }
     });
 
