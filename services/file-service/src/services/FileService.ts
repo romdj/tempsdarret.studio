@@ -138,6 +138,7 @@ export class FileService {
       ...(query.shootId && { shootId: query.shootId }),
       ...(query.type && { type: query.type }),
       ...(query.processingStatus && { processingStatus: query.processingStatus }),
+      ...(query.photographerOnly !== undefined && { photographerOnly: query.photographerOnly }),
       ...(query.tags?.length && { tags: { $in: query.tags } })
     };
 

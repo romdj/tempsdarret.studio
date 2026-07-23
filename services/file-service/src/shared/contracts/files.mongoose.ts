@@ -142,6 +142,12 @@ chunkSchema.pre('save', function(next) {
   next();
 });
 
+// Coerce a persisted timestamp (Date, or an ISO string from lean/plain docs)
+// into an ISO string, so transforms are robust to both shapes.
+function toISOString(value: Date | string): string {
+  return new Date(value).toISOString();
+}
+
 // Transform function to convert document to API model
 function transformFileDocument(doc: FileDocument): FileModel {
   return {
@@ -160,8 +166,8 @@ function transformFileDocument(doc: FileDocument): FileModel {
     photographerOnly: doc.photographerOnly,
     parentFileId: doc.parentFileId,
     sidecarType: doc.sidecarType,
-    createdAt: doc.createdAt.toISOString(),
-    updatedAt: doc.updatedAt.toISOString(),
+    createdAt: toISOString(doc.createdAt),
+    updatedAt: toISOString(doc.updatedAt),
   };
 }
 
@@ -172,10 +178,10 @@ function transformArchiveDocument(doc: ArchiveDocument): ArchiveModel {
     type: doc.type,
     size: doc.size,
     downloadUrl: doc.downloadUrl,
-    expiresAt: doc.expiresAt.toISOString(),
+    expiresAt: toISOString(doc.expiresAt),
     status: doc.status,
-    createdAt: doc.createdAt.toISOString(),
-    updatedAt: doc.updatedAt.toISOString(),
+    createdAt: toISOString(doc.createdAt),
+    updatedAt: toISOString(doc.updatedAt),
   };
 }
 

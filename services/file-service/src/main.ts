@@ -3,10 +3,10 @@
  * Implements ADR-026/027 file storage and download requirements
  */
 
-import Fastify, { FastifyInstance } from 'fastify';
-import multipart from '@fastify/multipart';
+import { FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
 import { config } from './config/index.js';
+import { createServer } from './server.js';
 import { FileHandlers } from './handlers/FileHandlers.js';
 import { FileService } from './services/FileService.js';
 import { StorageService } from './services/StorageService.js';
@@ -33,26 +33,6 @@ class MockEventProducer {
     // eslint-disable-next-line no-console
     console.log(`[EVENT] ${topic}:${key}`, { type: value.eventType, headers });
   }
-}
-
-async function createServer(): Promise<FastifyInstance> {
-  const fastify = Fastify({
-    logger: true,
-    bodyLimit: 1024 * 1024 * 1024, // 1GB for large file uploads
-  });
-
-  // Register multipart plugin for file uploads
-  await fastify.register(multipart, {
-    limits: {
-      fieldNameSize: 100,
-      fieldSize: 1024 * 1024, // 1MB for form fields
-      fields: 10,
-      fileSize: 1024 * 1024 * 1024, // 1GB for files
-      files: 10,
-    },
-  });
-
-  return fastify;
 }
 
 async function connectDatabase(): Promise<{

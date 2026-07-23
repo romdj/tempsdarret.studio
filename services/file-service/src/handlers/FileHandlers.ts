@@ -42,7 +42,7 @@ export class FileHandlers {
     try {
       const { file, shootId, tags } = request.body;
 
-      if (!file.data) {
+      if (!file?.data) {
         return {
           success: false,
           error: {

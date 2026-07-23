@@ -45,6 +45,7 @@ export interface FileQuery {
   shootId?: string;
   type?: FileType;
   processingStatus?: ProcessingStatus;
+  photographerOnly?: boolean;
   tags?: string[];
   page?: number;
   limit?: number;

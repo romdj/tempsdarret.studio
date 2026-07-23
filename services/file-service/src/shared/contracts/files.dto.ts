@@ -94,7 +94,7 @@ export function validateCreateFileDTO(dto: Partial<CreateFileDTO>): dto is Creat
     dto.size > 0 &&
     typeof dto.mimeType === 'string' &&
     typeof dto.storagePath === 'string' &&
-    ['jpeg', 'png', 'raw', 'video'].includes(dto.type as FileType)
+    ['jpeg', 'png', 'raw', 'video', 'sidecar', 'config'].includes(dto.type as FileType)
   );
 }
 
