@@ -1,15 +1,17 @@
 #!/bin/sh
 # Pre-push quality gates — mirror CI's "Quality • Lint & Type Check" + unit tests.
 #
-# Build the workspace libraries FIRST: the type-aware lint rules and tsc resolve
-# @tempsdarret/* through the compiled dist/, so a STALE local dist/ shadows the
-# current source and makes local lint/type-check diverge from CI (which always
-# builds from a clean checkout). Rebuilding first keeps this gate equivalent to CI.
+# Clean + rebuild the workspace libraries FIRST: the type-aware lint rules and tsc
+# resolve @tempsdarret/* through the compiled dist/, so a STALE or orphaned local
+# dist/ shadows current source and makes local lint/type-check diverge from CI
+# (which always builds from a clean checkout). A plain rebuild can leave orphaned
+# artifacts, so we clean the lib dist first — keeping this gate equivalent to CI.
 
 echo "🧪 Running pre-push quality checks..."
 
-# 1. Build workspace libraries (refresh dist so lint/type-check see current types)
-echo "🔨 Step 1/4: Building workspace libraries..."
+# 1. Clean + rebuild workspace libraries (dist/ must reflect CURRENT source)
+echo "🔨 Step 1/4: Clean + rebuild workspace libraries..."
+rm -rf packages/models/dist packages/models/tsp-output packages/shared/dist
 npm run build || {
   echo "❌ Build failed! Fix errors before pushing."
   exit 1
