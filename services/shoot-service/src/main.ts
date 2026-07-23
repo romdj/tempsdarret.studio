@@ -1,53 +1,42 @@
-import Fastify from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { Kafka } from 'kafkajs';
 import { appConfig } from './config/app.config';
 import { dbConnection } from './config/database';
 import { EventPublisher } from './shared/messaging';
 import { ShootService } from './services/shoot.service';
-import { ShootHandlers } from './handlers/shoot.handlers';
 import { ShootRepository } from './persistence/shoot.repository';
 import { ShootCreatedPublisher } from './events/publishers/shoot-created.publisher';
-import { registerShootRoutes } from './handlers/shoot.routes';
+import { createServer } from './server';
+
+interface RuntimeConfig {
+  mongoUri: string;
+  kafkaBrokers: string[];
+  port: number;
+}
 
 class ShootServiceApp {
-  private readonly fastify: ReturnType<typeof Fastify>;
-  private readonly kafka: Kafka;
-  private readonly eventPublisher: EventPublisher;
-
-  constructor() {
-    this.fastify = Fastify({ logger: true });
-    
-    this.kafka = new Kafka({
-      clientId: 'shoot-service',
-      brokers: appConfig.kafkaBrokers,
-    });
-    
-    this.eventPublisher = new EventPublisher(this.kafka);
-  }
+  private fastify: FastifyInstance | undefined;
+  private eventPublisher: EventPublisher | undefined;
 
   async start(): Promise<void> {
+    const config = this.resolveConfig();
     try {
-      // Connect to MongoDB
-      await dbConnection.connect({
-        uri: appConfig.mongoUri
-      });
+      await dbConnection.connect({ uri: config.mongoUri });
 
-      // Connect to Kafka
+      const kafka = new Kafka({ clientId: 'shoot-service', brokers: config.kafkaBrokers });
+      this.eventPublisher = new EventPublisher(kafka);
       await this.eventPublisher.connect();
 
-      // Setup dependencies following functional structure
-      const shootRepository = new ShootRepository();
-      const shootCreatedPublisher = new ShootCreatedPublisher(this.eventPublisher);
-      const shootService = new ShootService(shootRepository, shootCreatedPublisher);
-      const shootHandlers = new ShootHandlers(shootService);
+      const shootService = new ShootService(
+        new ShootRepository(),
+        new ShootCreatedPublisher(this.eventPublisher)
+      );
 
-      // Register routes
-      registerShootRoutes(this.fastify, shootHandlers);
+      this.fastify = await createServer({ logger: true, shootService });
 
-      // Start server
-      await this.fastify.listen({ port: appConfig.port, host: '0.0.0.0' });
+      await this.fastify.listen({ port: config.port, host: '0.0.0.0' });
       // eslint-disable-next-line no-console
-      console.log(`Shoot Service running on port ${appConfig.port}`);
+      console.log(`Shoot Service running on port ${config.port}`);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to start Shoot Service:', error);
@@ -57,26 +46,42 @@ class ShootServiceApp {
 
   async stop(): Promise<void> {
     await dbConnection.disconnect();
-    await this.eventPublisher.disconnect();
-    await this.fastify.close();
+    await this.eventPublisher?.disconnect();
+    await this.fastify?.close();
   }
 
-  getServer(): ReturnType<typeof Fastify> {
+  getServer(): FastifyInstance {
+    if (!this.fastify) {
+      throw new Error('Server has not been started');
+    }
     return this.fastify;
+  }
+
+  // Resolved at start time so runtime env overrides (used by component tests to
+  // point at ephemeral containers) take effect after construction.
+  private resolveConfig(): RuntimeConfig {
+    return {
+      mongoUri: process.env['MONGO_URI'] ?? appConfig.mongoUri,
+      kafkaBrokers: process.env['KAFKA_BROKERS']?.split(',') ?? appConfig.kafkaBrokers,
+      port: process.env['PORT'] ? Number(process.env['PORT']) : appConfig.port
+    };
   }
 }
 
-// Start service (this module is the service entrypoint)
-const app = new ShootServiceApp();
+// Start service when run as the entrypoint (not when imported by tests).
+if (process.env['NODE_ENV'] !== 'test') {
+  const app = new ShootServiceApp();
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  // eslint-disable-next-line no-console
-  console.log('Shutting down Shoot Service...');
-  void app.stop().then(() => process.exit(0));
-});
+  process.on('SIGINT', () => {
+    // eslint-disable-next-line no-console
+    console.log('Shutting down Shoot Service...');
+    void app.stop().then(() => process.exit(0));
+  });
 
-// eslint-disable-next-line no-console
-app.start().catch(console.error);
+  app.start().catch((error) => {
+    // eslint-disable-next-line no-console
+    console.error(error);
+  });
+}
 
 export { ShootServiceApp };

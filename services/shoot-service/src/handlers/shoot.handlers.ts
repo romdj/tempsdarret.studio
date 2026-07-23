@@ -117,20 +117,12 @@ export class ShootHandlers {
     reply: FastifyReply
   ): Promise<void> {
     try {
-      const { shoots, total } = await this.shootService.listShoots(request.query);
-
-      const { page, limit } = request.query;
-      const pageLimit = limit ?? 20;
-      const totalPages = Math.ceil(total / pageLimit);
+      const { shoots, total, page, limit, totalPages } =
+        await this.shootService.listShoots(request.query);
 
       reply.send({
         data: shoots,
-        meta: {
-          page: page ?? 1,
-          limit: pageLimit,
-          total,
-          totalPages
-        }
+        meta: { page, limit, total, totalPages }
       });
     } catch (error) {
       if (error instanceof ZodError) {

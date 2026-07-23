@@ -42,15 +42,24 @@ export class ShootService {
     return updatedShoot ? updatedShoot.toJSON() as Shoot : null;
   }
 
-  async listShoots(query: ShootQuery): Promise<{ shoots: Shoot[], total: number }> {
-    // Validate query parameters
+  async listShoots(query: ShootQuery): Promise<{
+    shoots: Shoot[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    // Validate query parameters (also resolves paging defaults)
     const validatedQuery = ShootQuerySchema.parse(query);
-    
+
     const { shoots, total } = await this.shootRepository.findMany(validatedQuery);
 
     return {
       shoots: shoots.map(shoot => shoot.toJSON() as Shoot),
-      total
+      total,
+      page: validatedQuery.page,
+      limit: validatedQuery.limit,
+      totalPages: Math.ceil(total / validatedQuery.limit)
     };
   }
 

@@ -6,7 +6,16 @@ export interface DomainEvent {
   eventType: string;
 }
 
-export class EventPublisher {
+/**
+ * The publishing capability the domain depends on. Keeping it an abstraction
+ * lets the transport (Kafka) be swapped for a no-op in tests without touching
+ * callers (Dependency Inversion).
+ */
+export interface EventPublisherPort {
+  publish(topic: string, event: DomainEvent, key?: string): Promise<void>;
+}
+
+export class EventPublisher implements EventPublisherPort {
   private readonly producer: Producer;
 
   constructor(kafka: Kafka) {

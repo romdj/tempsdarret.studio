@@ -59,6 +59,14 @@ const shootSchema = new Schema<IShootDocument>({
       const result = ret as Record<string, unknown>;
       delete result['_id'];
       delete result['__v'];
+      // Absent optional fields are stored as null; expose them as absent so the
+      // serialized shoot matches the (optional, never-null) Shoot contract.
+      if (result['scheduledDate'] === null) {
+        delete result['scheduledDate'];
+      }
+      if (result['location'] === null) {
+        delete result['location'];
+      }
       return result;
     }
   }

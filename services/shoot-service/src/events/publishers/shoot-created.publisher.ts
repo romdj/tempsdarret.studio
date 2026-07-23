@@ -1,10 +1,10 @@
-import { EventPublisher } from '../../shared/messaging';
+import { EventPublisherPort } from '../../shared/messaging';
 import { ShootCreatedPayload, SHOOT_EVENT_TYPES } from '../../shared/contracts/shoots.events';
 import { generateEventId } from '../../shared/utils/id';
 import { IShootDocument } from '../../shared/contracts/shoots.mongoose';
 
 export class ShootCreatedPublisher {
-  constructor(private readonly eventPublisher: EventPublisher) {}
+  constructor(private readonly eventPublisher: EventPublisherPort) {}
 
   async publish(shoot: IShootDocument): Promise<void> {
     const event: ShootCreatedPayload = {
