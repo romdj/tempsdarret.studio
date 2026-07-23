@@ -358,6 +358,80 @@ jobs:
 
 
   # ==========================================================================
+  # 🎬 END-TO-END TESTS (In-process event flows)
+  # ==========================================================================
+
+  e2e-tests:
+    name: 🎬 E2E • In-Process Flows
+    runs-on: ubuntu-latest
+    needs: build-and-unit-test
+
+    services:
+      mongodb:
+        image: mongo:7
+        env:
+          MONGO_INITDB_ROOT_USERNAME: test
+          MONGO_INITDB_ROOT_PASSWORD: test
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})' --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.6.0
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+        ports:
+          - 2181:2181
+
+      kafka:
+        image: confluentinc/cp-kafka:7.6.0
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+        ports:
+          - 9092:9092
+        options: >-
+          --health-cmd "kafka-topics --bootstrap-server localhost:9092 --list"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run in-process E2E flows
+        run: cd services/common/tests && pnpm run test:e2e:inprocess
+        env:
+          NODE_ENV: test
+          E2E_MONGO_URI: mongodb://test:test@localhost:27017/tempsdarret-e2e?authSource=admin
+          E2E_KAFKA_BROKERS: localhost:9092
+
+
+  # ==========================================================================
   # 📊 CODE COVERAGE (Aggregated)
   # ==========================================================================
 
@@ -462,6 +536,7 @@ jobs:
       - component-tests
       - integration-tests
       - contract-tests
+      - e2e-tests
       - coverage
       - security-audit
     if: always()
@@ -477,6 +552,7 @@ jobs:
           echo "Component Tests: ${{ needs.component-tests.result }}"
           echo "Integration Tests: ${{ needs.integration-tests.result }}"
           echo "Contract Tests: ${{ needs.contract-tests.result }}"
+          echo "E2E Tests: ${{ needs.e2e-tests.result }}"
           echo "Coverage: ${{ needs.coverage.result }}"
           echo "Security: ${{ needs.security-audit.result }}"
           echo "========================================="
@@ -500,6 +576,10 @@ jobs:
           fi
           if [ "${{ needs.contract-tests.result }}" != "success" ]; then
             echo "❌ Contract tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.e2e-tests.result }}" != "success" ]; then
+            echo "❌ E2E tests failed"
             exit 1
           fi
 
