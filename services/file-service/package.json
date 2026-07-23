@@ -20,7 +20,7 @@
     "test:contract": "vitest run tests/contract --passWithNoTests"
   },
   "dependencies": {
-    "@fastify/multipart": "^8.0.0",
+    "@fastify/multipart": "^9.0.0",
     "@tempsdarret/events": "workspace:*",
     "archiver": "^7.0.1",
     "sharp": "^0.33.0",
