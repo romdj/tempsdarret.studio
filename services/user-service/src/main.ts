@@ -1,32 +1,31 @@
-import fastify from 'fastify';
 import mongoose from 'mongoose';
 import { Kafka } from 'kafkajs';
 import { appConfig } from './config/app.config';
-import { UserHandlers } from './handlers/user.handlers';
 import { UserService, shootCreatedEventSchema } from './services/user.service';
 import { UserRepository } from './persistence/user.repository';
 import { KafkaEventPublisher } from './shared/messaging/event-publisher';
 import { KafkaConsumer, type EventHandler } from '@tempsdarret/shared/messaging';
 import { ShootCreatedConsumer } from './events/consumers/shoot-created.consumer';
-import { registerUserRoutes } from './handlers/user.routes';
+import { createServer } from './server';
 
 async function start(): Promise<void> {
-  const app = fastify({ logger: true });
   const kafka = new Kafka({ clientId: appConfig.serviceName, brokers: appConfig.kafkaBrokers });
   const eventPublisher = new KafkaEventPublisher(kafka);
 
   try {
     // Infrastructure
-    await mongoose.connect(appConfig.mongoUri);
     await eventPublisher.connect();
 
     // Dependencies
     const userRepository = new UserRepository();
     const userService = new UserService(userRepository, eventPublisher);
-    const userHandlers = new UserHandlers(userService);
 
-    // HTTP routes
-    registerUserRoutes(app, userHandlers);
+    // HTTP app (owns the MongoDB connection via mongoUrl)
+    const app = await createServer({
+      logger: true,
+      mongoUrl: appConfig.mongoUri,
+      userService
+    });
 
     // Consume shoot.created → create/verify client user (sequence diagram step 2).
     // The event is validated at the boundary (schema.parse) before handling.

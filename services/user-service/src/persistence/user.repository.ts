@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { User, CreateUserRequest, UpdateUserRequest } from '../shared/contracts/users.dto';
 import { UserModel, UserDocument } from '../shared/contracts/users.mongoose';
 
@@ -23,6 +24,12 @@ export class UserRepository {
   }
 
   async findById(id: string): Promise<User | null> {
+    // A malformed id is simply an id no user can have — treat it as not found
+    // rather than letting Mongoose throw a CastError.
+    if (!Types.ObjectId.isValid(id)) {
+      return null;
+    }
+
     const user = await UserModel.findById(id);
     return user ? this.documentToUser(user) : null;
   }
