@@ -17,9 +17,13 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
  * - Featured images selection
  */
 // QUARANTINED: targets portfolio-curation flows/endpoints that are not
-// implemented yet. Re-enable (describe.skip → describe) once the portfolio
-// curation + publication endpoints exist and this suite is aligned to what the
-// services actually emit.
+// implemented yet, and it drives the services through an API gateway that does
+// not exist. Re-enable once the portfolio curation + publication endpoints
+// exist and this suite is ported to the in-process harness pattern proven in
+// `e2e-inprocess/01-shoot-to-invitation.e2e.test.ts` (boot the services via
+// their exported `startService`, drive them over a real Kafka + Mongo).
+// BACKLOG: port flow 02 to the in-process E2E harness once portfolio publish +
+// file surfaces are built.
 describe.skip('E2E: Portfolio Curation Workflow', () => {
   let shootServiceUrl: string;
   let fileServiceUrl: string;

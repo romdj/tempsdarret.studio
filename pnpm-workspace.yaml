@@ -3,4 +3,5 @@ packages:
   - 'api-gateway'
   - 'packages/*'
   - 'services/*'
+  - 'services/common/tests'
   - 'dev-tools'

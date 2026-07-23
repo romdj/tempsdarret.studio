@@ -19,8 +19,12 @@ import { describe, it, expect, beforeAll } from 'vitest';
  */
 // QUARANTINED: targets gallery/file endpoints that are not implemented yet and
 // has stale config (e.g. fileServiceUrl points at port 3003 = invitation-service,
-// not 3006). Re-enable (describe.skip → describe) once the gallery access + file
-// download flow exists and the ports/endpoints are corrected.
+// not 3006), and it drives the services through an API gateway that does not
+// exist. Re-enable once the gallery access + file download flow exists, and port
+// it to the in-process harness pattern proven in
+// `e2e-inprocess/01-shoot-to-invitation.e2e.test.ts`.
+// BACKLOG: port flow 03 to the in-process E2E harness once magic-link gallery
+// access + file-service download surfaces are built.
 describe.skip('E2E: Client Gallery Access Flow', () => {
   let shootServiceUrl: string;
   let inviteServiceUrl: string;
