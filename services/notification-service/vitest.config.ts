@@ -3,13 +3,11 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     environment: 'node',
-    // Explicit allowlist: tests migrated from Jest to Vitest so far.
-    // TODO(vitest-migration): port the remaining Jest tests (EmailRepository —
-    // ~490 lines + resend.mock, TemplateService, component/integration/
-    // performance) which still use the jest.* API on the removed Jest runner.
-    include: [
-      'tests/unit/services/EmailService.test.ts',
-      'tests/unit/events/NotificationEventHandler.test.ts'
-    ]
+    include: ['src/**/*.test.ts', 'tests/**/*.test.ts']
+    // Note: performance tests (tests/performance/**) are timing-based and
+    // intentionally excluded from the default gate (pre-commit/pre-push/CI)
+    // via `--exclude` on the `test`/`test:unit` scripts below, not here, so
+    // `pnpm test:perf` (plain `vitest run tests/performance`) can still run
+    // them on demand.
   }
 });

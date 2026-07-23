@@ -3,6 +3,7 @@
  * Common testing utilities for notification service tests
  */
 
+import { vi, type MockInstance } from 'vitest';
 import {
   NotificationMessage,
   NotificationTemplate,
@@ -185,12 +186,12 @@ export async function retry<T>(
 export function createMethodSpy<T extends object>(
   target: T,
   methodName: keyof T
-): jest.SpyInstance & { 
+): MockInstance & {
   getCallDetails: () => Array<{ args: any[], timestamp: number, result?: any, error?: Error }>
 } {
   const callDetails: Array<{ args: any[], timestamp: number, result?: any, error?: Error }> = [];
-  
-  const spy = jest.spyOn(target, methodName as any).mockImplementation(async (...args: any[]) => {
+
+  const spy = vi.spyOn(target, methodName as any).mockImplementation(async (...args: any[]) => {
     const callStart = Date.now();
     const detail = { args, timestamp: callStart };
     
@@ -254,10 +255,10 @@ export class ConsoleMock {
   }
 
   start(): void {
-    console.log = jest.fn((...args) => this.captureLog('log', args));
-    console.error = jest.fn((...args) => this.captureLog('error', args));
-    console.warn = jest.fn((...args) => this.captureLog('warn', args));
-    console.info = jest.fn((...args) => this.captureLog('info', args));
+    console.log = vi.fn((...args) => this.captureLog('log', args));
+    console.error = vi.fn((...args) => this.captureLog('error', args));
+    console.warn = vi.fn((...args) => this.captureLog('warn', args));
+    console.info = vi.fn((...args) => this.captureLog('info', args));
   }
 
   stop(): void {

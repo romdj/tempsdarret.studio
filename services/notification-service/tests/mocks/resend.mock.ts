@@ -3,6 +3,7 @@
  * Mock implementation of Resend for testing email functionality
  */
 
+import { vi } from 'vitest';
 import { SendResult } from '../../src/shared/contracts/notifications.types.js';
 
 export interface MockResendResponse {
@@ -21,7 +22,7 @@ export class MockResend {
   private delay: number = 0;
 
   emails = {
-    send: jest.fn(async (emailData: any): Promise<MockResendResponse> => {
+    send: vi.fn(async (emailData: any): Promise<MockResendResponse> => {
       // Simulate network delay if configured
       if (this.delay > 0) {
         await new Promise(resolve => setTimeout(resolve, this.delay));
@@ -65,7 +66,7 @@ export class MockResend {
       };
     }),
 
-    get: jest.fn(async (messageId: string): Promise<MockResendResponse> => {
+    get: vi.fn(async (messageId: string): Promise<MockResendResponse> => {
       const status = this.emailStatuses.get(messageId);
       
       if (!status) {
@@ -87,7 +88,7 @@ export class MockResend {
   };
 
   domains = {
-    list: jest.fn(async () => {
+    list: vi.fn(async () => {
       if (this.shouldFail) {
         return {
           error: {
@@ -154,7 +155,7 @@ export class MockResend {
     this.delay = 0;
     
     // Reset all mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   }
 
   // Simulate webhook events for testing
@@ -196,7 +197,7 @@ export class MockResend {
 export const mockResend = new MockResend();
 
 // Mock the Resend constructor
-export const Resend = jest.fn().mockImplementation(() => mockResend);
+export const Resend = vi.fn().mockImplementation(() => mockResend);
 
 // Helper functions for test setup
 export const setupResendMock = {

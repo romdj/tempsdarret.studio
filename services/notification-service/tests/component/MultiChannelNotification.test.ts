@@ -3,70 +3,66 @@
  * Testing the orchestration of notifications across multiple channels
  */
 
-import {
-  MultiChannelNotificationService,
-  BaseNotificationRepository
-} from '../../src/services/repositories/NotificationRepository.js';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import type { MockedObject } from 'vitest';
+import { MultiChannelNotificationService } from '../../src/services/repositories/NotificationRepository.js';
 import { EmailRepository } from '../../src/services/repositories/EmailRepository.js';
 import { SlackRepository } from '../../src/services/repositories/SlackRepository.js';
 import { SmsRepository } from '../../src/services/repositories/SmsRepository.js';
 import {
   NotificationMessage,
-  NotificationChannel,
-  TemplateType,
-  SendResult,
-  DeliveryStatus
+  NotificationChannel
 } from '../../src/shared/contracts/notifications.types.js';
 import { mockResend, setupResendMock } from '../mocks/resend.mock.js';
 
 // Mock all repository implementations
-jest.mock('../../src/services/repositories/EmailRepository.js');
-jest.mock('../../src/services/repositories/SlackRepository.js');
-jest.mock('../../src/services/repositories/SmsRepository.js');
-jest.mock('resend', () => ({
-  Resend: jest.fn().mockImplementation(() => mockResend)
+vi.mock('../../src/services/repositories/EmailRepository.js');
+vi.mock('../../src/services/repositories/SlackRepository.js');
+vi.mock('../../src/services/repositories/SmsRepository.js');
+vi.mock('resend', () => ({
+  Resend: vi.fn().mockImplementation(() => mockResend)
 }));
 
 describe('MultiChannelNotificationService', () => {
   let multiChannelService: MultiChannelNotificationService;
-  let mockEmailRepo: jest.Mocked<EmailRepository>;
-  let mockSlackRepo: jest.Mocked<SlackRepository>;
-  let mockSmsRepo: jest.Mocked<SmsRepository>;
+  let mockEmailRepo: MockedObject<EmailRepository>;
+  let mockSlackRepo: MockedObject<SlackRepository>;
+  let mockSmsRepo: MockedObject<SmsRepository>;
 
   beforeEach(() => {
     // Create factory mock
     const mockFactory = {
-      getRepository: jest.fn(),
-      getSupportedChannels: jest.fn().mockReturnValue(['email', 'slack', 'sms']),
+      getRepository: vi.fn(),
+      getSupportedChannels: vi.fn().mockReturnValue(['email', 'slack', 'sms']),
     };
 
     multiChannelService = new MultiChannelNotificationService(mockFactory);
 
     // Create mocked repositories
     mockEmailRepo = {
-      send: jest.fn(),
-      getDeliveryStatus: jest.fn(),
-      updateDeliveryStatus: jest.fn(),
-      getChannel: jest.fn().mockReturnValue('email'),
-      validateConfiguration: jest.fn(),
-      handleWebhook: jest.fn(),
-      getStats: jest.fn(),
+      send: vi.fn(),
+      getDeliveryStatus: vi.fn(),
+      updateDeliveryStatus: vi.fn(),
+      getChannel: vi.fn().mockReturnValue('email'),
+      validateConfiguration: vi.fn(),
+      handleWebhook: vi.fn(),
+      getStats: vi.fn(),
     } as any;
 
     mockSlackRepo = {
-      send: jest.fn(),
-      getDeliveryStatus: jest.fn(),
-      updateDeliveryStatus: jest.fn(),
-      getChannel: jest.fn().mockReturnValue('slack'),
-      sendToChannel: jest.fn(),
-      sendDirectMessage: jest.fn(),
+      send: vi.fn(),
+      getDeliveryStatus: vi.fn(),
+      updateDeliveryStatus: vi.fn(),
+      getChannel: vi.fn().mockReturnValue('slack'),
+      sendToChannel: vi.fn(),
+      sendDirectMessage: vi.fn(),
     } as any;
 
     mockSmsRepo = {
-      send: jest.fn(),
-      getDeliveryStatus: jest.fn(),
-      updateDeliveryStatus: jest.fn(),
-      getChannel: jest.fn().mockReturnValue('sms'),
+      send: vi.fn(),
+      getDeliveryStatus: vi.fn(),
+      updateDeliveryStatus: vi.fn(),
+      getChannel: vi.fn().mockReturnValue('sms'),
     } as any;
 
     // Register repositories
@@ -88,11 +84,11 @@ describe('MultiChannelNotificationService', () => {
     });
 
     it('should log registration', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
       
       const newService = new MultiChannelNotificationService({
-        getRepository: jest.fn(),
-        getSupportedChannels: jest.fn(),
+        getRepository: vi.fn(),
+        getSupportedChannels: vi.fn(),
       });
       
       newService.registerRepository('whatsapp', mockSmsRepo);
@@ -363,7 +359,7 @@ describe('MultiChannelNotificationService', () => {
     });
 
     it('should log health check failures', async () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation();
       
       mockEmailRepo.getDeliveryStatus.mockRejectedValueOnce(new Error('Connection failed'));
       
@@ -456,7 +452,10 @@ describe('MultiChannelNotificationService', () => {
     it('should handle malformed messages', async () => {
       const malformedMessage = {
         id: 'malformed',
-        // Missing required fields
+        channel: 'email',
+        // Missing recipient/content/etc — the repository is expected to
+        // reject; the service should still route by channel and surface a
+        // graceful failure.
       } as NotificationMessage;
 
       mockEmailRepo.send.mockRejectedValueOnce(new Error('Invalid message format'));

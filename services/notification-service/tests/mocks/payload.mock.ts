@@ -3,7 +3,7 @@
  * Provides mock implementation of Payload CMS for isolated testing
  */
 
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { NotificationTemplate, TemplateType, NotificationChannel } from '../../src/shared/contracts/notifications.types.js';
 
 export interface MockPayloadTemplate {
@@ -37,7 +37,7 @@ class MockPayloadCMS {
   private variables: Map<string, any> = new Map();
   
   // Mock Payload operations
-  find = jest.fn(async ({ collection, where, sort, limit }: any) => {
+  find = vi.fn(async ({ collection, where, sort, limit }: any) => {
     if (collection === 'notification-templates') {
       let templates = Array.from(this.templates.values());
       
@@ -84,7 +84,7 @@ class MockPayloadCMS {
     return { docs: [] };
   });
 
-  create = jest.fn(async ({ collection, data }: any) => {
+  create = vi.fn(async ({ collection, data }: any) => {
     const id = `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const doc = { id, ...data, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
     
@@ -99,7 +99,7 @@ class MockPayloadCMS {
     return doc;
   });
 
-  update = jest.fn(async ({ collection, id, data }: any) => {
+  update = vi.fn(async ({ collection, id, data }: any) => {
     if (collection === 'notification-templates' && this.templates.has(id)) {
       const existing = this.templates.get(id)!;
       const updated = { ...existing, ...data, updatedAt: new Date().toISOString() };
@@ -110,22 +110,22 @@ class MockPayloadCMS {
     throw new Error('Document not found');
   });
 
-  findByID = jest.fn(async ({ collection, id }: any) => {
+  findByID = vi.fn(async ({ collection, id }: any) => {
     if (collection === 'notification-templates') {
       return this.templates.get(id) || null;
     }
     return null;
   });
 
-  init = jest.fn(async () => {
+  init = vi.fn(async () => {
     console.log('Mock Payload CMS initialized');
   });
 
   logger = {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
   };
 
   // Mock data management
@@ -171,7 +171,7 @@ class MockPayloadCMS {
     this.templates.clear();
     this.channels.clear();
     this.variables.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   }
 
   // Default test templates
@@ -188,7 +188,7 @@ Your photos from {{eventName}} are ready.
 Access: {{magicLinkUrl}}
 Expires: {{formatDate expirationDate}}
 Best regards, {{photographerName}}`,
-        html: `<h1>Photos Ready!</h1><p>Hi {{clientName}}, your {{eventName}} photos are ready!</p>`,
+        html: `<style>.event{font-weight:bold;}</style><h1>Hi {{clientName}}</h1><p>Your <span class="event">{{eventName}}</span> photos are ready.</p><p><a href="{{magicLinkUrl}}">Access your gallery</a></p><p>Expires: {{formatDate expirationDate}}</p><p>Best regards, {{photographerName}}</p>`,
       },
       variables: [
         { name: 'clientName', description: 'Client name', type: 'string', required: true },
@@ -205,15 +205,46 @@ Best regards, {{photographerName}}`,
       type: 'photos-ready',
       channel: 'email',
       templates: {
-        subject: '📸 Your {{eventName}} photos are ready!',
+        subject: '📸 Your {{eventType}} photos are ready!',
         text: `Hello {{clientName}}, your {{totalPhotoCount}} photos are ready at {{galleryUrl}}`,
-        html: `<h1>Photos Ready!</h1><p>{{totalPhotoCount}} photos available</p>`,
+        html: `<h1>Photos Ready!</h1><p>{{totalPhotoCount}} photos available at {{galleryUrl}}</p>`,
       },
       variables: [
         { name: 'clientName', description: 'Client name', type: 'string', required: true },
         { name: 'eventName', description: 'Event name', type: 'string', required: true },
         { name: 'totalPhotoCount', description: 'Photo count', type: 'number', required: true },
         { name: 'galleryUrl', description: 'Gallery URL', type: 'url', required: true },
+      ],
+    });
+
+    // Slack/SMS templates so `getAllTemplates()` (no channel filter) exercises
+    // every channel, matching the multi-channel notification feature.
+    this.seedMockTemplate({
+      id: 'magic-link-slack',
+      name: 'Magic Link Slack',
+      type: 'magic-link',
+      channel: 'slack',
+      templates: {
+        text: 'Hi {{clientName}}, your {{eventName}} photos are ready: {{magicLinkUrl}}',
+      },
+      variables: [
+        { name: 'clientName', description: 'Client name', type: 'string', required: true },
+        { name: 'eventName', description: 'Event name', type: 'string', required: true },
+        { name: 'magicLinkUrl', description: 'Gallery URL', type: 'url', required: true },
+      ],
+    });
+
+    this.seedMockTemplate({
+      id: 'magic-link-sms',
+      name: 'Magic Link SMS',
+      type: 'magic-link',
+      channel: 'sms',
+      templates: {
+        text: 'Hi {{clientName}}, access your photos: {{magicLinkUrl}}',
+      },
+      variables: [
+        { name: 'clientName', description: 'Client name', type: 'string', required: true },
+        { name: 'magicLinkUrl', description: 'Gallery URL', type: 'url', required: true },
       ],
     });
   }

@@ -3,18 +3,29 @@
  * Testing template compilation, rendering, and Handlebars integration
  */
 
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TemplateService } from '../../../src/services/TemplateService.js';
 import {
   NotificationTemplate,
-  RenderedTemplate,
   NotificationChannel,
   TemplateType
 } from '../../../src/shared/contracts/notifications.types.js';
+import { mockPayload, setupPayloadMock } from '../../mocks/payload.mock.js';
+
+// TemplateService sources templates from Payload CMS via a lazy dynamic
+// `import('payload')`; mock that module so getTemplate()/getAllTemplates()
+// resolve seeded fixture templates instead of touching a real Payload/Mongo
+// connection.
+vi.mock('payload', () => ({
+  default: mockPayload
+}));
 
 describe('TemplateService', () => {
   let templateService: TemplateService;
 
   beforeEach(() => {
+    setupPayloadMock.reset();
+    setupPayloadMock.seedDefaults();
     templateService = new TemplateService();
   });
 
@@ -29,7 +40,7 @@ describe('TemplateService', () => {
       expect(stats.keys).toEqual([]);
     });
 
-    it('should register Handlebars helpers', () => {
+    it('should register Handlebars helpers', async () => {
       // Test that helpers are available by using them
       const template: NotificationTemplate = {
         id: 'test-template',
@@ -51,10 +62,9 @@ describe('TemplateService', () => {
         testDate: new Date('2024-09-15T10:30:00Z'),
       };
 
-      // Should not throw when using helper
-      expect(async () => {
-        await templateService.renderTemplate(template, variables);
-      }).not.toThrow();
+      // Registered helper (formatDate) should render without throwing
+      const rendered = await templateService.renderTemplate(template, variables);
+      expect(rendered.text).toContain('Date: ');
     });
   });
 
@@ -128,7 +138,9 @@ describe('TemplateService', () => {
     it('should render text template correctly', async () => {
       const rendered = await templateService.renderTemplate(magicLinkTemplate, templateVariables);
       
-      expect(rendered).toHaveRenderedTemplate();
+      expect(typeof rendered.text).toBe('string');
+      expect(rendered.text.length).toBeGreaterThan(0);
+      expect(rendered.variables).toBeTypeOf('object');
       expect(rendered.text).toContain('John Smith');
       expect(rendered.text).toContain('Wedding Photography');
       expect(rendered.text).toContain('https://gallery.example.com/access/abc123');
@@ -211,16 +223,20 @@ describe('TemplateService', () => {
     });
 
     it('should cache compiled templates', async () => {
+      // Cache key is content-addressed (template id + updatedAt) so edits to
+      // a template invalidate the cache rather than reusing a stale compile.
+      const cacheKey = `${magicLinkTemplate.id}-${magicLinkTemplate.updatedAt.getTime()}`;
+
       // First render
       await templateService.renderTemplate(magicLinkTemplate, templateVariables);
-      
+
       const statsAfterFirst = templateService.getCacheStats();
       expect(statsAfterFirst.size).toBe(1);
-      expect(statsAfterFirst.keys).toContain('magic-link_email');
-      
+      expect(statsAfterFirst.keys).toContain(cacheKey);
+
       // Second render should use cache
       await templateService.renderTemplate(magicLinkTemplate, templateVariables);
-      
+
       const statsAfterSecond = templateService.getCacheStats();
       expect(statsAfterSecond.size).toBe(1); // No additional entries
     });
@@ -359,37 +375,51 @@ describe('TemplateService', () => {
   });
 
   describe('cache management', () => {
+    const magicLinkVariables = {
+      clientName: 'John',
+      eventName: 'Wedding',
+      magicLinkUrl: 'https://gallery.example.com/access/abc123',
+      expirationDate: '2024-09-22',
+      photographerName: 'Emma Photography',
+    };
+    const photosReadyVariables = {
+      clientName: 'John',
+      eventName: 'Wedding',
+      totalPhotoCount: 42,
+      galleryUrl: 'https://gallery.example.com/shoots/123',
+    };
+
     it('should clear cache correctly', async () => {
       const template = (await templateService.getTemplate('magic-link', 'email'))!;
-      await templateService.renderTemplate(template, {});
-      
+      await templateService.renderTemplate(template, magicLinkVariables);
+
       expect(templateService.getCacheStats().size).toBe(1);
-      
+
       templateService.clearCache();
-      
+
       expect(templateService.getCacheStats().size).toBe(0);
     });
 
     it('should track cache keys correctly', async () => {
       const template1 = (await templateService.getTemplate('magic-link', 'email'))!;
       const template2 = (await templateService.getTemplate('photos-ready', 'email'))!;
-      
-      await templateService.renderTemplate(template1, {});
-      await templateService.renderTemplate(template2, {});
-      
+
+      await templateService.renderTemplate(template1, magicLinkVariables);
+      await templateService.renderTemplate(template2, photosReadyVariables);
+
       const stats = templateService.getCacheStats();
       expect(stats.size).toBe(2);
-      expect(stats.keys).toContain('magic-link_email');
-      expect(stats.keys).toContain('photos-ready_email');
+      expect(stats.keys).toContain(`${template1.id}-${template1.updatedAt.getTime()}`);
+      expect(stats.keys).toContain(`${template2.id}-${template2.updatedAt.getTime()}`);
     });
 
     it('should reuse cache for same template type/channel', async () => {
       const template = (await templateService.getTemplate('magic-link', 'email'))!;
-      
+
       // Render same template with different variables
-      await templateService.renderTemplate(template, { clientName: 'John' });
-      await templateService.renderTemplate(template, { clientName: 'Jane' });
-      
+      await templateService.renderTemplate(template, { ...magicLinkVariables, clientName: 'John' });
+      await templateService.renderTemplate(template, { ...magicLinkVariables, clientName: 'Jane' });
+
       const stats = templateService.getCacheStats();
       expect(stats.size).toBe(1); // Only one cache entry
     });
@@ -427,20 +457,18 @@ describe('TemplateService', () => {
   });
 
   describe('error scenarios', () => {
-    it('should handle template rendering with missing required variables', async () => {
+    it('should reject rendering when required variables are missing', async () => {
       const template = (await templateService.getTemplate('magic-link', 'email'))!;
-      
-      // Provide minimal variables (missing some required ones)
+
+      // Missing eventName, magicLinkUrl, expirationDate, photographerName —
+      // all declared required on the magic-link template.
       const incompleteVariables = {
         clientName: 'John Smith',
-        // Missing eventName, magicLinkUrl, etc.
       };
 
-      const rendered = await templateService.renderTemplate(template, incompleteVariables);
-      
-      // Should still render but may have empty values where variables are missing
-      expect(rendered.text).toContain('John Smith');
-      expect(rendered.html).toBeDefined();
+      await expect(
+        templateService.renderTemplate(template, incompleteVariables)
+      ).rejects.toThrow(/Missing required variables/);
     });
 
     it('should handle malformed template gracefully', async () => {

@@ -3,23 +3,23 @@
  * Provides mock implementation of KafkaJS for event-driven testing
  */
 
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 
 class MockKafkaProducer {
-  connect = jest.fn(async () => {});
-  disconnect = jest.fn(async () => {});
-  send = jest.fn(async (record: any) => [{ partition: 0, errorCode: 0, offset: '1' }]);
+  connect = vi.fn(async () => {});
+  disconnect = vi.fn(async () => {});
+  send = vi.fn(async (record: any) => [{ partition: 0, errorCode: 0, offset: '1' }]);
 }
 
 class MockKafkaConsumer {
-  connect = jest.fn(async () => {});
-  disconnect = jest.fn(async () => {});
-  subscribe = jest.fn(async () => {});
-  run = jest.fn(async () => {});
-  commitOffsets = jest.fn(async () => {});
-  seek = jest.fn(async () => {});
-  pause = jest.fn(async () => {});
-  resume = jest.fn(async () => {});
+  connect = vi.fn(async () => {});
+  disconnect = vi.fn(async () => {});
+  subscribe = vi.fn(async () => {});
+  run = vi.fn(async () => {});
+  commitOffsets = vi.fn(async () => {});
+  seek = vi.fn(async () => {});
+  pause = vi.fn(async () => {});
+  resume = vi.fn(async () => {});
   
   private messageHandlers: Array<(payload: any) => Promise<void>> = [];
 
@@ -48,7 +48,7 @@ class MockKafkaConsumer {
   }
 
   // Override run to capture message handler
-  run = jest.fn(async ({ eachMessage }: any) => {
+  run = vi.fn(async ({ eachMessage }: any) => {
     if (eachMessage) {
       this.messageHandlers.push(eachMessage);
     }
@@ -56,17 +56,17 @@ class MockKafkaConsumer {
 }
 
 class MockKafkaAdmin {
-  connect = jest.fn(async () => {});
-  disconnect = jest.fn(async () => {});
-  createTopics = jest.fn(async () => true);
-  deleteTopics = jest.fn(async () => {});
-  listTopics = jest.fn(async () => ['test-topic']);
+  connect = vi.fn(async () => {});
+  disconnect = vi.fn(async () => {});
+  createTopics = vi.fn(async () => true);
+  deleteTopics = vi.fn(async () => {});
+  listTopics = vi.fn(async () => ['test-topic']);
 }
 
 class MockKafka {
-  producer = jest.fn(() => new MockKafkaProducer());
-  consumer = jest.fn(() => new MockKafkaConsumer());
-  admin = jest.fn(() => new MockKafkaAdmin());
+  producer = vi.fn(() => new MockKafkaProducer());
+  consumer = vi.fn(() => new MockKafkaConsumer());
+  admin = vi.fn(() => new MockKafkaAdmin());
   
   // Test helpers
   private producers: MockKafkaProducer[] = [];
@@ -74,13 +74,13 @@ class MockKafka {
 
   constructor() {
     // Override methods to track instances
-    this.producer = jest.fn(() => {
+    this.producer = vi.fn(() => {
       const producer = new MockKafkaProducer();
       this.producers.push(producer);
       return producer;
     });
 
-    this.consumer = jest.fn(() => {
+    this.consumer = vi.fn(() => {
       const consumer = new MockKafkaConsumer();
       this.consumers.push(consumer);
       return consumer;
@@ -107,7 +107,7 @@ class MockKafka {
   reset() {
     this.producers = [];
     this.consumers = [];
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   }
 }
 
@@ -116,7 +116,7 @@ export const mockKafka = new MockKafka();
 
 // Mock KafkaJS module
 export const mockKafkaJS = {
-  Kafka: jest.fn(() => mockKafka),
+  Kafka: vi.fn(() => mockKafka),
   logLevel: {
     ERROR: 1,
     WARN: 2,

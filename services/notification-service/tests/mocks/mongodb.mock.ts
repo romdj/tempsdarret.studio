@@ -3,7 +3,7 @@
  * Provides mock implementation of MongoDB operations for testing
  */
 
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 
 class MockCollection {
   private data: Map<string, any> = new Map();
@@ -13,14 +13,14 @@ class MockCollection {
     this.name = name;
   }
 
-  insertOne = jest.fn(async (doc: any) => {
+  insertOne = vi.fn(async (doc: any) => {
     const id = doc._id || `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const insertedDoc = { _id: id, ...doc };
     this.data.set(id, insertedDoc);
     return { insertedId: id, acknowledged: true };
   });
 
-  insertMany = jest.fn(async (docs: any[]) => {
+  insertMany = vi.fn(async (docs: any[]) => {
     const insertedIds: string[] = [];
     docs.forEach((doc, index) => {
       const id = doc._id || `mock_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`;
@@ -31,7 +31,7 @@ class MockCollection {
     return { insertedIds, acknowledged: true };
   });
 
-  findOne = jest.fn(async (filter: any = {}) => {
+  findOne = vi.fn(async (filter: any = {}) => {
     for (const [id, doc] of this.data.entries()) {
       if (this.matchesFilter(doc, filter)) {
         return doc;
@@ -40,7 +40,7 @@ class MockCollection {
     return null;
   });
 
-  find = jest.fn((filter: any = {}) => ({
+  find = vi.fn((filter: any = {}) => ({
     toArray: async () => {
       const results: any[] = [];
       for (const [id, doc] of this.data.entries()) {
@@ -50,12 +50,12 @@ class MockCollection {
       }
       return results;
     },
-    limit: jest.fn().mockReturnThis(),
-    sort: jest.fn().mockReturnThis(),
-    skip: jest.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    sort: vi.fn().mockReturnThis(),
+    skip: vi.fn().mockReturnThis(),
   }));
 
-  updateOne = jest.fn(async (filter: any, update: any) => {
+  updateOne = vi.fn(async (filter: any, update: any) => {
     for (const [id, doc] of this.data.entries()) {
       if (this.matchesFilter(doc, filter)) {
         const updatedDoc = { ...doc, ...update.$set };
@@ -66,7 +66,7 @@ class MockCollection {
     return { matchedCount: 0, modifiedCount: 0, acknowledged: true };
   });
 
-  updateMany = jest.fn(async (filter: any, update: any) => {
+  updateMany = vi.fn(async (filter: any, update: any) => {
     let matchedCount = 0;
     let modifiedCount = 0;
     
@@ -82,7 +82,7 @@ class MockCollection {
     return { matchedCount, modifiedCount, acknowledged: true };
   });
 
-  deleteOne = jest.fn(async (filter: any) => {
+  deleteOne = vi.fn(async (filter: any) => {
     for (const [id, doc] of this.data.entries()) {
       if (this.matchesFilter(doc, filter)) {
         this.data.delete(id);
@@ -92,7 +92,7 @@ class MockCollection {
     return { deletedCount: 0, acknowledged: true };
   });
 
-  deleteMany = jest.fn(async (filter: any = {}) => {
+  deleteMany = vi.fn(async (filter: any = {}) => {
     let deletedCount = 0;
     const toDelete: string[] = [];
     
@@ -107,7 +107,7 @@ class MockCollection {
     return { deletedCount, acknowledged: true };
   });
 
-  countDocuments = jest.fn(async (filter: any = {}) => {
+  countDocuments = vi.fn(async (filter: any = {}) => {
     let count = 0;
     for (const [id, doc] of this.data.entries()) {
       if (this.matchesFilter(doc, filter)) {
@@ -117,8 +117,8 @@ class MockCollection {
     return count;
   });
 
-  createIndex = jest.fn(async () => ({ acknowledged: true }));
-  dropIndex = jest.fn(async () => ({ acknowledged: true }));
+  createIndex = vi.fn(async () => ({ acknowledged: true }));
+  dropIndex = vi.fn(async () => ({ acknowledged: true }));
 
   // Helper methods
   private matchesFilter(doc: any, filter: any): boolean {
@@ -183,12 +183,12 @@ class MockMongoClient {
   private databases: Map<string, MockDatabase> = new Map();
   private connected = false;
 
-  connect = jest.fn(async () => {
+  connect = vi.fn(async () => {
     this.connected = true;
     return this;
   });
 
-  close = jest.fn(async () => {
+  close = vi.fn(async () => {
     this.connected = false;
   });
 
@@ -207,7 +207,7 @@ class MockMongoClient {
   reset() {
     this.databases.clear();
     this.connected = false;
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   }
 
   clearAllDatabases() {
@@ -224,8 +224,8 @@ export const mockMongoClient = new MockMongoClient();
 
 // Mock MongoDB module
 export const mockMongoDB = {
-  MongoClient: jest.fn(() => mockMongoClient),
-  ObjectId: jest.fn((id?: string) => ({
+  MongoClient: vi.fn(() => mockMongoClient),
+  ObjectId: vi.fn((id?: string) => ({
     toString: () => id || `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     toHexString: () => id || `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   })),

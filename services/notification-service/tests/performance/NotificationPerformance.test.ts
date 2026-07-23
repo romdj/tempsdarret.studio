@@ -3,11 +3,13 @@
  * Load testing and performance benchmarking for high-volume scenarios
  */
 
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TemplateService } from '../../src/services/TemplateService.js';
 import { EmailRepository } from '../../src/services/repositories/EmailRepository.js';
 import { MultiChannelNotificationService } from '../../src/services/repositories/NotificationRepository.js';
-import { EventFactory, generateBatchEvents } from '../fixtures/events.js';
+import { generateBatchEvents } from '../fixtures/events.js';
 import { mockResend, setupResendMock } from '../mocks/resend.mock.js';
+import { mockPayload, setupPayloadMock } from '../mocks/payload.mock.js';
 import {
   NotificationMessage,
   NotificationChannel,
@@ -15,8 +17,14 @@ import {
 } from '../../src/shared/contracts/notifications.types.js';
 
 // Mock external services for performance testing
-jest.mock('resend', () => ({
-  Resend: jest.fn().mockImplementation(() => mockResend)
+vi.mock('resend', () => ({
+  Resend: vi.fn().mockImplementation(() => mockResend)
+}));
+
+// TemplateService sources templates from Payload CMS (lazy dynamic import);
+// mock it the same way tests/unit/services/TemplateService.test.ts does.
+vi.mock('payload', () => ({
+  default: mockPayload
 }));
 
 describe('Notification Service Performance Tests', () => {
@@ -27,9 +35,11 @@ describe('Notification Service Performance Tests', () => {
   beforeEach(async () => {
     setupResendMock.reset();
     setupResendMock.success();
-    
+    setupPayloadMock.reset();
+    setupPayloadMock.seedDefaults();
+
     templateService = new TemplateService();
-    
+
     emailRepository = new EmailRepository({
       apiKey: 'test-key',
       defaultFromEmail: 'test@example.com',
@@ -37,8 +47,8 @@ describe('Notification Service Performance Tests', () => {
     });
 
     const mockFactory = {
-      getRepository: jest.fn(),
-      getSupportedChannels: jest.fn().mockReturnValue(['email']),
+      getRepository: vi.fn(),
+      getSupportedChannels: vi.fn().mockReturnValue(['email']),
     };
 
     multiChannelService = new MultiChannelNotificationService(mockFactory);
@@ -89,15 +99,17 @@ describe('Notification Service Performance Tests', () => {
         photographerEmail: 'cache@test.com',
       };
 
-      // First render (compilation + render)
-      const firstRenderStart = Date.now();
+      // Render + compile times are sub-millisecond on modern hardware, so
+      // Date.now()'s 1ms resolution can't reliably order them — use
+      // performance.now() (sub-ms resolution) instead.
+      const firstRenderStart = performance.now();
       await templateService.renderTemplate(template!, testVariables);
-      const firstRenderTime = Date.now() - firstRenderStart;
+      const firstRenderTime = performance.now() - firstRenderStart;
 
       // Subsequent renders (cached compilation)
-      const cachedRenderStart = Date.now();
+      const cachedRenderStart = performance.now();
       await templateService.renderTemplate(template!, testVariables);
-      const cachedRenderTime = Date.now() - cachedRenderStart;
+      const cachedRenderTime = performance.now() - cachedRenderStart;
 
       // Cached render should be significantly faster
       expect(cachedRenderTime).toBeLessThan(firstRenderTime * 0.5);
@@ -263,10 +275,10 @@ describe('Notification Service Performance Tests', () => {
       
       // Mock email service for performance test
       const mockEmailService = {
-        sendMagicLinkEmail: jest.fn().mockResolvedValue(undefined),
-        sendPhotosReadyEmail: jest.fn().mockResolvedValue(undefined),
-        sendShootUpdateEmail: jest.fn().mockResolvedValue(undefined),
-        sendReminderEmail: jest.fn().mockResolvedValue(undefined),
+        sendMagicLinkEmail: vi.fn().mockResolvedValue(undefined),
+        sendPhotosReadyEmail: vi.fn().mockResolvedValue(undefined),
+        sendShootUpdateEmail: vi.fn().mockResolvedValue(undefined),
+        sendReminderEmail: vi.fn().mockResolvedValue(undefined),
       };
 
       const startTime = Date.now();
@@ -311,7 +323,7 @@ describe('Notification Service Performance Tests', () => {
       const totalEvents = batchSize * batchCount;
       
       const mockEmailService = {
-        sendMagicLinkEmail: jest.fn().mockResolvedValue(undefined),
+        sendMagicLinkEmail: vi.fn().mockResolvedValue(undefined),
       };
 
       const batchTimes: number[] = [];
@@ -344,8 +356,11 @@ describe('Notification Service Performance Tests', () => {
       const maxBatchTime = Math.max(...batchTimes);
       const minBatchTime = Math.min(...batchTimes);
       
-      // Variation should be reasonable (max time shouldn't be more than 2x avg)
-      expect(maxBatchTime).toBeLessThan(avgBatchTime * 2);
+      // Variation should be reasonable (max time shouldn't be more than 2x
+      // avg). +1ms slack: on a fast machine every batch can resolve inside
+      // the same Date.now() millisecond tick, making avg/max both 0 — a
+      // strict `< 0` would flake on the very machines that are fastest.
+      expect(maxBatchTime).toBeLessThanOrEqual(avgBatchTime * 2 + 1);
       
       console.log(`📊 Sustained load: ${totalEvents} events, avg batch time: ${avgBatchTime.toFixed(2)}ms`);
       console.log(`📊 Batch time range: ${minBatchTime}ms - ${maxBatchTime}ms`);
