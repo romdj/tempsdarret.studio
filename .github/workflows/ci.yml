@@ -428,26 +428,6 @@ jobs:
           MONGODB_URI: mongodb://test:test@localhost:27017/coverage-test?authSource=admin
           REDIS_URL: redis://localhost:6379/2
 
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
-        with:
-          files: services/*/coverage/lcov.info
-          flags: services
-          name: all-services-coverage
-          fail_ci_if_error: false
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        continue-on-error: true
-
-      - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v5
-        if: always()
-        with:
-          name: coverage-reports
-          path: services/*/coverage/
-          retention-days: 30
-          if-no-files-found: ignore
-
   # ==========================================================================
   # 🔒 SECURITY & DEPENDENCY AUDIT
   # ==========================================================================
