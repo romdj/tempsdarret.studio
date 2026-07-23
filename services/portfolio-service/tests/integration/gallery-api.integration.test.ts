@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { PortfolioServiceApp } from '../../src/main.js';
+import type { PortfolioServiceApp } from '../../src/main.js';
 import { CreateGalleryRequest, AddGalleryImagesRequest } from '@tempsdarret/shared/schemas/portfolio.schema';
+import { configureTestInfra, dropTestDatabase } from '../support/test-infra.js';
 
 describe('Gallery API Integration Tests', () => {
   let app: PortfolioServiceApp;
@@ -8,9 +9,11 @@ describe('Gallery API Integration Tests', () => {
   let testPortfolioId: string;
 
   beforeAll(async () => {
-    process.env['MONGODB_URI'] = 'mongodb://localhost:27017/tempsdarret-portfolios-test';
-    process.env['KAFKA_BROKERS'] = 'localhost:9092';
+    // Env must be set before `src/main.js` is imported, so `appConfig`
+    // (evaluated on import) picks up the test database and Kafka broker.
+    configureTestInfra('tempsdarret-portfolios-gallery-test');
 
+    const { PortfolioServiceApp } = await import('../../src/main.js');
     app = new PortfolioServiceApp();
     await app.start();
     server = app.getServer();
@@ -31,6 +34,7 @@ describe('Gallery API Integration Tests', () => {
   });
 
   afterAll(async () => {
+    await dropTestDatabase();
     await app.stop();
   });
 

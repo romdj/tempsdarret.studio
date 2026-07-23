@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { PortfolioServiceApp } from '../../src/main.js';
+import type { PortfolioServiceApp } from '../../src/main.js';
+import { configureTestInfra, dropTestDatabase } from '../support/test-infra.js';
 
 /**
  * Component tests verify complete portfolio service workflows
@@ -10,15 +11,18 @@ describe('Portfolio Service Component Tests', () => {
   let server: any;
 
   beforeAll(async () => {
-    process.env['MONGODB_URI'] = 'mongodb://localhost:27017/tempsdarret-portfolios-component-test';
-    process.env['KAFKA_BROKERS'] = 'localhost:9092';
+    // Env must be set before `src/main.js` is imported, so `appConfig`
+    // (evaluated on import) picks up the test database and Kafka broker.
+    configureTestInfra('tempsdarret-portfolios-component-test');
 
+    const { PortfolioServiceApp } = await import('../../src/main.js');
     app = new PortfolioServiceApp();
     await app.start();
     server = app.getServer();
   });
 
   afterAll(async () => {
+    await dropTestDatabase();
     await app.stop();
   });
 

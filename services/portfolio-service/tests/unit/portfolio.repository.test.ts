@@ -3,17 +3,27 @@ import { PortfolioRepository } from '../../src/persistence/portfolio.repository.
 import { PortfolioModel } from '../../src/shared/contracts/portfolios.mongoose.js';
 import { CreatePortfolioRequest } from '@tempsdarret/shared/schemas/portfolio.schema';
 
-// Mock mongoose
-vi.mock('../../src/shared/contracts/portfolios.mongoose.js', () => ({
-  PortfolioModel: {
-    prototype: {},
-    findOne: vi.fn(),
-    findOneAndUpdate: vi.fn(),
-    find: vi.fn(),
-    countDocuments: vi.fn(),
-    deleteOne: vi.fn()
-  }
-}));
+// Mock mongoose. `PortfolioModel` is used both as a constructor (`new
+// PortfolioModel(...)` in `create`) and as a namespace of static query
+// methods, so the mock must be a `vi.fn()` (constructible) with those
+// statics attached — a plain object throws on `.mockImplementation`.
+vi.mock('../../src/shared/contracts/portfolios.mongoose.js', () => {
+  const PortfolioModel = vi.fn() as unknown as {
+    (): void;
+    findOne: ReturnType<typeof vi.fn>;
+    findOneAndUpdate: ReturnType<typeof vi.fn>;
+    find: ReturnType<typeof vi.fn>;
+    countDocuments: ReturnType<typeof vi.fn>;
+    deleteOne: ReturnType<typeof vi.fn>;
+  };
+  PortfolioModel.findOne = vi.fn();
+  PortfolioModel.findOneAndUpdate = vi.fn();
+  PortfolioModel.find = vi.fn();
+  PortfolioModel.countDocuments = vi.fn();
+  PortfolioModel.deleteOne = vi.fn();
+
+  return { PortfolioModel };
+});
 
 describe('PortfolioRepository', () => {
   let repository: PortfolioRepository;
