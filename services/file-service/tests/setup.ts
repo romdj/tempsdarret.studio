@@ -36,7 +36,7 @@ afterAll(async () => {
   // Clean up test storage directory
   const testStoragePath = path.join(process.cwd(), 'test-storage');
   try {
-    await fs.rmdir(testStoragePath, { recursive: true });
+    await fs.rm(testStoragePath, { recursive: true, force: true });
   } catch (error) {
     // Directory might not exist or cleanup failed
     console.warn('Failed to cleanup test storage:', error);

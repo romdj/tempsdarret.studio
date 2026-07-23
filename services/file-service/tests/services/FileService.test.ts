@@ -12,17 +12,35 @@ import { EventEmitter } from '../../src/services/EventEmitter.js';
 import { FileModel, FileType } from '../../src/shared/contracts/files.api.js';
 import { Model } from 'mongoose';
 
-// Mock dependencies
-const mockFileModel = {
-  findById: vi.fn(),
-  find: vi.fn(),
-  countDocuments: vi.fn(),
-  updateOne: vi.fn(),
-  deleteOne: vi.fn(),
-  prototype: {
-    save: vi.fn(),
-  }
-} as any;
+// Mock dependencies. The model is a constructor (`new this.fileModel(...)`),
+// so it must be a `vi.fn()` with the static query methods attached.
+const mockFileModel = vi.fn() as any;
+mockFileModel.findById = vi.fn();
+mockFileModel.find = vi.fn();
+mockFileModel.countDocuments = vi.fn();
+mockFileModel.updateOne = vi.fn();
+mockFileModel.deleteOne = vi.fn();
+
+// Build a persisted file document mock whose `save()` resolves to itself,
+// mirroring Mongoose. Includes timestamps so `transformFileDocument` works.
+function buildSavedFileDoc(overrides: Record<string, unknown>): Record<string, unknown> {
+  const doc: Record<string, unknown> = {
+    _id: 'file123',
+    filename: 'test.jpg',
+    shootId: 'shoot123',
+    size: 0,
+    mimeType: 'image/jpeg',
+    storagePath: '/2024/01/test-file.jpg',
+    processingStatus: 'pending',
+    photographerOnly: false,
+    tags: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+  doc.save = vi.fn().mockResolvedValue(doc);
+  return doc;
+}
 
 const mockStorageService = {
   storeFile: vi.fn(),
@@ -75,21 +93,11 @@ describe('FileService', () => {
     };
 
     it('should upload a JPEG file successfully', async () => {
-      const mockSavedDoc = {
-        _id: 'file123',
-        ...mockFileData,
+      const mockSavedDoc = buildSavedFileDoc({
         type: 'jpeg',
         size: mockFileData.fileData.length,
-        storagePath: '/2024/01/test-file.jpg',
-        processingStatus: 'pending',
         photographerOnly: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        save: vi.fn().mockResolvedValue({
-          _id: 'file123',
-          toObject: () => ({}),
-        }),
-      };
+      });
 
       // Mock the model constructor and save
       mockFileModel.mockImplementation(() => mockSavedDoc);
@@ -113,12 +121,7 @@ describe('FileService', () => {
         mimeType: 'image/x-canon-cr2',
       };
 
-      const mockSavedDoc = {
-        _id: 'file123',
-        ...rawFileData,
-        type: 'raw',
-        save: vi.fn().mockResolvedValue({ _id: 'file123' }),
-      };
+      const mockSavedDoc = buildSavedFileDoc({ type: 'raw' });
 
       mockFileModel.mockImplementation(() => mockSavedDoc);
 
@@ -134,14 +137,11 @@ describe('FileService', () => {
         mimeType: 'application/xml',
       };
 
-      const mockSavedDoc = {
-        _id: 'file123',
-        ...xmpFileData,
+      const mockSavedDoc = buildSavedFileDoc({
         type: 'sidecar',
         photographerOnly: true,
         sidecarType: 'xmp',
-        save: vi.fn().mockResolvedValue({ _id: 'file123' }),
-      };
+      });
 
       mockFileModel.mockImplementation(() => mockSavedDoc);
 
@@ -159,14 +159,11 @@ describe('FileService', () => {
         mimeType: 'image/vnd.adobe.photoshop',
       };
 
-      const mockSavedDoc = {
-        _id: 'file123',
-        ...psdFileData,
+      const mockSavedDoc = buildSavedFileDoc({
         type: 'config',
         photographerOnly: true,
         sidecarType: 'psd',
-        save: vi.fn().mockResolvedValue({ _id: 'file123' }),
-      };
+      });
 
       mockFileModel.mockImplementation(() => mockSavedDoc);
 
@@ -196,11 +193,7 @@ describe('FileService', () => {
           mimeType: format.mime,
         };
 
-        const mockSavedDoc = {
-          _id: 'file123',
-          type: 'raw',
-          save: vi.fn().mockResolvedValue({ _id: 'file123' }),
-        };
+        const mockSavedDoc = buildSavedFileDoc({ type: 'raw' });
 
         mockFileModel.mockImplementation(() => mockSavedDoc);
 
@@ -227,13 +220,11 @@ describe('FileService', () => {
           mimeType: 'application/octet-stream',
         };
 
-        const mockSavedDoc = {
-          _id: 'file123',
+        const mockSavedDoc = buildSavedFileDoc({
           type: format.type,
           photographerOnly: true,
           sidecarType: format.ext,
-          save: vi.fn().mockResolvedValue({ _id: 'file123' }),
-        };
+        });
 
         mockFileModel.mockImplementation(() => mockSavedDoc);
 
@@ -315,7 +306,13 @@ describe('FileService', () => {
 
       // Mock getFileById to return the file
       vi.spyOn(fileService, 'getFileById').mockResolvedValue(mockFile);
-      
+
+      // Report the file's real (large) size so chunking is chosen
+      mockStorageService.getFileStats.mockResolvedValue({
+        size: mockFile.size,
+        exists: true,
+      });
+
       // Mock large file handling
       mockStorageService.shouldUseChunking.mockReturnValue(true);
       mockStorageService.createChunkedReadStream.mockResolvedValue({} as any);

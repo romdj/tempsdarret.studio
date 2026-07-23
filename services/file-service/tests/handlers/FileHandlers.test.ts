@@ -434,8 +434,21 @@ describe('FileHandlers', () => {
       });
       const reply = createMockReply();
 
+      const listedFile: FileModel = {
+        id: 'file123',
+        filename: 'test.jpg',
+        type: 'jpeg',
+        size: 1024 * 1024,
+        mimeType: 'image/jpeg',
+        storagePath: '2024/01/file123.jpg',
+        shootId: 'shoot123',
+        processingStatus: 'completed',
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+      };
+
       const mockResult = {
-        files: [mockFile],
+        files: [listedFile],
         pagination: {
           page: 1,
           limit: 20,
