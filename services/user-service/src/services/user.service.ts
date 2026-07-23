@@ -60,8 +60,8 @@ export class UserService {
 
   async listUsers(query: UserQuery): Promise<UserListResult> {
     // Apply default values
-    const page = query.page || 1;
-    const limit = query.limit || 20;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
 
     // Build filter object
     const filter: Record<string, unknown> = {};
