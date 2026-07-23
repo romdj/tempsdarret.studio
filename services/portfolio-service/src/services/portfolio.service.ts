@@ -2,6 +2,7 @@ import { PortfolioRepository } from '../persistence/portfolio.repository.js';
 import { EventPublisher } from '../shared/messaging/event-publisher.js';
 import {
   CreatePortfolioRequest,
+  CreatePortfolioRequestSchema,
   UpdatePortfolioRequest,
   PortfolioQuery,
   Portfolio
@@ -14,15 +15,19 @@ export class PortfolioService {
   ) {}
 
   async createPortfolio(photographerId: string, portfolioData: CreatePortfolioRequest): Promise<Portfolio> {
+    // Validate the incoming request shape (e.g. rejects an empty title)
+    // before touching the database.
+    const validatedData = CreatePortfolioRequestSchema.parse(portfolioData);
+
     // Check if slug is already taken
-    const existing = await this.portfolioRepository.findBySlug(portfolioData.urlSlug);
+    const existing = await this.portfolioRepository.findBySlug(validatedData.urlSlug);
     if (existing) {
       throw new Error('Portfolio URL slug already exists');
     }
 
     // Save to database
     const savedPortfolio = await this.portfolioRepository.create({
-      ...portfolioData,
+      ...validatedData,
       photographerId
     });
 

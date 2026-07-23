@@ -131,16 +131,25 @@ export class PortfolioHandlers {
     reply: FastifyReply
   ): Promise<FastifyReply> {
     try {
-      const { portfolios, total } = await this.portfolioService.listPortfolios(request.query);
+      // Fastify parses querystring values as strings; coerce pagination to
+      // numbers so both the repository query and the response `meta` are
+      // typed correctly.
+      const page = Number(request.query.page ?? 1);
+      const limit = Number(request.query.limit ?? 20);
 
-      const { page, limit } = request.query;
-      const totalPages = Math.ceil(total / (limit ?? 20));
+      const { portfolios, total } = await this.portfolioService.listPortfolios({
+        ...request.query,
+        page,
+        limit
+      });
+
+      const totalPages = Math.ceil(total / limit);
 
       return reply.send({
         data: portfolios,
         meta: {
-          page: page ?? 1,
-          limit: limit ?? 20,
+          page,
+          limit,
           total,
           totalPages
         }
