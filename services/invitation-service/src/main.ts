@@ -1,24 +1,18 @@
-import fastify from 'fastify';
 import mongoose from 'mongoose';
 import { Kafka } from 'kafkajs';
 import { KafkaConsumer, type EventHandler } from '@tempsdarret/shared/messaging';
 import { appConfig } from './config/app.config';
-import { InvitationHandlers } from './handlers/invitation.handlers';
-import { MagicLinkHandlers } from './handlers/magic-link.handlers';
 import {
   InvitationService,
   userCreatedEventSchema,
   userVerifiedEventSchema
 } from './services/invitation.service';
-import { MagicLinkService } from './services/magic-link.service';
 import { InvitationRepository } from './persistence/invitation.repository';
 import { MagicLinkRepository } from './persistence/magic-link.repository';
 import { KafkaEventPublisher } from './shared/messaging/event-publisher';
-import { registerInvitationRoutes } from './handlers/invitation.routes';
-import { registerMagicLinkRoutes } from './handlers/magic-link.routes';
+import { createServer } from './server';
 
 async function start(): Promise<void> {
-  const app = fastify({ logger: true });
   const kafka = new Kafka({ clientId: appConfig.serviceName, brokers: appConfig.kafkaBrokers });
   const eventPublisher = new KafkaEventPublisher(kafka);
 
@@ -27,18 +21,16 @@ async function start(): Promise<void> {
     await mongoose.connect(appConfig.mongoUri);
     await eventPublisher.connect();
 
-    // Dependencies
-    const invitationRepository = new InvitationRepository();
-    const magicLinkRepository = new MagicLinkRepository();
-    const invitationService = new InvitationService(invitationRepository, magicLinkRepository, eventPublisher);
-    const magicLinkService = new MagicLinkService(magicLinkRepository, eventPublisher);
+    // HTTP app (routes wired against the real Kafka-backed publisher)
+    const app = await createServer({ logger: true, eventPublisher });
 
-    // HTTP routes
-    registerInvitationRoutes(app, new InvitationHandlers(invitationService));
-    registerMagicLinkRoutes(app, new MagicLinkHandlers(magicLinkService));
-
-    // Consume user.created / user.verified → generate magic link + invitation.created
+    // Consume user.created / user.verified → generate magic link + invitation.created.
     // Each event is validated at the boundary (schema.parse) before handling.
+    const invitationService = new InvitationService(
+      new InvitationRepository(),
+      new MagicLinkRepository(),
+      eventPublisher
+    );
     const handlers: Record<string, EventHandler> = {
       'user.created': async (event) => {
         await invitationService.handleUserCreatedEvent(userCreatedEventSchema.parse(event));
