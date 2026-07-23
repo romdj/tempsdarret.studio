@@ -25,11 +25,11 @@ npm run build || {
   exit 1
 }
 
-# 4. Tests
-echo "🧪 Step 4/4: Running tests..."
-npm test || {
-  echo "⚠️  Tests failed or no tests found - continuing anyway"
-  echo "Note: Add tests before deploying to production"
+# 4. Unit tests (infra-free gate; component/integration/contract run in CI)
+echo "🧪 Step 4/4: Running unit tests..."
+npm run test:unit || {
+  echo "❌ Unit tests failed! Fix them before pushing."
+  exit 1
 }
 
 echo "✅ Pre-push checks passed! Safe to push."
