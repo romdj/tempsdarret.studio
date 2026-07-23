@@ -108,9 +108,8 @@ jobs:
           elif [ "${{ matrix.component }}" = "frontend" ]; then
             cd frontend && pnpm run test:unit || npm test || echo "No unit tests for frontend"
           else
-            cd services/${{ matrix.component }} && pnpm run test:unit || echo "No unit tests for ${{ matrix.component }}"
+            cd services/${{ matrix.component }} && pnpm run test:unit
           fi
-        continue-on-error: true
         env:
           NODE_ENV: test
 
@@ -167,6 +166,33 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.6.0
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+        ports:
+          - 2181:2181
+
+      kafka:
+        image: confluentinc/cp-kafka:7.6.0
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+        ports:
+          - 9092:9092
+        options: >-
+          --health-cmd "kafka-topics --bootstrap-server localhost:9092 --list"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -187,11 +213,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run component tests
-        run: cd services/${{ matrix.service }} && pnpm run test:component || echo "No component tests"
-        continue-on-error: true
+        run: cd services/${{ matrix.service }} && pnpm run test:component
         env:
           NODE_ENV: test
           MONGODB_URI: mongodb://test:test@localhost:27017/${{ matrix.service }}-test?authSource=admin
+          MONGO_TEST_BASE_URI: mongodb://test:test@localhost:27017
+          KAFKA_BROKERS: localhost:9092
           REDIS_URL: redis://localhost:6379/0
 
       - name: Upload test results
@@ -247,6 +274,33 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.6.0
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+        ports:
+          - 2181:2181
+
+      kafka:
+        image: confluentinc/cp-kafka:7.6.0
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+        ports:
+          - 9092:9092
+        options: >-
+          --health-cmd "kafka-topics --bootstrap-server localhost:9092 --list"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -267,11 +321,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run integration tests
-        run: cd services/${{ matrix.service }} && pnpm run test:integration || echo "No integration tests"
-        continue-on-error: true
+        run: cd services/${{ matrix.service }} && pnpm run test:integration
         env:
           NODE_ENV: test
           MONGODB_URI: mongodb://test:test@localhost:27017/${{ matrix.service }}-integration?authSource=admin
+          MONGO_TEST_BASE_URI: mongodb://test:test@localhost:27017
+          KAFKA_BROKERS: localhost:9092
           REDIS_URL: redis://localhost:6379/1
 
       - name: Upload test results
@@ -323,8 +378,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run contract tests
-        run: cd services/${{ matrix.service }} && pnpm run test:contract || echo "No contract tests"
-        continue-on-error: true
+        run: cd services/${{ matrix.service }} && pnpm run test:contract
         env:
           NODE_ENV: test
 
@@ -543,6 +597,10 @@ jobs:
           fi
           if [ "${{ needs.integration-tests.result }}" != "success" ]; then
             echo "❌ Integration tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.contract-tests.result }}" != "success" ]; then
+            echo "❌ Contract tests failed"
             exit 1
           fi
 
