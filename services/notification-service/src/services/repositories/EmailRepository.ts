@@ -40,8 +40,9 @@ export class EmailRepository extends BaseNotificationRepository {
   }
 
   async send(message: NotificationMessage): Promise<SendResult> {
-    this.validateMessage(message);
-
+    // Handled before the generic validateMessage() check below so a missing
+    // recipient email always surfaces this specific, non-retryable error
+    // code rather than the generic one from the catch branch.
     if (!message.recipient.email) {
       return {
         success: false,
@@ -51,6 +52,15 @@ export class EmailRepository extends BaseNotificationRepository {
           retryable: false,
         }
       };
+    }
+
+    // validateMessage() throws on channel mismatch etc.; send()'s contract is
+    // to always resolve a SendResult (never reject), so any validation
+    // failure is converted the same way provider errors are below.
+    try {
+      this.validateMessage(message);
+    } catch (error) {
+      return this.handleProviderError(error);
     }
 
     if (this.dryRun || !this.resend) {

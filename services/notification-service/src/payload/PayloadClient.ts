@@ -19,13 +19,22 @@ export class PayloadClient {
   private initialized = false;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private payload: any = null;
+  // In-flight initialize() promise, so concurrent first calls (e.g. several
+  // getTemplate() calls fired in parallel before any has finished) share a
+  // single `import('payload')` + `payload.init()` rather than each racing
+  // their own — a classic thundering-herd on lazy init.
+  private initPromise: Promise<void> | null = null;
 
   /**
    * Initialize Payload CMS connection (lazy dynamic import)
    */
   async initialize(): Promise<void> {
     if (this.initialized) {return;}
+    this.initPromise ??= this.doInitialize();
+    return this.initPromise;
+  }
 
+  private async doInitialize(): Promise<void> {
     try {
       const payloadModule = await import('payload');
       this.payload = payloadModule.default ?? payloadModule;
@@ -40,6 +49,7 @@ export class PayloadClient {
       console.log('✅ Payload CMS client initialized');
     } catch (error) {
       console.error('❌ Failed to initialize Payload CMS client:', error);
+      this.initPromise = null; // allow a later call to retry
       throw error;
     }
   }
