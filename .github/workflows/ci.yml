@@ -544,11 +544,15 @@ jobs:
       - name: Build Docker image
         run: |
           if [ "${{ matrix.component }}" = "frontend" ]; then
-            cd frontend && docker build -t tempsdarret-frontend:latest .
+            dir=frontend
           else
-            cd services/${{ matrix.component }} && docker build -t tempsdarret-${{ matrix.component }}:latest .
+            dir=services/${{ matrix.component }}
           fi
-        continue-on-error: true
+          if [ ! -f "$dir/Dockerfile" ]; then
+            echo "⏭️  No Dockerfile in $dir yet — containerization not implemented (ADR-018). Skipping."
+            exit 0
+          fi
+          cd "$dir" && docker build -t tempsdarret-${{ matrix.component }}:latest .
 
   # ==========================================================================
   # ✅ FINAL STATUS (Required checks summary)
