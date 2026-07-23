@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach, vi } from 'vitest';
 import { FastifyInstance } from 'fastify';
+import mongoose from 'mongoose';
 import { createServer } from '../../src/server';
 import { 
   CreateUserRequestSchema, 
@@ -28,6 +29,16 @@ describe('User API Contract Tests (TypeSpec Compliance)', () => {
 
   afterAll(async () => {
     await app?.close();
+  });
+
+  // The in-memory database is shared across the whole file, so reset it between
+  // tests to keep each case isolated (otherwise repeated fixtures collide on the
+  // unique email index).
+  afterEach(async () => {
+    const collections = mongoose.connection.collections;
+    for (const key of Object.keys(collections)) {
+      await collections[key].deleteMany({});
+    }
   });
 
   describe('Health Check Contract', () => {
@@ -267,7 +278,9 @@ describe('User API Contract Tests (TypeSpec Compliance)', () => {
         { limit: 0 },          // limit must be >= 1  
         { limit: 101 },        // limit must be <= 100
         { role: 'invalid' },   // invalid UserRole enum
-        { isActive: 'true' },  // isActive must be boolean
+        // Over HTTP, isActive arrives as a string; 'true'/'false' are accepted
+        // and coerced, so a non-boolean-like string is the real invalid case.
+        { isActive: 'maybe' }, // isActive must be boolean-like ('true'/'false')
         { page: 'invalid' },   // page must be number
         { limit: 'invalid' }   // limit must be number
       ];
