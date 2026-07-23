@@ -32,10 +32,17 @@ export const UpdateUserRequestSchema = z.object({
 // Maps to TypeSpec UserQuery from user-service.tsp
 export const UserQuerySchema = z.object({
   role: UserRoleSchema.optional(),
-  isActive: z.boolean().optional(),
+  // HTTP query strings arrive as 'true'/'false'; map them to booleans while
+  // still accepting genuine booleans from in-process callers.
+  isActive: z
+    .preprocess(
+      (value) => (value === 'true' ? true : value === 'false' ? false : value),
+      z.boolean().optional()
+    ),
   search: z.string().optional(), // Search by name or email
-  page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(100).default(20)
+  // Coerced because HTTP query parameters always arrive as strings.
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20)
 });
 
 // Note: Magic link authentication schemas are handled by invitation-service

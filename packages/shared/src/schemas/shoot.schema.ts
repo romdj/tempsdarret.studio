@@ -39,8 +39,9 @@ export const ShootQuerySchema = z.object({
   status: ShootStatusSchema.optional(),
   fromDate: z.coerce.date().optional(),
   toDate: z.coerce.date().optional(),
-  page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(100).default(20)
+  // Coerced because HTTP query parameters always arrive as strings.
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20)
 });
 
 // Type exports that match TypeSpec
