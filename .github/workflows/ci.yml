@@ -104,9 +104,9 @@ jobs:
       - name: Run unit tests
         run: |
           if [ "${{ matrix.component }}" = "models" ] || [ "${{ matrix.component }}" = "shared" ]; then
-            cd packages/${{ matrix.component }} && pnpm run test:unit || npm test || echo "No unit tests for ${{ matrix.component }}"
+            cd packages/${{ matrix.component }} && pnpm run test:unit || echo "No unit tests for ${{ matrix.component }}"
           elif [ "${{ matrix.component }}" = "frontend" ]; then
-            cd frontend && pnpm run test:unit || npm test || echo "No unit tests for frontend"
+            cd frontend && pnpm run test:unit || echo "No unit tests for frontend"
           else
             cd services/${{ matrix.component }} && pnpm run test:unit
           fi

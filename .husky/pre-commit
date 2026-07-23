@@ -5,14 +5,14 @@
 echo "🔍 Running pre-commit quality checks..."
 
 # 1. Lint - fail the commit if linting fails
-npm run lint || {
+pnpm run lint || {
   echo "❌ Lint failed! Fix errors before committing."
   exit 1
 }
 
 # 2. Unit tests - fail the commit if any unit test fails
 echo "🧪 Running unit tests..."
-npm run test:unit || {
+pnpm run test:unit || {
   echo "❌ Unit tests failed! Fix them before committing."
   exit 1
 }
