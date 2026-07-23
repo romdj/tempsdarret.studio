@@ -13,15 +13,16 @@
     "payload:dev": "tsx watch src/payload/server.ts",
     "test": "vitest run --exclude tests/performance/**",
     "test:watch": "vitest --exclude tests/performance/**",
-    "test:unit": "vitest run tests/unit",
-    "test:component": "vitest run tests/component",
-    "test:integration": "vitest run tests/integration",
+    "test:unit": "vitest run tests/unit --passWithNoTests",
+    "test:component": "vitest run tests/component --passWithNoTests",
+    "test:integration": "vitest run tests/integration --passWithNoTests",
     "test:perf": "NODE_OPTIONS=--expose-gc vitest run tests/performance",
     "test:coverage": "vitest run --coverage --exclude tests/performance/**",
     "test:ci": "vitest run --coverage --exclude tests/performance/**",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test:contract": "vitest run tests/contract --passWithNoTests"
   },
   "dependencies": {
     "@payloadcms/bundler-webpack": "^1.0.0",

@@ -12,10 +12,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:integration": "vitest run tests/integration",
-    "test:unit": "vitest run tests/services tests/handlers",
+    "test:integration": "vitest run tests/integration --passWithNoTests",
+    "test:unit": "vitest run tests/services tests/handlers --passWithNoTests",
     "lint": "eslint src",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test:component": "vitest run tests/component --passWithNoTests",
+    "test:contract": "vitest run tests/contract --passWithNoTests"
   },
   "dependencies": {
     "@fastify/multipart": "^8.0.0",

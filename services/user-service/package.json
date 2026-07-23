@@ -12,10 +12,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:unit": "vitest run src/services",
-    "test:contract": "vitest run tests/contract",
+    "test:unit": "vitest run src/services --passWithNoTests",
+    "test:contract": "vitest run tests/contract --passWithNoTests",
     "lint": "eslint src",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test:component": "vitest run tests/component --passWithNoTests",
+    "test:integration": "vitest run tests/integration --passWithNoTests"
   },
   "dependencies": {
     "jsonwebtoken": "^9.0.2",

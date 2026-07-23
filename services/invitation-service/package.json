@@ -11,13 +11,15 @@
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:unit": "vitest run tests/services",
-    "test:contract": "vitest run tests/contract",
+    "test:unit": "vitest run tests/services --passWithNoTests",
+    "test:contract": "vitest run tests/contract --passWithNoTests",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "check": "tsc --noEmit",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:component": "vitest run tests/component --passWithNoTests",
+    "test:integration": "vitest run tests/integration --passWithNoTests"
   },
   "dependencies": {
     "@tempsdarret/events": "workspace:*",

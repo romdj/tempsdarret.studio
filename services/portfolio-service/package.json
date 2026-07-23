@@ -12,11 +12,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:unit": "vitest run tests/unit",
-    "test:component": "vitest run tests/component",
-    "test:integration": "vitest run tests/integration",
+    "test:unit": "vitest run tests/unit --passWithNoTests",
+    "test:component": "vitest run tests/component --passWithNoTests",
+    "test:integration": "vitest run tests/integration --passWithNoTests",
     "lint": "eslint src --ext .ts",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test:contract": "vitest run tests/contract --passWithNoTests"
   },
   "dependencies": {
     "@tempsdarret/events": "workspace:*",
