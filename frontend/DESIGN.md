@@ -50,7 +50,10 @@ Components never reference espresso/cream directly. They use **surface classes**
 (`.surf-1` → T1, `.surf-2` → T2) which expose `--bg/--fg/--muted/--line/--brand`.
 A section is a surface; the page alternates them for the dark↔cream **editorial rhythm**.
 
-Theme resolution order: `prefers-color-scheme` → `:root[data-theme]` override (user toggle wins).
+Theme resolution order: `prefers-color-scheme` → `:root[data-color-mode]` override (user toggle
+wins). **Not `data-theme`** — that attribute is already owned by daisyUI (legacy admin/client
+portal theme, kept as-is; see §9). Using a separate attribute avoids the two systems colliding
+on the same `<html>` element.
 
 Semantic colors (portal states: success/warning/error) are separate from this palette and
 are not an accent — TBD when the portal UI is designed.
@@ -139,11 +142,14 @@ Purposeful, one orchestrated moment, everything else restrained. **All gated on
 - **Bilingual FR (primary) / EN** from the start.
 - All copy through an i18n layer — recommend **Paraglide (inlang)** for SvelteKit (type-safe,
   tree-shaken, SSR-friendly).
-- **Locale lives in the URL** (`/fr/…`, `/en/…`) — decided. SEO-indexable, shareable, no
-  cookie/header guessing. Root `/` redirects based on `Accept-Language` (default `fr`), then
-  the URL is the source of truth.
+- **Locale lives in the URL** — decided. Base locale **French is unprefixed** (`/`,
+  `/portfolio`, …); English is prefixed (`/en`, `/en/portfolio`, …). This is Paraglide's
+  idiomatic pattern and needs no custom redirect code.
+- Detection order (Paraglide `strategy`): explicit **URL** wins, then a saved **cookie**, then
+  the browser's **Accept-Language**, finally falling back to **French**. Handled entirely by
+  Paraglide's middleware — no hand-written redirect logic.
 - Header **FR/EN switch** swaps the locale segment and preserves the rest of the route.
-  `lang` attribute set per locale.
+  `lang`/`dir` attributes set per locale on `<html>`.
 
 ---
 
@@ -153,7 +159,7 @@ Built in `src/lib/components/` (existing `ui/`, `gallery/`, plus `layout/`, `bra
 
 | Component | Purpose |
 |-----------|---------|
-| `Header` | fixed bar; brand lockup, nav, LangSwitch, ThemeToggle; condense-on-scroll |
+| `Header` | fixed bar; brand lockup, nav, **auth-aware CTA**, LangSwitch, ThemeToggle; condense-on-scroll |
 | `Hero` | capture animation, kicker, display headline, time-bar, subtitle, scroll cue |
 | `SommaireIndex` | numbered category list, hover thumbnail, timestamps |
 | `MosaicGallery` | spanned/aspect grid, hover reveal captions |
@@ -164,6 +170,14 @@ Built in `src/lib/components/` (existing `ui/`, `gallery/`, plus `layout/`, `bra
 
 Public routes already scaffolded in `src/routes/(public)/` per the sitemap; categories are
 content-driven (`src/content/`).
+
+**Scope note — this is an application, not just a marketing site.** Photographers (admin) and
+clients both log in (`$lib/stores/auth`, `(admin)`/`(client)` route groups, magic-link flow).
+This design system governs the **public marketing pages** (`(public)`); `Header` is shared
+chrome, so it must reflect real auth state (logged out → "Espace client"; client → "Mes
+galeries"; admin → "Tableau de bord") using the existing `auth` store — it does not invent a new
+one. The `(admin)`/`(client)` portal layouts and their own internal screens keep their current
+(legacy daisyUI) styling for now; redesigning the portal UI is separate, future work.
 
 ---
 
@@ -180,10 +194,15 @@ content-driven (`src/content/`).
 
 ## 11. Decided vs. refine-later
 
-**Decided (foundational):** monochrome+cream palette & tonal-role theming · Montserrat scale ·
-light+dark · cream as second surface · bilingual FR/EN, URL-based locale routing ·
-watermark-on-proofs (file-service) · discreet vector logo · the pause/capture concept ·
-timestamp motif.
+**Decided (foundational):** monochrome+cream palette & tonal-role theming (`data-color-mode`) ·
+Montserrat scale · light+dark · cream as second surface · bilingual FR/EN, URL-based locale
+routing (French unprefixed, English `/en`) · watermark-on-proofs (file-service) · discreet
+vector logo · the pause/capture concept · timestamp motif · Header is auth-aware and shared
+across the whole site.
 
 **Refine later (cosmetic):** exact hero photo & crop · headline wording · motion timings ·
 mosaic ratios & section order · precise cream shade / grayscale amount · per-page copy.
+
+**Explicitly out of scope (separate future work):** redesigning the `(admin)`/`(client)` portal
+UI itself; the login-request ("send me a magic link") page; full responsive image
+srcset/AVIF pipeline (a single optimized JPEG per image is the interim approach).
