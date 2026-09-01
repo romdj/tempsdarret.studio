@@ -16,54 +16,50 @@ Single-page view of all builds, tests, and quality checks.
                 │  - Circular Deps        │
                 └────────────┬────────────┘
                              │
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-┌───────▼────────┐  ┌────────▼────────┐  ┌───────▼────────┐
-│ 🏗️ Build Matrix │  │ 🧪 Test Matrix  │  │ 🔒 Security    │
-│                 │  │                 │  │    Audit       │
-│ • user-service  │  │ Per service:    │  │                │
-│ • invite-svc    │  │ • Unit tests    │  │ • npm audit    │
-│ • portfolio-svc │  │ • Component     │  │ • Outdated     │
-│ • shoot-service │  │                 │  │   deps check   │
-│ • file-service  │  │ Infrastructure: │  └────────────────┘
-│ • notify-svc    │  │ • MongoDB       │
-│ • shared pkg    │  │ • Redis         │
-│ • frontend      │  │                 │
-│                 │  │ 8 services ×    │
-│ (Parallel)      │  │ 2 test types    │
-└────────┬────────┘  │ = 16 jobs       │
-         │           │                 │
-         │           │ (Parallel)      │
-         └───────────┴────────┬────────┘
-                              │
-                    ┌─────────▼─────────┐
-                    │ 📊 Coverage       │
-                    │                   │
-                    │ • All services    │
-                    │ • Upload Codecov  │
-                    │ • Artifacts       │
-                    └─────────┬─────────┘
-                              │
-                    ┌─────────▼─────────┐
-                    │ ✅ CI Success     │
-                    │                   │
-                    │ Summary of all    │
-                    │ job results       │
-                    └─────────┬─────────┘
-                              │
-                    ┌─────────▼─────────┐
-                    │ 🐳 Docker Build   │ (main only)
-                    │                   │
-                    │ • Kong Gateway    │
-                    │ • All services    │
-                    │ • Frontend        │
-                    └─────────┬─────────┘
-                              │
-                    ┌─────────▼─────────┐
-                    │ 🚀 Ready for      │ (main only)
-                    │    Deployment     │
-                    └───────────────────┘
+                    ┌────────────▼────────────┐
+                    │  🏗️ Build Matrix        │
+                    │  9 components, parallel │
+                    └────────────┬────────────┘
+                                 │
+        ┌──────────────┬────────┼────────┬──────────────┐
+        │              │        │        │              │
+┌───────▼──────┐┌──────▼─────┐┌─▼──────┐┌▼─────────────┐
+│ 🧪 Component ││🔗 Integration││📜 Contract││🎬 E2E        │
+│  (6 svc,      ││ (6 svc,     ││ (6 svc)  ││ in-process   │
+│  Mongo/Redis/ ││ Mongo/Redis/││          ││ flows        │
+│  Kafka)       ││ Kafka)      ││          ││              │
+└───────┬──────┘└──────┬─────┘└─┬──────┘└┬─────────────┘
+        │              │        │         │
+        └──────────────┴────┬───┴─────────┘
+                             │
+      ┌──────────┬──────────┼──────────┬──────────────┐
+      │          │          │          │              │
+┌─────▼────┐┌────▼─────┐┌───▼────┐┌────▼───┐┌─────────▼────────┐
+│📊 Coverage││🔒 Security││🛡️ SAST ││🕷️ DAST ││📈 Code Quality   │
+│ per-svc   ││ Audit     ││CodeQL  ││ZAP     ││SonarQube Cloud   │
+│ thresholds││ pnpm audit││        ││baseline││(not yet required)│
+└─────┬────┘└────┬─────┘└───┬────┘└────┬───┘└─────────┬────────┘
+      │          │          │          │              │
+      └──────────┴────┬─────┴──────────┘              │
+                       │           (informational until SONAR_TOKEN exists)
+             ┌─────────▼─────────┐
+             │ ✅ CI Success     │
+             │                   │
+             │ Blocking: coverage,│
+             │ security, SAST,   │
+             │ DAST + all tests  │
+             └─────────┬─────────┘
+                       │
+             ┌─────────▼─────────┐
+             │ 🚀 Ready for      │ (main only)
+             │    Deployment     │
+             └───────────────────┘
 ```
+
+> **Note on drift**: the "Docker Build" stage and Codecov upload described in older
+> revisions of this doc were aspirational and were never implemented in
+> `ci.yml` — removed here rather than perpetuated. If/when a Docker image
+> build stage is added, document it here alongside the job it actually maps to.
 
 ## Job Details
 
@@ -122,12 +118,14 @@ Single-page view of all builds, tests, and quality checks.
 **Purpose**: Code coverage analysis
 
 **Process**:
-- Runs after all tests complete
-- Collects coverage from all services
-- Uploads to Codecov
-- Stores artifacts
+- Runs after component/integration/contract/e2e tests all complete
+- Runs `pnpm run test:coverage` per service, no error-swallowing
 
-**Artifacts**: Coverage reports (30 day retention)
+**Blocking**: Yes — a crashing coverage run fails the job and `ci-success`.
+Per-service `coverage.thresholds` (line/branch/function floors) are the next
+step to make a *regression in coverage %*, not just a crash, fail the build
+too — not yet configured project-wide (see the coverage job's comment in
+`ci.yml`).
 
 ---
 
@@ -136,29 +134,56 @@ Single-page view of all builds, tests, and quality checks.
 **Purpose**: Vulnerability scanning
 
 **Checks**:
-- npm audit (moderate level)
-- Outdated dependency check
+- `pnpm audit --audit-level=moderate`
+- Outdated dependency check (informational only)
 
-**Continues on error**: Yes (informational)
-
----
-
-### 6. 🐳 Docker Build (~5-10 mins)
-
-**Purpose**: Build container images
-
-**Triggers**: Only on main branch pushes
-
-**Images**:
-- Kong Gateway
-- All 6 microservices
-- Frontend
-
-**Strategy**: Parallel builds, fail-fast disabled
+**Blocking**: Yes, for the audit step — a moderate+ vulnerability fails the
+job. If a transitive dep has no fix yet, document an explicit allowlist
+rather than reintroducing `continue-on-error`.
 
 ---
 
-### 7. ✅ CI Success (instant)
+### 6. 🛡️ SAST — CodeQL (~2-4 mins)
+
+**Purpose**: Static analysis for security vulnerabilities (injection, unsafe
+regex, prototype pollution, etc.) across the JS/TypeScript codebase.
+
+**Runs**: `github/codeql-action/init` + `analyze`, `javascript-typescript`.
+
+**Blocking**: The job fails if the analysis itself errors. Findings surface
+as Code Scanning alerts in the Security tab — reacting to those (or setting
+a branch protection rule that requires this check) is a separate, deliberate
+step, not automatic today.
+
+---
+
+### 7. 🕷️ DAST — OWASP ZAP Baseline (~3-5 mins)
+
+**Purpose**: Dynamic scan of the actual shipped artifact — builds the static
+SvelteKit frontend, serves it locally (`vite preview`), and runs ZAP's
+baseline scan against it.
+
+**Blocking**: Yes (`fail_action: true`).
+
+**Known limitation**: this only covers the public static frontend, not the
+backend microservices — a DAST pass against the full docker-compose stack
+(auth flows, API endpoints) is future work.
+
+---
+
+### 8. 📈 Code Quality — SonarQube Cloud (~2-4 mins)
+
+**Purpose**: Maintainability, duplication, and quality-gate scoring across
+the whole monorepo, via `sonar-project.properties`.
+
+**Blocking**: **Not yet.** Requires a `SONAR_TOKEN` repo secret (create a
+project at sonarcloud.io, generate a token). Until that secret exists this
+job fails every run, so it's intentionally excluded from `ci-success`'s
+required checks. Once configured, add `code-quality-sonar` to that list.
+
+---
+
+### 9. ✅ CI Success (instant)
 
 **Purpose**: Pipeline status summary
 
@@ -172,7 +197,7 @@ Single-page view of all builds, tests, and quality checks.
 
 ---
 
-### 8. 🚀 Deployment Ready (instant)
+### 10. 🚀 Deployment Ready (instant)
 
 **Purpose**: Deployment readiness notification
 
@@ -195,11 +220,13 @@ You'll see a single run with all jobs organized in stages:
 ```
 CI/CD Pipeline
 ├─ 🔍 Quality Checks
-├─ 🏗️ Build Matrix (8 jobs)
-├─ 🧪 Test Matrix (12 jobs)
+├─ 🏗️ Build Matrix (9 jobs)
+├─ 🧪 Component / Integration / Contract / E2E tests (24 jobs)
 ├─ 📊 Coverage
 ├─ 🔒 Security Audit
-├─ 🐳 Docker Build (8 jobs) [main only]
+├─ 🛡️ SAST (CodeQL)
+├─ 🕷️ DAST (ZAP baseline)
+├─ 📈 Code Quality (SonarQube Cloud) — advisory until SONAR_TOKEN is set
 ├─ ✅ CI Success
 └─ 🚀 Deployment Ready [main only]
 ```
@@ -262,13 +289,38 @@ CI/CD Pipeline
 
 ### Job Fails: Coverage
 
-**Check**: Coverage threshold not met
-**Fix**: Add more tests or adjust threshold
-**Note**: This is informational, won't block PR
+**Check**: The coverage run crashed for a service (or, once thresholds are
+configured, dropped below the configured floor)
+**Fix**: Run `pnpm run test:coverage` in that service directory locally
+**Note**: This blocks `ci-success` — it is not informational
+
+### Job Fails: SAST (CodeQL)
+
+**Check**: Actions tab → job logs for an analysis error (not the same as a
+security finding, which shows as a Code Scanning alert instead)
+**Fix**: Usually a transient runner issue; re-run the job
+
+### Job Fails: DAST (ZAP baseline)
+
+**Check**: Download the `zap_scan` artifact for the full alert report
+**Fix**: Triage each alert — fix real findings, or add a suppression to a
+`rules_file_name` TSV if it's a confirmed false positive
+
+### Job Fails: Code Quality (SonarQube Cloud)
+
+**Check**: Is `SONAR_TOKEN` set yet? If not, this is expected — the job
+isn't wired into `ci-success` for exactly this reason.
+**Fix**: Create the project on sonarcloud.io, add the `SONAR_TOKEN` secret
 
 ## Future Enhancements
 
-- [ ] E2E tests (integration across services)
+- [x] E2E tests (integration across services)
+- [x] Security audit blocking (`pnpm audit`)
+- [x] SAST (CodeQL)
+- [x] DAST (OWASP ZAP baseline, against the static frontend)
+- [x] Code quality scaffold (SonarQube Cloud — needs `SONAR_TOKEN` to go live)
+- [ ] Per-service coverage % thresholds (currently only "did the run crash" is blocking, not "did coverage regress")
+- [ ] DAST against the full backend (docker-compose stack), not just the static frontend
 - [ ] Performance regression tests
 - [ ] Bundle size checks (frontend)
 - [ ] Visual regression testing
