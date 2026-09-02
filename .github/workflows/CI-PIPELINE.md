@@ -21,39 +21,41 @@ Single-page view of all builds, tests, and quality checks.
                     │  9 components, parallel │
                     └────────────┬────────────┘
                                  │
-        ┌──────────────┬────────┼────────┬──────────────┐
-        │              │        │        │              │
-┌───────▼──────┐┌──────▼─────┐┌─▼──────┐┌▼─────────────┐
-│ 🧪 Component ││🔗 Integration││📜 Contract││🎬 E2E        │
-│  (6 svc,      ││ (6 svc,     ││ (6 svc)  ││ in-process   │
-│  Mongo/Redis/ ││ Mongo/Redis/││          ││ flows        │
-│  Kafka)       ││ Kafka)      ││          ││              │
-└───────┬──────┘└──────┬─────┘└─┬──────┘└┬─────────────┘
-        │              │        │         │
-        └──────────────┴────┬───┴─────────┘
-                             │
-      ┌──────────┬──────────┼──────────┬──────────────┐
-      │          │          │          │              │
-┌─────▼────┐┌────▼─────┐┌───▼────┐┌────▼───┐┌─────────▼────────┐
-│📊 Coverage││🔒 Security││🛡️ SAST ││🕷️ DAST ││📈 Code Quality   │
-│ per-svc   ││ Audit     ││CodeQL  ││ZAP     ││SonarQube Cloud   │
-│ thresholds││ pnpm audit││        ││baseline││(not yet required)│
-└─────┬────┘└────┬─────┘└───┬────┘└────┬───┘└─────────┬────────┘
-      │          │          │          │              │
-      └──────────┴────┬─────┴──────────┘              │
-                       │           (informational until SONAR_TOKEN exists)
-             ┌─────────▼─────────┐
-             │ ✅ CI Success     │
-             │                   │
-             │ Blocking: coverage,│
-             │ security, SAST,   │
-             │ DAST + all tests  │
-             └─────────┬─────────┘
-                       │
-             ┌─────────▼─────────┐
-             │ 🚀 Ready for      │ (main only)
-             │    Deployment     │
-             └───────────────────┘
+              All 9 jobs below fan out together off the build
+              matrix and run fully concurrently — none of them
+              needs another's results, only the build:
+                                 │
+        ┌───────────┬───────────┼───────────┬─────────────────┐
+        │           │           │           │                 │
+┌───────▼──────┐┌───▼────────┐┌─▼─────────┐┌▼──────────┐┌─────▼──────┐
+│ 🧪 Component ││🔗 Integration││📜 Contract││🎬 E2E     ││📊 Coverage │
+│ (6 svc, w/   ││(6 svc, w/   ││(6 svc)    ││in-process ││per-service,│
+│ Mongo/Redis/ ││Mongo/Redis/ ││           ││flows      ││no swallow  │
+│ Kafka)       ││Kafka)       ││           ││           ││            │
+└──────────────┘└─────────────┘└───────────┘└───────────┘└─────┬──────┘
+        ┌───────────┬───────────┬───────────────────────────────┘
+        │           │           │
+┌───────▼──────┐┌───▼────────┐┌─▼─────────────────┐
+│🔒 Security   ││🛡️ SAST     ││🕷️ DAST             │      ┌────────────────────┐
+│Audit         ││CodeQL      ││ZAP baseline        │      │📈 Code Quality*    │
+│(pnpm audit)  ││            ││(built frontend)    │      │SonarQube Cloud     │
+└───────┬──────┘└─────┬──────┘└─────────┬──────────┘      │*needs SONAR_TOKEN, │
+        │             │                 │                 │ not yet required  │
+        └─────────────┴────────┬────────┘                 └──────────┬─────────┘
+                                │                                    │ (advisory,
+                      ┌─────────▼─────────┐                          │  runs but
+                      │ ✅ CI Success     │◄─────────────────────────┘  doesn't gate)
+                      │                   │
+                      │ Blocking: all 4   │
+                      │ test tiers +      │
+                      │ coverage/security/│
+                      │ SAST/DAST         │
+                      └─────────┬─────────┘
+                                │
+                      ┌─────────▼─────────┐
+                      │ 🚀 Ready for      │ (main only)
+                      │    Deployment     │
+                      └───────────────────┘
 ```
 
 > **Note on drift**: the "Docker Build" stage and Codecov upload described in older
@@ -118,7 +120,8 @@ Single-page view of all builds, tests, and quality checks.
 **Purpose**: Code coverage analysis
 
 **Process**:
-- Runs after component/integration/contract/e2e tests all complete
+- Runs alongside component/integration/contract/e2e (not after them) — it
+  re-executes each service's own `test:coverage`, so it only needs the build
 - Runs `pnpm run test:coverage` per service, no error-swallowing
 
 **Blocking**: Yes — a crashing coverage run fails the job and `ci-success`.

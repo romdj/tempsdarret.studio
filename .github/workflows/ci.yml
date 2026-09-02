@@ -433,12 +433,15 @@ jobs:
 
   # ==========================================================================
   # 📊 CODE COVERAGE (Aggregated)
+  # Runs alongside component/integration/contract/e2e — it re-executes each
+  # service's own test:coverage rather than reusing their results, so it
+  # doesn't need to wait for them; only needs the build.
   # ==========================================================================
 
   coverage:
     name: 📊 Coverage • All Services
     runs-on: ubuntu-latest
-    needs: [component-tests, integration-tests, contract-tests, e2e-tests]
+    needs: build-and-unit-test
 
     services:
       mongodb:
@@ -494,13 +497,15 @@ jobs:
           REDIS_URL: redis://localhost:6379/2
 
   # ==========================================================================
-  # 🔒 SECURITY & DEPENDENCY AUDIT (After test suites, parallel with SAST/DAST/quality)
+  # 🔒 SECURITY & DEPENDENCY AUDIT
+  # Lockfile-based, doesn't need test results — runs alongside
+  # component/integration/contract/e2e, SAST, DAST, and code-quality.
   # ==========================================================================
 
   security-audit:
     name: 🔒 Security • Audit & Vulnerabilities
     runs-on: ubuntu-latest
-    needs: [component-tests, integration-tests, contract-tests, e2e-tests]
+    needs: build-and-unit-test
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -532,14 +537,15 @@ jobs:
 
   # ==========================================================================
   # 🛡️ SAST — Static Application Security Testing (CodeQL)
-  # Runs after the test suites, in parallel with coverage / security-audit /
-  # DAST / code-quality.
+  # Pure source analysis, no test dependency — runs alongside
+  # component/integration/contract/e2e, coverage, security-audit, DAST, and
+  # code-quality.
   # ==========================================================================
 
   sast-codeql:
     name: 🛡️ SAST • CodeQL
     runs-on: ubuntu-latest
-    needs: [component-tests, integration-tests, contract-tests, e2e-tests]
+    needs: build-and-unit-test
     permissions:
       actions: read
       contents: read
@@ -568,7 +574,7 @@ jobs:
   dast-zap:
     name: 🕷️ DAST • ZAP Baseline
     runs-on: ubuntu-latest
-    needs: [component-tests, integration-tests, contract-tests, e2e-tests]
+    needs: build-and-unit-test
     permissions:
       contents: read
     steps:
@@ -610,7 +616,14 @@ jobs:
 
   # ==========================================================================
   # 📈 CODE QUALITY — SonarQube Cloud
-  # Runs after the test suites, alongside SAST/DAST/coverage.
+  # Runs alongside component/integration/contract/e2e, coverage,
+  # security-audit, and DAST — not after them.
+  #
+  # ⚠️ This job runs on its own fresh checkout and does NOT download the
+  # `coverage` job's lcov output (no artifact upload/download wired between
+  # them), so sonar-project.properties' coverage report paths currently
+  # resolve to nothing — Sonar will report with no coverage data merged in
+  # until that artifact wiring is added as follow-up work.
   #
   # ⚠️ Not yet wired into ci-success: this job needs a SONAR_TOKEN repo
   # secret (create the project at sonarcloud.io, generate a token, add it
@@ -623,7 +636,7 @@ jobs:
   code-quality-sonar:
     name: 📈 Code Quality • SonarQube Cloud
     runs-on: ubuntu-latest
-    needs: [component-tests, integration-tests, contract-tests, e2e-tests]
+    needs: build-and-unit-test
     steps:
       - name: Checkout
         uses: actions/checkout@v5
