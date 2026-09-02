@@ -35,21 +35,21 @@ Single-page view of all builds, tests, and quality checks.
 └──────────────┘└─────────────┘└───────────┘└───────────┘└─────┬──────┘
         ┌───────────┬───────────┬───────────────────────────────┘
         │           │           │
-┌───────▼──────┐┌───▼────────┐┌─▼─────────────────┐
-│🔒 Security   ││🛡️ SAST     ││🕷️ DAST             │      ┌────────────────────┐
-│Audit         ││CodeQL      ││ZAP baseline        │      │📈 Code Quality*    │
-│(pnpm audit)  ││            ││(built frontend)    │      │SonarQube Cloud     │
-└───────┬──────┘└─────┬──────┘└─────────┬──────────┘      │*needs SONAR_TOKEN, │
-        │             │                 │                 │ not yet required  │
-        └─────────────┴────────┬────────┘                 └──────────┬─────────┘
-                                │                                    │ (advisory,
-                      ┌─────────▼─────────┐                          │  runs but
-                      │ ✅ CI Success     │◄─────────────────────────┘  doesn't gate)
+┌───────▼──────┐┌───▼────────┐┌─▼─────────────────┐┌────────────────────┐
+│🔒 Security   ││🛡️ SAST     ││🕷️ DAST             ││📈 Code Quality     │
+│Audit         ││CodeQL      ││ZAP baseline        ││SonarQube Cloud     │
+│(pnpm audit)  ││            ││(built frontend)    ││                    │
+└───────┬──────┘└─────┬──────┘└─────────┬──────────┘└──────────┬─────────┘
+        │             │                 │                      │
+        └─────────────┴────────┬────────┴──────────────────────┘
+                                │
+                      ┌─────────▼─────────┐
+                      │ ✅ CI Success     │
                       │                   │
                       │ Blocking: all 4   │
                       │ test tiers +      │
                       │ coverage/security/│
-                      │ SAST/DAST         │
+                      │ SAST/DAST/quality │
                       └─────────┬─────────┘
                                 │
                       ┌─────────▼─────────┐
@@ -179,10 +179,11 @@ backend microservices — a DAST pass against the full docker-compose stack
 **Purpose**: Maintainability, duplication, and quality-gate scoring across
 the whole monorepo, via `sonar-project.properties`.
 
-**Blocking**: **Not yet.** Requires a `SONAR_TOKEN` repo secret (create a
-project at sonarcloud.io, generate a token). Until that secret exists this
-job fails every run, so it's intentionally excluded from `ci-success`'s
-required checks. Once configured, add `code-quality-sonar` to that list.
+**Blocking**: Yes — `SONAR_TOKEN` was added 2026-09-02, so this is now a
+required check on `ci-success` like the others. It runs on its own fresh
+checkout without the `coverage` job's lcov output (no artifact wiring
+between them), so it's currently scoring without merged coverage data —
+flagged as follow-up work.
 
 ---
 
@@ -229,7 +230,7 @@ CI/CD Pipeline
 ├─ 🔒 Security Audit
 ├─ 🛡️ SAST (CodeQL)
 ├─ 🕷️ DAST (ZAP baseline)
-├─ 📈 Code Quality (SonarQube Cloud) — advisory until SONAR_TOKEN is set
+├─ 📈 Code Quality (SonarQube Cloud)
 ├─ ✅ CI Success
 └─ 🚀 Deployment Ready [main only]
 ```
@@ -311,9 +312,12 @@ security finding, which shows as a Code Scanning alert instead)
 
 ### Job Fails: Code Quality (SonarQube Cloud)
 
-**Check**: Is `SONAR_TOKEN` set yet? If not, this is expected — the job
-isn't wired into `ci-success` for exactly this reason.
-**Fix**: Create the project on sonarcloud.io, add the `SONAR_TOKEN` secret
+**Check**: Actions tab → job logs, or the quality gate status at
+sonarcloud.io for the project
+**Fix**: A red quality gate blocks the scan step itself
+(`sonar.qualitygate.wait=true`) — fix the flagged issue, or adjust the gate
+conditions on sonarcloud.io if it's too strict for where the codebase is
+today
 
 ## Future Enhancements
 
@@ -321,8 +325,9 @@ isn't wired into `ci-success` for exactly this reason.
 - [x] Security audit blocking (`pnpm audit`)
 - [x] SAST (CodeQL)
 - [x] DAST (OWASP ZAP baseline, against the static frontend)
-- [x] Code quality scaffold (SonarQube Cloud — needs `SONAR_TOKEN` to go live)
+- [x] Code quality blocking (SonarQube Cloud, `SONAR_TOKEN` set 2026-09-02)
 - [ ] Per-service coverage % thresholds (currently only "did the run crash" is blocking, not "did coverage regress")
+- [ ] Wire the `coverage` job's lcov output into `code-quality-sonar` via upload/download-artifact so Sonar scores real coverage data
 - [ ] DAST against the full backend (docker-compose stack), not just the static frontend
 - [ ] Performance regression tests
 - [ ] Bundle size checks (frontend)

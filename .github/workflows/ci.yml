@@ -625,12 +625,7 @@ jobs:
   # resolve to nothing — Sonar will report with no coverage data merged in
   # until that artifact wiring is added as follow-up work.
   #
-  # ⚠️ Not yet wired into ci-success: this job needs a SONAR_TOKEN repo
-  # secret (create the project at sonarcloud.io, generate a token, add it
-  # under Settings → Secrets → Actions) before it can run at all. Until
-  # that's done it will fail every run, so it's deliberately left out of the
-  # required-checks list below. Once the secret exists, add `code-quality-sonar`
-  # to `ci-success`'s `needs` and status checks to make it blocking too.
+  # SONAR_TOKEN is set (2026-09-02) and this is now required by ci-success.
   # ==========================================================================
 
   code-quality-sonar:
@@ -681,6 +676,7 @@ jobs:
       - security-audit
       - sast-codeql
       - dast-zap
+      - code-quality-sonar
     if: always()
 
     steps:
@@ -699,9 +695,8 @@ jobs:
           echo "Security Audit: ${{ needs.security-audit.result }}"
           echo "SAST (CodeQL): ${{ needs.sast-codeql.result }}"
           echo "DAST (ZAP): ${{ needs.dast-zap.result }}"
+          echo "Code Quality (SonarQube Cloud): ${{ needs.code-quality-sonar.result }}"
           echo "========================================="
-          echo "Note: Code Quality (SonarQube Cloud) is not yet a required"
-          echo "check — see the code-quality-sonar job comment for setup."
 
           # Fail if any critical job failed
           if [ "${{ needs.quality-checks.result }}" != "success" ]; then
@@ -742,6 +737,10 @@ jobs:
           fi
           if [ "${{ needs.dast-zap.result }}" != "success" ]; then
             echo "❌ DAST (ZAP baseline) failed"
+            exit 1
+          fi
+          if [ "${{ needs.code-quality-sonar.result }}" != "success" ]; then
+            echo "❌ Code quality (SonarQube Cloud) failed"
             exit 1
           fi
 
