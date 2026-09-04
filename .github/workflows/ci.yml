@@ -524,12 +524,17 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run pnpm audit
-        # Blocking: a moderate-or-higher vulnerability now fails the job.
-        # If a transitive dep has no fix available yet, add it to a
-        # documented allowlist (e.g. via `pnpm audit --audit-level=moderate
-        # --ignore-cves ...` or an audit-ci config) rather than reintroducing
-        # continue-on-error.
-        run: pnpm audit --audit-level=moderate
+        # Blocking: a high-or-critical vulnerability fails the job (policy
+        # 2026-09-04). Moderate/low are visible in the job log but don't
+        # block - there's a real, tracked backlog of both left over from the
+        # 2026-09-02 baseline (chore(deps) 6f579f1 cut it from 209 to 78
+        # unique advisories; this threshold still leaves ~2 critical + ~41
+        # high findings blocking today, mostly in payload/next/mongoose/
+        # nodemailer/undici - clearing those needs major-version bumps, not
+        # another free `pnpm update -r`). If a specific high/critical finding
+        # turns out to have no fix available, add it to a documented
+        # allowlist rather than reintroducing continue-on-error.
+        run: pnpm audit --audit-level=high
 
       - name: Check for outdated dependencies
         run: pnpm outdated || echo "Some dependencies are outdated"

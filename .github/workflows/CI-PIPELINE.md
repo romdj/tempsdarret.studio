@@ -137,12 +137,15 @@ too — not yet configured project-wide (see the coverage job's comment in
 **Purpose**: Vulnerability scanning
 
 **Checks**:
-- `pnpm audit --audit-level=moderate`
+- `pnpm audit --audit-level=high`
 - Outdated dependency check (informational only)
 
-**Blocking**: Yes, for the audit step — a moderate+ vulnerability fails the
-job. If a transitive dep has no fix yet, document an explicit allowlist
-rather than reintroducing `continue-on-error`.
+**Blocking**: Yes, for the audit step — a high or critical vulnerability
+fails the job; moderate/low are visible in the log but don't block (policy
+2026-09-04). There's a real, tracked backlog behind this threshold too —
+see the job's comment in `ci.yml` for the current count and root packages.
+If a specific high/critical finding turns out to have no fix yet, document
+an explicit allowlist rather than reintroducing `continue-on-error`.
 
 ---
 
