@@ -5,3 +5,18 @@ packages:
   - 'services/*'
   - 'services/common/tests'
   - 'dev-tools'
+
+# pnpm 10 reads `overrides` from either here or a nested `pnpm.overrides` in
+# package.json - this repo previously had a bare top-level `overrides` key in
+# package.json, which is npm/yarn's convention, not pnpm's, so it was
+# silently never applied. Moved here, the canonical location pnpm is
+# converging on (pnpm 11+ drops package.json's `pnpm.*` settings entirely).
+overrides:
+  cross-spawn: ^7.0.6
+  cookie: ^0.7.1
+  tar: ^7.5.22
+  # testcontainers (devDependency-only test infra) pulls an old undici with
+  # WebSocket DoS advisories we don't actually hit (no websocket usage in
+  # our testcontainers calls) - forced up since testcontainers' own HTTP
+  # usage doesn't rely on undici's WebSocket path.
+  undici: ^7.29.1

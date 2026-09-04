@@ -138,7 +138,7 @@
     "docs:clean": "rm -rf docs/{api,events,architecture}/*"
   },
   "devDependencies": {
-    "@asyncapi/cli": "^3.6.0",
+    "@asyncapi/cli": "^6.0.2",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@eslint/js": "^9.39.5",
@@ -166,10 +166,6 @@
     "url": "git+https://github.com/romdj/tempsdarret-studio.git"
   },
   "homepage": "https://github.com/romdj/tempsdarret-studio#readme",
-  "overrides": {
-    "cross-spawn": "^7.0.6",
-    "cookie": "^0.7.1"
-  },
   "dependencies": {
     "@vitest/coverage-v8": "^3.2.7",
     "fastify": "^5.12.3",
