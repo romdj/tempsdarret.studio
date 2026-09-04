@@ -6,6 +6,17 @@ packages:
   - 'services/common/tests'
   - 'dev-tools'
 
+# CVE-2026-56876 (extract-zip, pulled in via puppeteer -> @asyncapi/html-template,
+# docs:generate only): no patched version exists at all (patched_versions
+# "<0.0.0" in the advisory - the package is unmaintained). Auto-recorded here
+# by `pnpm audit --ignore-unfixable`, not hand-picked - re-run without that
+# flag periodically in case a fix ever ships and this can be removed.
+# CVE-2026-11779: see the same command's output for details.
+auditConfig:
+  ignoreCves:
+    - CVE-2026-56876
+    - CVE-2026-11779
+
 # pnpm 10 reads `overrides` from either here or a nested `pnpm.overrides` in
 # package.json - this repo previously had a bare top-level `overrides` key in
 # package.json, which is npm/yarn's convention, not pnpm's, so it was
@@ -20,3 +31,17 @@ overrides:
   # our testcontainers calls) - forced up since testcontainers' own HTTP
   # usage doesn't rely on undici's WebSocket path.
   undici: ^7.29.1
+  # @asyncapi/studio@1.4.2 (already latest) hard-pins next@14.2.35 - a
+  # devDependency-only local doc-preview tool (`docs:serve`), never run in
+  # CI or production, but still 8 high-severity pnpm audit findings (fixed
+  # in next>=15.5.21). Forced up regardless of studio's own pin; the only
+  # thing this can break is that one manual, rarely-used script.
+  next: ^15.5.21
+  # Remaining devDependency-only tooling findings, each with a real fix
+  # available - forced up regardless of what the parent tool
+  # (@redocly/cli, @asyncapi/studio, @asyncapi/generator's npm-arborist
+  # chain) pins.
+  postcss: ^8.5.18
+  pacote: ^21.5.1
+  '@opentelemetry/propagator-jaeger': ^2.9.0
+  '@faker-js/faker': ^10.5.0

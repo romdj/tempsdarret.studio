@@ -526,15 +526,19 @@ jobs:
       - name: Run pnpm audit
         # Blocking: a high-or-critical vulnerability fails the job (policy
         # 2026-09-04). Moderate/low are visible in the job log but don't
-        # block - there's a real, tracked backlog of both left over from the
-        # 2026-09-02 baseline (chore(deps) 6f579f1 cut it from 209 to 78
-        # unique advisories; this threshold still leaves ~2 critical + ~41
-        # high findings blocking today, mostly in payload/next/mongoose/
-        # nodemailer/undici - clearing those needs major-version bumps, not
-        # another free `pnpm update -r`). If a specific high/critical finding
-        # turns out to have no fix available, add it to a documented
-        # allowlist rather than reintroducing continue-on-error.
-        run: pnpm audit --audit-level=high
+        # block. Chased the backlog down from the 2026-09-02 baseline (209
+        # unique advisories) to 0 high/critical via chore(deps) 6f579f1,
+        # the payload v3 migration (5714ddf, see ADR-031), and pnpm-workspace
+        # .yaml overrides forcing patched versions of everything still
+        # pinned old by devDependency-only tooling (@asyncapi/studio,
+        # @redocly/cli, testcontainers). --ignore-unfixable skips the one
+        # remaining finding with no patched version at all (extract-zip,
+        # CVE-2026-56876 - see pnpm-workspace.yaml's auditConfig.ignoreCves
+        # comment) rather than blocking forever on something no version
+        # bump can fix. If a *new* high/critical finding turns out to have
+        # no fix available, that's what --ignore-unfixable is for; if one
+        # does have a fix, add an override rather than reaching for this.
+        run: pnpm audit --audit-level=high --ignore-unfixable
 
       - name: Check for outdated dependencies
         run: pnpm outdated || echo "Some dependencies are outdated"
