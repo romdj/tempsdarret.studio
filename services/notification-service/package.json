@@ -25,27 +25,27 @@
     "test:contract": "vitest run tests/contract --passWithNoTests"
   },
   "dependencies": {
-    "@payloadcms/bundler-webpack": "^1.0.0",
-    "@payloadcms/db-mongodb": "^1.5.0",
-    "@payloadcms/richtext-slate": "^1.5.0",
+    "@payloadcms/bundler-webpack": "^1.0.7",
+    "@payloadcms/db-mongodb": "^1.7.5",
+    "@payloadcms/richtext-slate": "^1.5.2",
     "@tempsdarret/events": "workspace:*",
     "@tempsdarret/shared": "workspace:*",
-    "bullmq": "^5.0.0",
-    "handlebars": "^4.7.0",
-    "ioredis": "^5.3.0",
-    "juice": "^10.0.0",
-    "kafkajs": "^2.2.0",
-    "payload": "^2.24.0",
-    "resend": "^3.2.0"
+    "bullmq": "^5.81.4",
+    "handlebars": "^4.7.9",
+    "ioredis": "^5.11.1",
+    "juice": "^10.0.1",
+    "kafkajs": "^2.2.4",
+    "payload": "^2.32.3",
+    "resend": "^3.5.0"
   },
   "devDependencies": {
     "@types/handlebars": "^4.1.0",
-    "@types/node": "^20.0.0",
-    "@vitest/coverage-v8": "^3.2.4",
-    "mongodb-memory-server": "^9.1.0",
-    "tsx": "^4.0.0",
-    "typescript": "^5.3.0",
-    "vitest": "^3.2.4"
+    "@types/node": "^20.19.43",
+    "@vitest/coverage-v8": "^3.2.7",
+    "mongodb-memory-server": "^9.5.0",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
   },
   "engines": {
     "node": ">=24.0.0",
