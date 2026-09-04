@@ -12,6 +12,11 @@ export default defineConfig({
     globals: true,
     testTimeout: 60000,
     hookTimeout: 60000,
+    // See user-service/vitest.config.ts: src/server.ts's connectMongo('memory')
+    // path races multiple MongoMemoryServer instances on the shared cached
+    // mongod binary lock when files run in parallel (only hit by unscoped
+    // runs like test:coverage — the scoped CI jobs stay isolated per-job).
+    fileParallelism: false,
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [
