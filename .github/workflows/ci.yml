@@ -655,7 +655,7 @@ jobs:
         run: pnpm run build:models && pnpm run build:shared
 
       - name: SonarQube Cloud Scan
-        uses: SonarSource/sonarqube-scan-action@v4.1.0
+        uses: SonarSource/sonarqube-scan-action@v8
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
