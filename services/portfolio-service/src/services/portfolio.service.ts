@@ -40,17 +40,22 @@ export class PortfolioService {
       timestamp: new Date().toISOString()
     }, savedPortfolio.id);
 
-    return savedPortfolio.toJSON() as Portfolio;
+    // Mongoose's .toJSON() typing (as of 8.24) infers a lean-document shape
+    // that no longer structurally overlaps our schema-derived Portfolio type
+    // closely enough for a direct `as` cast — a typings tightening between
+    // 8.17 and 8.24, not a runtime behavior change (the schema's toJSON
+    // transform is unchanged). Double-cast bridges it.
+    return savedPortfolio.toJSON() as unknown as Portfolio;
   }
 
   async getPortfolio(portfolioId: string): Promise<Portfolio | null> {
     const portfolio = await this.portfolioRepository.findById(portfolioId);
-    return portfolio ? portfolio.toJSON() as Portfolio : null;
+    return portfolio ? portfolio.toJSON() as unknown as Portfolio : null;
   }
 
   async getPortfolioBySlug(urlSlug: string): Promise<Portfolio | null> {
     const portfolio = await this.portfolioRepository.findBySlug(urlSlug);
-    return portfolio ? portfolio.toJSON() as Portfolio : null;
+    return portfolio ? portfolio.toJSON() as unknown as Portfolio : null;
   }
 
   async updatePortfolio(portfolioId: string, updateData: UpdatePortfolioRequest): Promise<Portfolio | null> {
@@ -73,14 +78,14 @@ export class PortfolioService {
       }, portfolioId);
     }
 
-    return updatedPortfolio ? updatedPortfolio.toJSON() as Portfolio : null;
+    return updatedPortfolio ? updatedPortfolio.toJSON() as unknown as Portfolio : null;
   }
 
   async listPortfolios(query: PortfolioQuery): Promise<{ portfolios: Portfolio[], total: number }> {
     const { portfolios, total } = await this.portfolioRepository.findMany(query);
 
     return {
-      portfolios: portfolios.map(p => p.toJSON() as Portfolio),
+      portfolios: portfolios.map(p => p.toJSON() as unknown as Portfolio),
       total
     };
   }

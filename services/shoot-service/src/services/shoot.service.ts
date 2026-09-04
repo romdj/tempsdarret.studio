@@ -26,12 +26,16 @@ export class ShootService {
     // Publish event (this triggers the invitation flow)
     await this.shootCreatedPublisher.publish(savedShoot);
 
-    return savedShoot.toJSON() as Shoot;
+    // Mongoose 8.24's .toJSON() typing no longer structurally overlaps our
+    // schema-derived type closely enough for a direct `as` cast (typings-only
+    // change from the 8.17->8.24 dependency bump, not a runtime one — see
+    // portfolio-service/src/services/portfolio.service.ts for the same fix).
+    return savedShoot.toJSON() as unknown as Shoot;
   }
 
   async getShoot(shootId: string): Promise<Shoot | null> {
     const shoot = await this.shootRepository.findById(shootId);
-    return shoot ? shoot.toJSON() as Shoot : null;
+    return shoot ? shoot.toJSON() as unknown as Shoot : null;
   }
 
   async updateShoot(shootId: string, updateData: UpdateShootRequest): Promise<Shoot | null> {
@@ -39,7 +43,7 @@ export class ShootService {
     const validatedData = UpdateShootRequestSchema.parse(updateData);
 
     const updatedShoot = await this.shootRepository.updateById(shootId, validatedData);
-    return updatedShoot ? updatedShoot.toJSON() as Shoot : null;
+    return updatedShoot ? updatedShoot.toJSON() as unknown as Shoot : null;
   }
 
   async listShoots(query: ShootQuery): Promise<{
@@ -55,7 +59,7 @@ export class ShootService {
     const { shoots, total } = await this.shootRepository.findMany(validatedQuery);
 
     return {
-      shoots: shoots.map(shoot => shoot.toJSON() as Shoot),
+      shoots: shoots.map(shoot => shoot.toJSON() as unknown as Shoot),
       total,
       page: validatedQuery.page,
       limit: validatedQuery.limit,

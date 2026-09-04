@@ -26,12 +26,15 @@ export class GalleryService {
       timestamp: new Date().toISOString()
     }, savedGallery.id);
 
-    return savedGallery.toJSON() as Gallery;
+    // See portfolio.service.ts: mongoose 8.24's .toJSON() typing no longer
+    // structurally overlaps our schema-derived type closely enough for a
+    // direct `as` cast (typings-only change, not a runtime one).
+    return savedGallery.toJSON() as unknown as Gallery;
   }
 
   async getGallery(galleryId: string): Promise<Gallery | null> {
     const gallery = await this.galleryRepository.findById(galleryId);
-    return gallery ? gallery.toJSON() as Gallery : null;
+    return gallery ? gallery.toJSON() as unknown as Gallery : null;
   }
 
   async updateGallery(galleryId: string, updateData: Partial<CreateGalleryRequest>): Promise<Gallery | null> {
@@ -46,14 +49,14 @@ export class GalleryService {
       }, galleryId);
     }
 
-    return updatedGallery ? updatedGallery.toJSON() as Gallery : null;
+    return updatedGallery ? updatedGallery.toJSON() as unknown as Gallery : null;
   }
 
   async listGalleries(query: GalleryQuery): Promise<{ galleries: Gallery[], total: number }> {
     const { galleries, total } = await this.galleryRepository.findMany(query);
 
     return {
-      galleries: galleries.map(g => g.toJSON() as Gallery),
+      galleries: galleries.map(g => g.toJSON() as unknown as Gallery),
       total
     };
   }
@@ -83,11 +86,11 @@ export class GalleryService {
       timestamp: new Date().toISOString()
     }, galleryId);
 
-    return images.map(img => img.toJSON() as GalleryImage);
+    return images.map(img => img.toJSON() as unknown as GalleryImage);
   }
 
   async getGalleryImages(galleryId: string): Promise<GalleryImage[]> {
     const images = await this.galleryRepository.getImages(galleryId);
-    return images.map(img => img.toJSON() as GalleryImage);
+    return images.map(img => img.toJSON() as unknown as GalleryImage);
   }
 }
