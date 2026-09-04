@@ -1,0 +1,21 @@
+# zaproxy/action-baseline's fail_action:true fails the job on ANY alert —
+# WARN or FAIL, there's no "block only on FAIL" middle ground in this action.
+# So every currently-known finding below is IGNOREd (dated, with a reason),
+# rather than leaving DAST permanently red until Phase 3 ships and people
+# start tuning it out. Remove a line once its underlying gap is actually
+# fixed, so a regression on that specific header/config shows up as a real
+# failure again.
+#
+# Baseline captured 2026-09-04 against the pre-Phase-1 placeholder frontend
+# (docs/superpowers/plans/2026-08-07-01…04-*.md — not yet built).
+
+10020	IGNORE	(Missing Anti-clickjacking Header) — add X-Frame-Options/frame-ancestors via CloudFront response headers policy or hooks.server.ts, then remove this line.
+10021	IGNORE	(X-Content-Type-Options Header Missing) — add nosniff via the same mechanism, then remove.
+10038	IGNORE	(Content Security Policy Header Not Set) — needs real design work (inline script/style sources for SvelteKit hydration) before it can be added without breaking the app; deliberately deferred, not a false positive.
+10049	IGNORE	(Storable and Cacheable Content) — informational; deploy-frontend.yml already sets deliberate cache-control per asset type. Revisit only if this flags something unexpected.
+10063	IGNORE	(Permissions Policy Header Not Set) — add via CloudFront response headers policy, then remove.
+10094	IGNORE	(Base64 Disclosure) — near-certain false positive on bundled JS containing base64-looking strings (fonts/icons). Revisit if a real secret ever shows up here.
+10098	IGNORE	(Cross-Domain Misconfiguration) — expected for a public static asset host. Revisit if this ever flags something unexpected.
+10109	IGNORE	(Modern Web Application) — informational only, not a finding (ZAP noting the site uses a JS framework).
+90004	IGNORE	(Cross-Origin-Embedder-Policy Header Missing) — add via CloudFront response headers policy, then remove.
+90005	IGNORE	(Sec-Fetch-Dest Header is Missing) — a request header ZAP itself didn't send, not something the frontend can set; near-certain false positive from the baseline scan's own request shape.
