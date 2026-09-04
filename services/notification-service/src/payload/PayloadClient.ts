@@ -8,12 +8,14 @@ import {
 } from './payload-schemas.js';
 
 /**
- * Payload CMS client for managing notification templates and configurations.
+ * Payload CMS (v3, Local API only — see ADR-031) client for managing
+ * notification templates and configurations.
  *
- * `payload` is imported lazily (dynamic import in initialize) so that merely
- * constructing this client does not pull in the heavy Payload/sharp dependency
- * tree. Callers fall back to built-in templates when the CMS is unavailable,
- * so the notification runtime works without Payload configured.
+ * `payload` and the config are both imported lazily (dynamic import in
+ * initialize) so that merely constructing this client does not pull in
+ * Payload's dependency tree. Callers fall back to built-in templates when
+ * the CMS is unavailable, so the notification runtime works without
+ * Payload configured.
  */
 export class PayloadClient {
   private initialized = false;
@@ -21,12 +23,12 @@ export class PayloadClient {
   private payload: any = null;
   // In-flight initialize() promise, so concurrent first calls (e.g. several
   // getTemplate() calls fired in parallel before any has finished) share a
-  // single `import('payload')` + `payload.init()` rather than each racing
-  // their own — a classic thundering-herd on lazy init.
+  // single `getPayload()` call rather than each racing their own — a
+  // classic thundering-herd on lazy init.
   private initPromise: Promise<void> | null = null;
 
   /**
-   * Initialize Payload CMS connection (lazy dynamic import)
+   * Initialize the Payload Local API instance (lazy dynamic import)
    */
   async initialize(): Promise<void> {
     if (this.initialized) {return;}
@@ -36,14 +38,12 @@ export class PayloadClient {
 
   private async doInitialize(): Promise<void> {
     try {
-      const payloadModule = await import('payload');
-      this.payload = payloadModule.default ?? payloadModule;
+      const [{ getPayload }, { default: config }] = await Promise.all([
+        import('payload'),
+        import('./payload.config.js'),
+      ]);
 
-      // Initialize Payload without Express (for API access only)
-      await this.payload.init({
-        secret: process.env.PAYLOAD_SECRET ?? 'your-secret-here',
-        local: true, // Use local API instead of HTTP requests
-      });
+      this.payload = await getPayload({ config });
 
       this.initialized = true;
       console.log('✅ Payload CMS client initialized');

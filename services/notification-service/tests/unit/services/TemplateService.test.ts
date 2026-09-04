@@ -12,12 +12,15 @@ import {
 } from '../../../src/shared/contracts/notifications.types.js';
 import { mockPayload, setupPayloadMock } from '../../mocks/payload.mock.js';
 
-// TemplateService sources templates from Payload CMS via a lazy dynamic
-// `import('payload')`; mock that module so getTemplate()/getAllTemplates()
-// resolve seeded fixture templates instead of touching a real Payload/Mongo
-// connection.
+// TemplateService sources templates from Payload CMS (v3, Local API) via a
+// lazy dynamic `import('payload')` + `getPayload({ config })`; mock both so
+// getTemplate()/getAllTemplates() resolve seeded fixture templates instead
+// of touching a real Payload/Mongo connection.
 vi.mock('payload', () => ({
-  default: mockPayload
+  getPayload: vi.fn(async () => mockPayload)
+}));
+vi.mock('../../../src/payload/payload.config.js', () => ({
+  default: {}
 }));
 
 describe('TemplateService', () => {

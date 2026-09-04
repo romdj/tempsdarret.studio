@@ -1,13 +1,18 @@
 /**
- * Seed Templates for Payload CMS
+ * Seed Templates for Payload CMS (v3, Local API — see ADR-031)
  * Creates default notification templates for photography business
+ *
+ * Standalone script, run via `pnpm run payload:seed` (tsx). Not imported
+ * elsewhere, so it initializes its own Payload instance and runs itself.
  */
 
-import payload from 'payload';
+import { getPayload, type Payload } from 'payload';
+import config from './payload.config.js';
 
 /* eslint-disable max-lines-per-function, max-lines, max-len */
 export const seedTemplates = async (): Promise<void> => {
   console.log('📦 Seeding default notification templates...');
+  const payload = await getPayload({ config });
 
   try {
     // Check if templates already exist
@@ -468,7 +473,7 @@ Best regards,
     console.log(`✅ Created ${templates.length} default templates`);
 
     // Seed template variables
-    await seedTemplateVariables();
+    await seedTemplateVariables(payload);
 
   } catch (error) {
     console.error('❌ Failed to seed templates:', error);
@@ -476,7 +481,7 @@ Best regards,
   }
 };
 
-const seedTemplateVariables = async (): Promise<void> => {
+const seedTemplateVariables = async (payload: Payload): Promise<void> => {
   console.log('📦 Seeding template variables...');
 
   const variables = [
@@ -589,7 +594,8 @@ const seedTemplateVariables = async (): Promise<void> => {
       });
     } catch (error) {
       // Skip if variable already exists
-      if (!error.message?.includes('duplicate')) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!message.includes('duplicate')) {
         console.error(`Failed to create variable ${variableData.name}:`, error);
       }
     }
@@ -597,3 +603,5 @@ const seedTemplateVariables = async (): Promise<void> => {
 
   console.log(`✅ Template variables seeded`);
 };
+
+await seedTemplates();

@@ -1,21 +1,7 @@
-import type { CollectionConfig } from 'payload/types';
+import type { CollectionConfig } from 'payload';
 
 export const NotificationTemplates: CollectionConfig = {
   slug: 'notification-templates',
-  admin: {
-    useAsTitle: 'name',
-    group: 'Templates',
-    defaultColumns: ['name', 'type', 'channel', 'isActive', 'updatedAt'],
-    preview: (doc) => {
-      return `${process.env.PAYLOAD_SERVER_URL}/api/notification-templates/${doc.id}/preview`;
-    },
-  },
-  access: {
-    read: () => true, // Templates are read by the notification service
-    create: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'editor',
-    update: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'editor',
-    delete: ({ req: { user } }) => user?.role === 'admin',
-  },
   fields: [
     {
       name: 'name',
@@ -108,10 +94,11 @@ export const NotificationTemplates: CollectionConfig = {
         },
         {
           name: 'html',
-          type: 'richText',
+          type: 'textarea',
           admin: {
             condition: (data) => data.channel === 'email',
-            description: 'HTML version for email templates (supports Handlebars variables)',
+            description: 'HTML source for email templates (supports Handlebars variables). Plain textarea, not rich text - this is authored/seeded as raw HTML+Handlebars, never edited via a WYSIWYG.',
+            rows: 12,
           },
         },
       ],
@@ -226,15 +213,15 @@ export const NotificationTemplates: CollectionConfig = {
     },
     {
       name: 'notes',
-      type: 'richText',
+      type: 'textarea',
       admin: {
         description: 'Internal notes about this template (not visible to end users)',
       },
     },
   ],
-  // TODO(payload-v2): top-level compound indexes were removed in Payload v2.
-  // Re-add type+channel+language+isActive and isActive+priority indexes via
-  // field-level `index: true` on the respective fields.
+  // TODO(payload-v3): compound indexes (type+channel+language+isActive,
+  // isActive+priority) still need field-level `index: true` - carried over
+  // unaddressed from the v2 migration, not introduced by this one.
   hooks: {
     beforeValidate: [
       ({ data }) => {
@@ -253,10 +240,6 @@ export const NotificationTemplates: CollectionConfig = {
         console.log(`Template ${doc.name} was ${operation}d at ${new Date().toISOString()}`);
       },
     ],
-  },
-  versions: {
-    drafts: true,
-    maxPerDoc: 10,
   },
   timestamps: true,
 };

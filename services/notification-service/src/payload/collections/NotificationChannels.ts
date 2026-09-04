@@ -1,18 +1,7 @@
-import type { CollectionConfig } from 'payload/types';
+import type { CollectionConfig } from 'payload';
 
 export const NotificationChannels: CollectionConfig = {
   slug: 'notification-channels',
-  admin: {
-    useAsTitle: 'name',
-    group: 'Configuration',
-    defaultColumns: ['name', 'channel', 'isEnabled', 'updatedAt'],
-  },
-  access: {
-    read: () => true,
-    create: ({ req: { user } }) => user?.role === 'admin',
-    update: ({ req: { user } }) => user?.role === 'admin',
-    delete: ({ req: { user } }) => user?.role === 'admin',
-  },
   fields: [
     {
       name: 'name',
@@ -270,7 +259,10 @@ export const NotificationChannels: CollectionConfig = {
             condition: (data) => data.webhooks?.enabled,
             description: 'Webhook endpoint URL for delivery status updates',
           },
-          validate: (value, { data }) => {
+          validate: (
+            value: string | null | undefined,
+            { data }: { data: { webhooks?: { enabled?: boolean } } }
+          ) => {
             if (data?.webhooks?.enabled && !value) {
               return 'Webhook endpoint is required when webhooks are enabled';
             }
@@ -326,15 +318,16 @@ export const NotificationChannels: CollectionConfig = {
     },
     {
       name: 'notes',
-      type: 'richText',
+      type: 'textarea',
       admin: {
         description: 'Configuration notes and documentation',
       },
     },
   ],
-  // TODO(payload-v2): top-level compound indexes were removed in Payload v2.
-  // Re-add the unique `channel` index via `unique: true` on the channel field,
-  // and the isEnabled+priority index via field-level `index: true`.
+  // TODO(payload-v3): the isEnabled+priority compound index still needs
+  // field-level `index: true` - carried over unaddressed from the v2
+  // migration, not introduced by this one. `channel`'s `unique: true`
+  // above already covers that index.
   hooks: {
     beforeValidate: [
       ({ data }) => {

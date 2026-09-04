@@ -1,18 +1,7 @@
-import type { CollectionConfig } from 'payload/types';
+import type { CollectionConfig } from 'payload';
 
 export const TemplateVariables: CollectionConfig = {
   slug: 'template-variables',
-  admin: {
-    useAsTitle: 'name',
-    group: 'Templates',
-    defaultColumns: ['name', 'type', 'category', 'updatedAt'],
-  },
-  access: {
-    read: () => true,
-    create: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'editor',
-    update: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'editor',
-    delete: ({ req: { user } }) => user?.role === 'admin',
-  },
   fields: [
     {
       name: 'name',
@@ -22,8 +11,8 @@ export const TemplateVariables: CollectionConfig = {
       admin: {
         description: 'Variable name used in templates (e.g., "clientName")',
       },
-      validate: (value) => {
-        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(value)) {
+      validate: (value: string | null | undefined) => {
+        if (!value || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(value)) {
           return 'Variable name must start with a letter or underscore and contain only letters, numbers, and underscores';
         }
         return true;
@@ -178,15 +167,15 @@ export const TemplateVariables: CollectionConfig = {
     },
     {
       name: 'notes',
-      type: 'richText',
+      type: 'textarea',
       admin: {
         description: 'Additional notes for template creators',
       },
     },
   ],
-  // TODO(payload-v2): top-level compound indexes were removed in Payload v2.
-  // Re-add category+name and required+isDeprecated indexes via field-level
-  // `index: true` on the respective fields.
+  // TODO(payload-v3): compound indexes (category+name,
+  // required+isDeprecated) still need field-level `index: true` - carried
+  // over unaddressed from the v2 migration, not introduced by this one.
   hooks: {
     beforeChange: [
       ({ data }) => {

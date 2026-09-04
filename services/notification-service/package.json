@@ -9,8 +9,7 @@
     "dev": "tsx watch src/main.ts",
     "build": "tsc",
     "start": "node dist/main.js",
-    "payload": "tsx src/payload/server.ts",
-    "payload:dev": "tsx watch src/payload/server.ts",
+    "payload:seed": "tsx src/payload/seed-templates.ts",
     "test": "vitest run --exclude tests/performance/**",
     "test:watch": "vitest --exclude tests/performance/**",
     "test:unit": "vitest run tests/unit --passWithNoTests",
@@ -25,9 +24,7 @@
     "test:contract": "vitest run tests/contract --passWithNoTests"
   },
   "dependencies": {
-    "@payloadcms/bundler-webpack": "^1.0.7",
-    "@payloadcms/db-mongodb": "^1.7.5",
-    "@payloadcms/richtext-slate": "^1.5.2",
+    "@payloadcms/db-mongodb": "^3.88.0",
     "@tempsdarret/events": "workspace:*",
     "@tempsdarret/shared": "workspace:*",
     "bullmq": "^5.81.4",
@@ -35,7 +32,7 @@
     "ioredis": "^5.11.1",
     "juice": "^10.0.1",
     "kafkajs": "^2.2.4",
-    "payload": "^2.32.3",
+    "payload": "^3.88.0",
     "resend": "^3.5.0"
   },
   "devDependencies": {

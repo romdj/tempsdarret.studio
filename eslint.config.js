@@ -74,11 +74,7 @@ export default [
       '.svelte-kit/',
       'coverage/',
       '*.min.js',
-      '*.min.css',
-      // Payload CMS admin server + seeding: excluded from the service tsconfig
-      // (deferred admin, needs express/dotenv) so keep them out of type-aware lint too.
-      'services/notification-service/src/payload/server.ts',
-      'services/notification-service/src/payload/seed-templates.ts'
+      '*.min.css'
     ]
   }
 ];

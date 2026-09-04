@@ -31,8 +31,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "tests/**/*",
-    "src/payload/server.ts",
-    "src/payload/seed-templates.ts"
+    "tests/**/*"
   ]
 }
