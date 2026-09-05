@@ -494,6 +494,7 @@ jobs:
         env:
           NODE_ENV: test
           MONGODB_URI: mongodb://test:test@localhost:27017/coverage-test?authSource=admin
+          MONGO_TEST_BASE_URI: mongodb://test:test@localhost:27017
           REDIS_URL: redis://localhost:6379/2
 
   # ==========================================================================
