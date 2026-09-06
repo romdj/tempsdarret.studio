@@ -6,7 +6,7 @@ import {
   UpdateShootRequestSchema, 
   ShootQuerySchema,
   ShootStatusSchema 
-} from './shoot.schema';
+} from '../src/schemas/shoot.schema';
 import { ZodError } from 'zod';
 
 describe('Shoot Schemas', () => {
