@@ -21,27 +21,27 @@ Single-page view of all builds, tests, and quality checks.
                     │  9 components, parallel │
                     └────────────┬────────────┘
                                  │
-              All 9 jobs below fan out together off the build
-              matrix and run fully concurrently — none of them
-              needs another's results, only the build:
+              These 8 jobs fan out together off the build matrix and
+              run concurrently — none needs another's results, only
+              the build:
                                  │
         ┌───────────┬───────────┼───────────┬─────────────────┐
         │           │           │           │                 │
 ┌───────▼──────┐┌───▼────────┐┌─▼─────────┐┌▼──────────┐┌─────▼──────┐
 │ 🧪 Component ││🔗 Integration││📜 Contract││🎬 E2E     ││📊 Coverage │
 │ (6 svc, w/   ││(6 svc, w/   ││(6 svc)    ││in-process ││per-service,│
-│ Mongo/Redis/ ││Mongo/Redis/ ││           ││flows      ││no swallow  │
-│ Kafka)       ││Kafka)       ││           ││           ││            │
+│ Mongo/Redis/ ││Mongo/Redis/ ││           ││flows      ││no swallow, │
+│ Kafka)       ││Kafka)       ││           ││           ││uploads lcov│
 └──────────────┘└─────────────┘└───────────┘└───────────┘└─────┬──────┘
-        ┌───────────┬───────────┬───────────────────────────────┘
-        │           │           │
-┌───────▼──────┐┌───▼────────┐┌─▼─────────────────┐┌────────────────────┐
-│🔒 Security   ││🛡️ SAST     ││🕷️ DAST             ││📈 Code Quality     │
-│Audit         ││CodeQL      ││ZAP baseline        ││SonarQube Cloud     │
-│(pnpm audit)  ││            ││(built frontend)    ││                    │
-└───────┬──────┘└─────┬──────┘└─────────┬──────────┘└──────────┬─────────┘
-        │             │                 │                      │
-        └─────────────┴────────┬────────┴──────────────────────┘
+        ┌───────────┬───────────────────────────────────────────┤
+        │           │                                           │ (needs
+┌───────▼──────┐┌───▼────────┐┌────────────────────┐            │ lcov)
+│🔒 Security   ││🛡️ SAST     ││🕷️ DAST             │  ┌─────────▼──────────┐
+│Audit         ││CodeQL      ││ZAP baseline        │  │📈 Code Quality     │
+│(pnpm audit)  ││            ││(built frontend)    │  │SonarQube Cloud     │
+└───────┬──────┘└─────┬──────┘└─────────┬──────────┘  └──────────┬─────────┘
+        │             │                 │                        │
+        └─────────────┴────────┬────────┴────────────────────────┘
                                 │
                       ┌─────────▼─────────┐
                       │ ✅ CI Success     │
@@ -183,10 +183,17 @@ backend microservices — a DAST pass against the full docker-compose stack
 the whole monorepo, via `sonar-project.properties`.
 
 **Blocking**: Yes — `SONAR_TOKEN` was added 2026-09-02, so this is now a
-required check on `ci-success` like the others. It runs on its own fresh
-checkout without the `coverage` job's lcov output (no artifact wiring
-between them), so it's currently scoring without merged coverage data —
-flagged as follow-up work.
+required check on `ci-success` like the others. Needs `coverage` (not just
+`build-and-unit-test`) so it can download the lcov reports that job
+uploads — real coverage data on the quality gate mattered more than
+keeping this fully parallel with coverage, so it now starts once coverage
+finishes rather than alongside it. `frontend` and `packages/models` don't
+appear in `sonar-project.properties`' lcov paths (frontend has no tests
+yet; models is TypeSpec-only) — that's expected, not a bug.
+
+Also requires **Automatic Analysis turned off** in SonarCloud's project
+settings (Administration → Analysis Method) — it conflicts with this
+CI-driven scan otherwise.
 
 ---
 
@@ -330,7 +337,7 @@ today
 - [x] DAST (OWASP ZAP baseline, against the static frontend)
 - [x] Code quality blocking (SonarQube Cloud, `SONAR_TOKEN` set 2026-09-02)
 - [ ] Per-service coverage % thresholds (currently only "did the run crash" is blocking, not "did coverage regress")
-- [ ] Wire the `coverage` job's lcov output into `code-quality-sonar` via upload/download-artifact so Sonar scores real coverage data
+- [x] Wire the `coverage` job's lcov output into `code-quality-sonar` via upload/download-artifact so Sonar scores real coverage data
 - [ ] DAST against the full backend (docker-compose stack), not just the static frontend
 - [ ] Performance regression tests
 - [ ] Bundle size checks (frontend)

@@ -514,6 +514,7 @@ jobs:
         # starting ratchet, not a target.
         run: |
           set -e
+          (cd packages/shared && pnpm run test:coverage)
           for service in user-service invitation-service portfolio-service shoot-service file-service notification-service; do
             echo "Running coverage for $service..."
             (cd services/$service && pnpm run test:coverage)
@@ -524,6 +525,27 @@ jobs:
           MONGO_TEST_BASE_URI: mongodb://test:test@localhost:27017
           KAFKA_BROKERS: localhost:9092
           REDIS_URL: redis://localhost:6379/2
+
+      - name: Upload lcov reports for SonarQube
+        # code-quality-sonar runs on its own fresh checkout and can't see
+        # this job's coverage output otherwise - without this, Sonar always
+        # reports 0% coverage regardless of how good the actual suites are
+        # (confirmed: CI run 2026-09-06 logged "No LCOV files were found"
+        # for every single package, which very likely explains the quality
+        # gate failing on its first-ever real run).
+        uses: actions/upload-artifact@v5
+        with:
+          name: lcov-reports
+          path: |
+            packages/shared/coverage/lcov.info
+            services/user-service/coverage/lcov.info
+            services/invitation-service/coverage/lcov.info
+            services/portfolio-service/coverage/lcov.info
+            services/shoot-service/coverage/lcov.info
+            services/file-service/coverage/lcov.info
+            services/notification-service/coverage/lcov.info
+          retention-days: 1
+          if-no-files-found: warn
 
   # ==========================================================================
   # 🔒 SECURITY & DEPENDENCY AUDIT
@@ -655,22 +677,23 @@ jobs:
 
   # ==========================================================================
   # 📈 CODE QUALITY — SonarQube Cloud
-  # Runs alongside component/integration/contract/e2e, coverage,
-  # security-audit, and DAST — not after them.
-  #
-  # ⚠️ This job runs on its own fresh checkout and does NOT download the
-  # `coverage` job's lcov output (no artifact upload/download wired between
-  # them), so sonar-project.properties' coverage report paths currently
-  # resolve to nothing — Sonar will report with no coverage data merged in
-  # until that artifact wiring is added as follow-up work.
+  # Needs `coverage` specifically (not just build-and-unit-test) so the
+  # lcov reports it uploads are available here - real coverage data on the
+  # quality gate mattered more than keeping this fully parallel with
+  # coverage. Still runs alongside security-audit, SAST, and DAST.
   #
   # SONAR_TOKEN is set (2026-09-02) and this is now required by ci-success.
+  #
+  # Also requires the "Automatic Analysis" toggle OFF in SonarCloud's
+  # project settings (Administration -> Analysis Method) - it conflicts
+  # with this CI-driven scan otherwise ("You are running CI analysis while
+  # Automatic Analysis is enabled").
   # ==========================================================================
 
   code-quality-sonar:
     name: 📈 Code Quality • SonarQube Cloud
     runs-on: ubuntu-latest
-    needs: build-and-unit-test
+    needs: [build-and-unit-test, coverage]
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -691,6 +714,12 @@ jobs:
 
       - name: Build shared packages (for accurate analysis)
         run: pnpm run build:models && pnpm run build:shared
+
+      - name: Download lcov reports
+        uses: actions/download-artifact@v7
+        with:
+          name: lcov-reports
+          path: .
 
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarqube-scan-action@v8
