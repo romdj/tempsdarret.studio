@@ -18,7 +18,7 @@ export default defineConfig({
     // execution trades some speed for not racing that lock.
     fileParallelism: false,
     coverage: {
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
         'tests/',

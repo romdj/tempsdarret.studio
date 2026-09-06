@@ -18,7 +18,7 @@ export default defineConfig({
     // runs like test:coverage — the scoped CI jobs stay isolated per-job).
     fileParallelism: false,
     coverage: {
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
         'tests/',
